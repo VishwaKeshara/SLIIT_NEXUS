@@ -44,7 +44,7 @@ This project has two main parts:
 
 ---
 
-## 📂 Project Structure
+📂 Project Structure
 
 SLIIT_NEXUS/
 ├── nexus_backend/ (Spring Boot Backend)
