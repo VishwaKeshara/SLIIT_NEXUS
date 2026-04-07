@@ -7,6 +7,7 @@ const primaryLinks = [
   { label: "Overview", to: "/" },
   { label: "Bookings", to: "/bookings", auth: true },
   { label: "Support Desk", to: "/tickets", auth: true },
+  { label: "Profile", to: "/profile", auth: true },
 ];
 
 const Navbar = () => {
@@ -79,7 +80,10 @@ const Navbar = () => {
 
           <div className="hidden items-center gap-3 lg:flex">
             {user && (
-              <div className="flex max-w-[23rem] items-center gap-3 rounded-[1.5rem] border border-slate-200/90 bg-[linear-gradient(135deg,#eff6ff,#ffffff_58%,#f8fafc)] px-3 py-2.5 shadow-sm">
+              <Link
+                to="/profile"
+                className="flex max-w-[23rem] items-center gap-3 rounded-[1.5rem] border border-slate-200/90 bg-[linear-gradient(135deg,#eff6ff,#ffffff_58%,#f8fafc)] px-3 py-2.5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
+              >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#1d4ed8,#0f172a)] text-sm font-black uppercase tracking-[0.08em] text-white">
                   {userInitials}
                 </div>
@@ -92,19 +96,21 @@ const Navbar = () => {
                   </div>
                   <p className="truncate text-xs font-medium text-slate-500">{user.email}</p>
                 </div>
-              </div>
+              </Link>
             )}
 
             <NotificationPanel />
 
             {user ? (
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
-              >
-                Sign Out
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
+                >
+                  Sign Out
+                </button>
+              </>
             ) : (
               <Link
                 to="/login"

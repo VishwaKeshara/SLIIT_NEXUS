@@ -9,6 +9,7 @@ import BookingsPage from "./pages/BookingsPage";
 import TicketsPage from "./pages/TicketsPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import LoginSuccessPage from "./pages/LoginSuccessPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   const { pathname } = useLocation();
@@ -34,6 +35,14 @@ function App() {
           element={
             <ProtectedRoute>
               <TicketsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />
