@@ -1,0 +1,23 @@
+# Node.js dependencies
+frontend/node_modules/
+
+# React build output
+frontend/build/
+
+# Spring Boot build output
+backend/target/
+
+# Environment variables
+*.env
+
+# Logs
+*.log
+
+# IDE files
+*.iml
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
