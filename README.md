@@ -44,55 +44,6 @@ This project has two main parts:
 
 ---
 
-📂 Project Structure
-
-SLIIT_NEXUS/
-├── nexus_backend/ (Spring Boot Backend)
-│ ├── src/
-│ │ ├── main/
-│ │ │ ├── java/com/sliit/nexus/
-│ │ │ │ ├── config/ (Security, OAuth, CORS configs)
-│ │ │ │ ├── controller/ (REST API controllers)
-│ │ │ │ ├── model/ (MongoDB document models)
-│ │ │ │ ├── repository/ (MongoDB repositories)
-│ │ │ │ ├── service/ (Business logic)
-│ │ │ │ ├── dto/ (Data transfer objects)
-│ │ │ │ ├── exception/ (Custom exceptions & handlers)
-│ │ │ │ └── utils/ (Helper utilities)
-│ │ │ └── resources/
-│ │ │ ├── application.properties
-│ │ │ └── application-dev.properties
-│ │ └── test/ (Unit & integration tests)
-│ ├── target/ (Build folder, ignored in Git)
-│ ├── pom.xml
-│ └── Dockerfile
-│
-├── nexus_frontend/ (React Frontend)
-│ ├── src/
-│ │ ├── components/
-│ │ │ ├── common/ (Navbar, Sidebar, NotificationPanel)
-│ │ │ ├── resources/ (Resource management)
-│ │ │ ├── bookings/ (Booking management)
-│ │ │ ├── tickets/ (Ticket management)
-│ │ │ └── admin/ (Admin dashboard)
-│ │ ├── pages/ (Login, Dashboard, etc.)
-│ │ ├── services/ (API service calls)
-│ │ ├── hooks/ (Custom React hooks)
-│ │ ├── context/ (Auth context)
-│ │ ├── styles/ (CSS files)
-│ │ ├── App.js
-│ │ └── index.js
-│ ├── public/
-│ ├── node_modules/ (Ignored in Git)
-│ ├── build/ (Production build, ignored in Git)
-│ ├── package.json
-│ └── Dockerfile
-│
-├── .github/workflows/ci-cd.yml (GitHub Actions pipeline)
-├── docs/ (Architecture diagrams, screenshots, reports)
-├── .gitignore
-├── README.md
-└── docker-compose.yml (Optional Docker setup)
 
 ## ⚡ Prerequisites
 
