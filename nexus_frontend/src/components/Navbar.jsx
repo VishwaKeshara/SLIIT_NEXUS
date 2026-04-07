@@ -16,6 +16,14 @@ const Navbar = () => {
   const roles = user?.roles ?? [];
   const isAdmin = roles.includes("ADMIN");
   const roleLabel = isAdmin ? "Admin" : roles.includes("TECHNICIAN") ? "Technician" : "User";
+  const userInitials = user?.displayName
+    ? user.displayName
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("")
+    : "GU";
 
   const handleLogout = async () => {
     await logout();
@@ -71,13 +79,19 @@ const Navbar = () => {
 
           <div className="hidden items-center gap-3 lg:flex">
             {user && (
-              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2">
-                <span className="rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700">
-                  {roleLabel}
-                </span>
-                <span className="text-sm font-semibold text-slate-700">
-                  {user.displayName}
-                </span>
+              <div className="flex max-w-[23rem] items-center gap-3 rounded-[1.5rem] border border-slate-200/90 bg-[linear-gradient(135deg,#eff6ff,#ffffff_58%,#f8fafc)] px-3 py-2.5 shadow-sm">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#1d4ed8,#0f172a)] text-sm font-black uppercase tracking-[0.08em] text-white">
+                  {userInitials}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="truncate text-sm font-bold text-slate-900">{user.displayName}</p>
+                    <span className="shrink-0 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-blue-700 ring-1 ring-blue-100">
+                      {roleLabel}
+                    </span>
+                  </div>
+                  <p className="truncate text-xs font-medium text-slate-500">{user.email}</p>
+                </div>
               </div>
             )}
 
@@ -87,7 +101,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                className="rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
               >
                 Sign Out
               </button>
@@ -115,14 +129,14 @@ const Navbar = () => {
             <div className="grid gap-3">
               <div className="rounded-3xl bg-[linear-gradient(135deg,#eff6ff,#f8fafc_55%,#e2e8f0)] p-4">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                       Session
                     </p>
                     <p className="mt-2 text-lg font-bold text-slate-950">
                       {user ? user.displayName : "Guest Access"}
                     </p>
-                    <p className="text-sm text-slate-600">
+                    <p className="truncate text-sm text-slate-600">
                       {user ? user.email : "Sign in to manage bookings and support tickets"}
                     </p>
                   </div>
