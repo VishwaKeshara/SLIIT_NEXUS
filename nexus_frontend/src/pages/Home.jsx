@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import sliitCampusImage from "../assets/SLIIT-malabe.jpg";
+import sliitBuildingImage from "../assets/download.webp";
+import sliitLibraryImage from "../assets/SLIIT-Library-3.jpg";
 
 const quickActions = [
   "Book lecture halls and labs in minutes",
@@ -31,23 +34,56 @@ const stats = [
   { label: "Avg. Ticket Response", value: "< 30 min" },
 ];
 
+const heroSlides = [
+  {
+    image: sliitCampusImage,
+    alt: "SLIIT Malabe campus aerial view",
+    eyebrow: "Welcome to SLIIT Nexus",
+  },
+  {
+    image: sliitBuildingImage,
+    alt: "SLIIT academic building entrance",
+    eyebrow: "Explore campus spaces",
+  },
+  {
+    image: sliitLibraryImage,
+    alt: "SLIIT library learning area",
+    eyebrow: "Connected student services",
+  },
+];
+
 const Home = () => {
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % heroSlides.length);
+    }, 4000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   return (
     <main className="pt-24 bg-slate-50 min-h-screen">
       <section className="mx-auto max-w-7xl px-4 py-10">
         <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 shadow-[0_28px_80px_rgba(15,23,42,0.16)]">
-          <img
-            src={sliitCampusImage}
-            alt="SLIIT Malabe campus"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          {heroSlides.map((slide, index) => (
+            <img
+              key={slide.alt}
+              src={slide.image}
+              alt={slide.alt}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                index === activeSlide ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,23,42,0.88)_0%,rgba(15,23,42,0.72)_38%,rgba(15,23,42,0.26)_100%)]" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(30,64,175,0.08)_0%,rgba(15,23,42,0.48)_100%)]" />
 
           <div className="relative grid min-h-[34rem] items-end gap-8 px-6 py-8 md:px-10 md:py-10 lg:grid-cols-[1.2fr_0.8fr] lg:px-12">
             <div className="max-w-3xl self-center">
               <p className="inline-flex items-center rounded-full border border-white/20 bg-white/12 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
-                Welcome to SLIIT Nexus
+                {heroSlides[activeSlide].eyebrow}
               </p>
               <h1 className="mt-5 max-w-2xl text-4xl font-extrabold leading-tight text-white md:text-5xl lg:text-6xl">
                 Smart Campus Operations, Unified in One Platform
@@ -69,6 +105,20 @@ const Home = () => {
                 >
                   Submit Ticket
                 </Link>
+              </div>
+
+              <div className="mt-8 flex items-center gap-3">
+                {heroSlides.map((slide, index) => (
+                  <button
+                    key={slide.alt}
+                    type="button"
+                    onClick={() => setActiveSlide(index)}
+                    className={`h-2.5 rounded-full transition-all ${
+                      index === activeSlide ? "w-10 bg-white" : "w-2.5 bg-white/45 hover:bg-white/70"
+                    }`}
+                    aria-label={`Show hero slide ${index + 1}`}
+                  />
+                ))}
               </div>
             </div>
 
