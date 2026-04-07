@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import sliitCampusImage from "../assets/SLIIT-malabe.jpg";
 
 const quickActions = [
   "Book lecture halls and labs in minutes",
@@ -33,48 +34,58 @@ const stats = [
 const Home = () => {
   return (
     <main className="pt-24 bg-slate-50 min-h-screen">
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <p className="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-sm font-semibold px-3 py-1">
-              Welcome to SLIIT Nexus
-            </p>
-            <h1 className="mt-5 text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight">
-              Smart Campus Operations, Unified in One Platform
-            </h1>
-            <p className="mt-5 text-lg text-slate-600 max-w-xl">
-              SLIIT Nexus helps students, staff, and administrators manage bookings,
-              resources, and support workflows with speed and clarity.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                to="/bookings"
-                className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-              >
-                Start Booking
-              </Link>
-              <Link
-                to="/tickets"
-                className="bg-white text-slate-800 border border-slate-300 px-6 py-3 rounded-xl font-semibold hover:bg-slate-100 transition-colors"
-              >
-                Submit Ticket
-              </Link>
-            </div>
-          </div>
+      <section className="mx-auto max-w-7xl px-4 py-10">
+        <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 shadow-[0_28px_80px_rgba(15,23,42,0.16)]">
+          <img
+            src={sliitCampusImage}
+            alt="SLIIT Malabe campus"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,23,42,0.88)_0%,rgba(15,23,42,0.72)_38%,rgba(15,23,42,0.26)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(30,64,175,0.08)_0%,rgba(15,23,42,0.48)_100%)]" />
 
-          <div className="bg-white border border-slate-200 shadow-lg rounded-2xl p-6 md:p-8">
-            <h2 className="text-xl font-bold text-slate-900">Quick Actions</h2>
-            <ul className="mt-5 space-y-3">
-              {quickActions.map((action) => (
-                <li
-                  key={action}
-                  className="flex items-start gap-3 text-slate-700 bg-slate-50 rounded-lg px-4 py-3"
+          <div className="relative grid min-h-[34rem] items-end gap-8 px-6 py-8 md:px-10 md:py-10 lg:grid-cols-[1.2fr_0.8fr] lg:px-12">
+            <div className="max-w-3xl self-center">
+              <p className="inline-flex items-center rounded-full border border-white/20 bg-white/12 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
+                Welcome to SLIIT Nexus
+              </p>
+              <h1 className="mt-5 max-w-2xl text-4xl font-extrabold leading-tight text-white md:text-5xl lg:text-6xl">
+                Smart Campus Operations, Unified in One Platform
+              </h1>
+              <p className="mt-5 max-w-xl text-base leading-7 text-slate-200 md:text-lg">
+                SLIIT Nexus helps students, staff, and administrators manage bookings, resources, and support
+                workflows with speed and clarity across the Malabe campus.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link
+                  to="/bookings"
+                  className="rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700"
                 >
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-blue-500" />
-                  <span>{action}</span>
-                </li>
-              ))}
-            </ul>
+                  Start Booking
+                </Link>
+                <Link
+                  to="/tickets"
+                  className="rounded-xl border border-white/25 bg-white/10 px-6 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+                >
+                  Submit Ticket
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-white/15 bg-white/12 p-6 backdrop-blur-md">
+              <h2 className="text-xl font-bold text-white">Quick Actions</h2>
+              <ul className="mt-5 space-y-3">
+                {quickActions.map((action) => (
+                  <li
+                    key={action}
+                    className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-950/20 px-4 py-3 text-slate-100"
+                  >
+                    <span className="mt-1 h-2.5 w-2.5 rounded-full bg-cyan-300" />
+                    <span>{action}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
