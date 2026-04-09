@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 
 const primaryLinks = [
   { label: "Overview", to: "/" },
+  { label: "Resources", to: "/resources", auth: true },
   { label: "Bookings", to: "/bookings", auth: true },
   { label: "Support Desk", to: "/tickets", auth: true },
 ];
