@@ -1,163 +1,122 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-
-const moduleCards = [
-  {
-    title: "Module A",
-    subtitle: "Facilities and Assets Catalogue",
-    description: "Maintain rooms, labs, and equipment with capacity, location, availability windows, and status.",
-    tag: "In Progress",
-  },
-  {
-    title: "Module B",
-    subtitle: "Booking Management",
-    description: "Approve or reject requests, prevent schedule conflicts, and keep full visibility of bookings.",
-    tag: "Core Workflow",
-  },
-  {
-    title: "Module C",
-    subtitle: "Maintenance and Incident Ticketing",
-    description: "Capture incidents, assign technicians, and track OPEN to CLOSED ticket life cycles.",
-    tag: "Service Desk",
-  },
-  {
-    title: "Module D",
-    subtitle: "Notifications",
-    description: "Deliver real-time updates for approvals, rejections, ticket status changes, and comments.",
-    tag: "User Experience",
-  },
-  {
-    title: "Module E",
-    subtitle: "Authentication and Authorization",
-    description: "Secure operations with OAuth login and role-based access for USER, ADMIN, and staff roles.",
-    tag: "Security",
-  },
-];
-
-const qualityChecklist = [
-  "RESTful API design with clean layered architecture",
-  "Role-based access control and secure route protection",
-  "Validation and consistent error handling",
-  "Database persistence for production-like behavior",
-  "Testability and CI-ready development workflow",
-];
+import { bookingApi, resourceApi, ticketApi } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 const Home = () => {
+  const { user } = useAuth();
+  const [resources, setResources] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [tickets, setTickets] = useState([]);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      try {
+        const [r, b, t] = await Promise.all([resourceApi.list(), bookingApi.list(), ticketApi.list()]);
+        setResources(r.data ?? []);
+        setBookings(b.data ?? []);
+        setTickets(t.data ?? []);
+      } catch {
+        setResources([]);
+        setBookings([]);
+        setTickets([]);
+      }
+    };
+    load();
+  }, [user]);
+
+  const approvedBookings = useMemo(() => bookings.filter((b) => b.status === "APPROVED").length, [bookings]);
+  const openTickets = useMemo(
+    () => tickets.filter((t) => !["CLOSED", "RESOLVED", "REJECTED"].includes(t.status)).length,
+    [tickets]
+  );
+  const pendingBookings = useMemo(() => bookings.filter((b) => b.status === "PENDING").length, [bookings]);
+
   return (
     <main
-      className="min-h-screen pt-24"
-      style={{
-        background:
-          "radial-gradient(1200px 500px at 15% 0%, #B0E4CC 0%, #FFF6F6 55%, #FFF6F6 100%)",
-      }}
+      className="relative min-h-screen bg-cover bg-center bg-no-repeat pt-20"
+      style={{ backgroundImage: "url('/sliit-campus-bg.jpeg')" }}
     >
-      <section className="mx-auto max-w-7xl px-4 py-14">
-        <div className="grid items-stretch gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <div>
-            <p className="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold text-[#285A48] bg-[#B0E4CC]">
-              IT3030 PAF Assignment 2026
-            </p>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight text-[#091413] md:text-5xl">
-              Smart Campus Operations Hub for SLIIT
-            </h1>
-            <p className="mt-5 max-w-2xl text-lg text-[#285A48]">
-              A professional web platform built with Spring Boot and React to manage facility bookings, campus assets,
-              maintenance incidents, and operational notifications in one connected workflow.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/resources"
-                className="rounded-xl border border-[#285A48] bg-[#285A48] px-5 py-3 font-semibold text-[#FFF6F6] transition hover:bg-[#091413]"
-              >
-                Manage Resources
-              </Link>
-              <Link
-                to="/bookings"
-                className="rounded-xl border border-[#091413] bg-[#091413] px-5 py-3 font-semibold text-[#FFF6F6] transition hover:bg-[#285A48]"
-              >
-                Booking Workflow
-              </Link>
-              <Link
-                to="/tickets"
-                className="rounded-xl border border-[#408A71] bg-[#FFF6F6] px-5 py-3 font-semibold text-[#285A48] transition hover:bg-[#B0E4CC]"
-              >
-                Incident Desk
-              </Link>
-            </div>
-          </div>
+      <div className="absolute inset-0 bg-[#031B1A]/55" />
 
-          <div className="rounded-2xl border border-[#408A71]/40 bg-[#FFF6F6]/90 p-6 shadow-[0_16px_40px_rgba(40,90,72,0.18)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#408A71]">Operational Flow</p>
-            <h2 className="mt-2 text-2xl font-bold text-[#091413]">Campus Workflows at a Glance</h2>
-            <ul className="mt-5 space-y-3 text-[#285A48]">
-              {[
-                "Catalogue resources with status and availability windows",
-                "Receive booking requests and apply approval decisions",
-                "Track maintenance tickets with technician updates",
-                "Notify users for status changes and discussion comments",
-              ].map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 rounded-xl border border-[#B0E4CC] bg-[#FFF6F6] px-4 py-3"
-                >
-                  <span className="mt-2 h-2 w-2 rounded-full bg-[#408A71]" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+      <section className="relative z-10 px-4 py-14 text-white">
+        <div className="mx-auto max-w-5xl text-center">
+          <h1 className="font-display text-6xl font-extrabold md:text-7xl">sliit nexus</h1>
+          <p className="mt-3 text-xl text-[#d8f2e8]">Seamless facility booking and maintenance operations.</p>
+
+          <div className="mx-auto mt-7 flex max-w-3xl items-center rounded-full border border-[#bde5d7]/70 bg-white p-2 shadow-[0_12px_30px_rgba(3,27,26,0.35)]">
+            <input
+              type="text"
+              placeholder="Search resources, bookings, or tickets..."
+              className="w-full rounded-full px-4 py-2 text-base text-[#031B1A] outline-none"
+            />
+            <button className="rounded-full bg-[#2E7D69] px-5 py-2 text-base font-bold text-white hover:bg-[#0E3B34]">
+              Search
+            </button>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 pb-6">
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            { label: "Core Modules", value: "5" },
-            { label: "Required Roles", value: "USER / ADMIN" },
-            { label: "Target Stack", value: "Spring + React" },
-          ].map((item) => (
-            <div key={item.label} className="rounded-xl border border-[#B0E4CC] bg-[#FFF6F6] p-5 text-center">
-              <p className="text-3xl font-extrabold text-[#091413]">{item.value}</p>
-              <p className="mt-1 text-[#285A48]">{item.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-14">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-bold text-[#091413]">Assignment Feature Modules</h2>
-            <p className="mt-2 text-[#285A48]">Designed around your assignment guideline requirements.</p>
-          </div>
-        </div>
-        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {moduleCards.map((module) => (
-            <article
-              key={module.title}
-              className="rounded-2xl border border-[#B0E4CC] bg-[#FFF6F6] p-6 shadow-[0_10px_25px_rgba(40,90,72,0.1)]"
+      <section className="relative z-10 mx-auto max-w-6xl px-4 pb-8 pt-8">
+        <div className="grid gap-4 md:grid-cols-3">
+          <article className="rounded-2xl border border-[#9dd6c4] bg-[#ddf3ea] p-5 shadow-sm">
+            <h3 className="font-display text-3xl font-extrabold text-[#031B1A]">Facilities Catalogue</h3>
+            <p className="mt-4 text-xl font-bold text-[#0E3B34]">Explore Catalogue</p>
+            <Link
+              to="/resources"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-[#2E7D69] px-4 py-2.5 text-base font-bold text-white hover:bg-[#0E3B34]"
             >
-              <span className="inline-flex rounded-full bg-[#B0E4CC] px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#285A48]">
-                {module.tag}
-              </span>
-              <h3 className="mt-3 text-xl font-bold text-[#091413]">{module.title}</h3>
-              <p className="mt-1 font-semibold text-[#285A48]">{module.subtitle}</p>
-              <p className="mt-3 leading-relaxed text-[#285A48]">{module.description}</p>
-            </article>
-          ))}
+              View Catalogue
+            </Link>
+          </article>
+
+          <article className="rounded-2xl border border-[#9dd6c4] bg-[#ddf3ea] p-5 shadow-sm">
+            <h3 className="font-display text-3xl font-extrabold text-[#031B1A]">Make a Booking</h3>
+            <p className="mt-4 text-xl font-bold text-[#0E3B34]">New Booking Request</p>
+            <Link
+              to="/bookings"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-[#2E7D69] px-4 py-2.5 text-base font-bold text-white hover:bg-[#0E3B34]"
+            >
+              Book Now
+            </Link>
+          </article>
+
+          <article className="rounded-2xl border border-[#9dd6c4] bg-[#ddf3ea] p-5 shadow-sm">
+            <h3 className="font-display text-3xl font-extrabold text-[#031B1A]">Report an Issue</h3>
+            <p className="mt-4 text-xl font-bold text-[#0E3B34]">Log an Incident</p>
+            <Link
+              to="/tickets"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-[#2E7D69] px-4 py-2.5 text-base font-bold text-white hover:bg-[#0E3B34]"
+            >
+              Report Issue
+            </Link>
+          </article>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 pb-14">
-        <div className="rounded-2xl border border-[#408A71]/40 bg-[#091413] p-6 md:p-8">
-          <h2 className="text-2xl font-bold text-[#FFF6F6]">Engineering Quality Focus</h2>
-          <p className="mt-2 text-[#B0E4CC]">The system is structured for maintainability, security, and viva readiness.</p>
-          <ul className="mt-5 grid gap-3 md:grid-cols-2">
-            {qualityChecklist.map((item) => (
-              <li key={item} className="rounded-xl border border-[#408A71]/60 bg-[#285A48]/40 px-4 py-3 text-[#FFF6F6]">
-                {item}
-              </li>
-            ))}
-          </ul>
+      <section className="relative z-10 mx-auto max-w-6xl px-4 pb-14">
+        <h2 className="font-display text-4xl font-extrabold text-white">Your Dashboard</h2>
+        <div className="mt-4 rounded-2xl border border-[#9dd6c4] bg-[#ecf8f3] p-5">
+          <h3 className="text-2xl font-extrabold text-[#0E3B34]">Take Action</h3>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl bg-white p-4">
+              <p className="text-sm font-bold text-[#2E7D69]">Total Resources</p>
+              <p className="font-display mt-2 text-4xl font-extrabold text-[#031B1A]">{user ? resources.length : "-"}</p>
+            </div>
+            <div className="rounded-xl bg-white p-4">
+              <p className="text-sm font-bold text-[#2E7D69]">Approved Bookings</p>
+              <p className="font-display mt-2 text-4xl font-extrabold text-[#031B1A]">{user ? approvedBookings : "-"}</p>
+            </div>
+            <div className="rounded-xl bg-white p-4">
+              <p className="text-sm font-bold text-[#2E7D69]">Open Tickets</p>
+              <p className="font-display mt-2 text-4xl font-extrabold text-[#031B1A]">{user ? openTickets : "-"}</p>
+            </div>
+            <div className="rounded-xl bg-white p-4">
+              <p className="text-sm font-bold text-[#2E7D69]">Pending Bookings</p>
+              <p className="font-display mt-2 text-4xl font-extrabold text-[#031B1A]">{user ? pendingBookings : "-"}</p>
+            </div>
+          </div>
         </div>
       </section>
     </main>
