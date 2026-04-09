@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { resourceApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { resourceApi } from "../services/api";
 
 const resourceTypeOptions = [
   "ALL",
@@ -70,7 +70,7 @@ const ResourcesPage = () => {
   };
 
   useEffect(() => {
-    loadResources();
+    void loadResources();
   }, []);
 
   const locationOptions = useMemo(() => {
