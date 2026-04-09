@@ -42,7 +42,19 @@ const TicketsPage = () => {
   const [formState, setFormState] = useState(createInitialForm());
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [contactError, setContactError] = useState("");
   const [files, setFiles] = useState([]);
+
+  const isValidContact = (value) => {
+    if (!value.trim()) return true;
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailRe.test(value.trim())) return true;
+    // Phone: allow +, digits, spaces, hyphens, dots, parentheses
+    // Must contain 7–15 digits (ITU-T E.164 range)
+    const allowedCharsRe = /^[+]?[\d\s\-().]+$/;
+    const digitCount = value.replace(/\D/g, "").length;
+    return allowedCharsRe.test(value.trim()) && digitCount >= 7 && digitCount <= 15;
+  };
 
   // Expanded ticket
   const [expandedId, setExpandedId] = useState(null);
@@ -102,6 +114,10 @@ const TicketsPage = () => {
 
   const handleCreateTicket = async (e) => {
     e.preventDefault();
+    if (!isValidContact(formState.preferredContact)) {
+      setContactError("Enter a valid email address or phone number.");
+      return;
+    }
     setSubmitting(true);
     setFormError("");
     try {
@@ -112,6 +128,7 @@ const TicketsPage = () => {
       }
       setFormState(createInitialForm());
       setFiles([]);
+      setContactError("");
       setShowCreate(false);
       await loadTickets();
     } catch (err) {
@@ -230,7 +247,7 @@ const TicketsPage = () => {
           </div>
           <button
             type="button"
-            onClick={() => setShowCreate((v) => !v)}
+            onClick={() => { setShowCreate((v) => !v); setContactError(""); }}
             className="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white transition hover:bg-indigo-700"
           >
             {showCreate ? "Cancel" : "+ New Ticket"}
@@ -243,7 +260,9 @@ const TicketsPage = () => {
             <h2 className="text-xl font-bold text-slate-900">Create Incident Ticket</h2>
             <form className="mt-5 grid gap-4 md:grid-cols-2" onSubmit={handleCreateTicket}>
               <label className="block md:col-span-2">
-                <span className="text-sm font-semibold text-slate-700">Title</span>
+                <span className="text-sm font-semibold text-slate-700">
+                  Title <span className="text-red-500">*</span>
+                </span>
                 <input
                   required
                   name="title"
@@ -255,20 +274,30 @@ const TicketsPage = () => {
               </label>
 
               <label className="block md:col-span-2">
-                <span className="text-sm font-semibold text-slate-700">Description</span>
+                <span className="flex items-center justify-between text-sm font-semibold text-slate-700">
+                  <span>Description <span className="text-red-500">*</span></span>
+                  <span className={`text-xs font-normal ${formState.description.length > 240 ? "text-red-500" : "text-slate-400"}`}>
+                    {formState.description.length}/250
+                  </span>
+                </span>
                 <textarea
                   required
                   name="description"
                   value={formState.description}
-                  onChange={handleFormChange}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 250) handleFormChange(e);
+                  }}
                   rows={3}
+                  maxLength={250}
                   placeholder="Detailed description of the incident"
                   className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500"
                 />
               </label>
 
               <label className="block">
-                <span className="text-sm font-semibold text-slate-700">Category</span>
+                <span className="text-sm font-semibold text-slate-700">
+                  Category <span className="text-red-500">*</span>
+                </span>
                 <select
                   name="category"
                   value={formState.category}
@@ -280,7 +309,9 @@ const TicketsPage = () => {
               </label>
 
               <label className="block">
-                <span className="text-sm font-semibold text-slate-700">Priority</span>
+                <span className="text-sm font-semibold text-slate-700">
+                  Priority <span className="text-red-500">*</span>
+                </span>
                 <select
                   name="priority"
                   value={formState.priority}
@@ -292,7 +323,9 @@ const TicketsPage = () => {
               </label>
 
               <label className="block">
-                <span className="text-sm font-semibold text-slate-700">Location / Room</span>
+                <span className="text-sm font-semibold text-slate-700">
+                  Location / Room <span className="text-red-500">*</span>
+                </span>
                 <input
                   required
                   name="location"
@@ -308,10 +341,23 @@ const TicketsPage = () => {
                 <input
                   name="preferredContact"
                   value={formState.preferredContact}
-                  onChange={handleFormChange}
+                  onChange={(e) => {
+                    handleFormChange(e);
+                    setContactError("");
+                  }}
+                  onBlur={() => {
+                    if (!isValidContact(formState.preferredContact)) {
+                      setContactError("Enter a valid email address or phone number.");
+                    }
+                  }}
                   placeholder="Phone / email (optional)"
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500"
+                  className={`mt-1 w-full rounded-xl border px-4 py-3 outline-none focus:border-indigo-500 ${
+                    contactError ? "border-red-400 bg-red-50" : "border-slate-300"
+                  }`}
                 />
+                {contactError && (
+                  <p className="mt-1 text-xs font-semibold text-red-600">{contactError}</p>
+                )}
               </label>
 
               <label className="block md:col-span-2">
