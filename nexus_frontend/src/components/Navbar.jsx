@@ -113,12 +113,20 @@ const Navbar = () => {
                 </button>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="rounded-full bg-[linear-gradient(135deg,#2563eb,#0f172a)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-95"
-              >
-                Sign In
-              </Link>
+              <>
+                <Link
+                  to="/signup"
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
+                >
+                  Sign Up
+                </Link>
+                <Link
+                  to="/login"
+                  className="rounded-full bg-[linear-gradient(135deg,#2563eb,#0f172a)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-95"
+                >
+                  Sign In
+                </Link>
+              </>
             )}
           </div>
 
@@ -208,13 +216,22 @@ const Navbar = () => {
                   Sign Out
                 </button>
               ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="block rounded-[1rem] bg-[linear-gradient(135deg,#2563eb,#0f172a)] py-3 text-center text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.18)]"
-                >
-                  Sign In
-                </Link>
+                <div className="grid gap-2">
+                  <Link
+                    to="/signup"
+                    onClick={() => setIsOpen(false)}
+                    className="block rounded-[1rem] border border-slate-200 bg-white py-3 text-center text-sm font-semibold text-slate-700"
+                  >
+                    Sign Up
+                  </Link>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="block rounded-[1rem] bg-[linear-gradient(135deg,#2563eb,#0f172a)] py-3 text-center text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.18)]"
+                  >
+                    Sign In
+                  </Link>
+                </div>
               )}
             </div>
           </div>

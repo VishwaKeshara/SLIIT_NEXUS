@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class DataSeeder {
     private final UserAccountRepository userAccountRepository;
     private final BookingRequestRepository bookingRequestRepository;
     private final SupportTicketRepository supportTicketRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     ApplicationRunner seedData() {
@@ -35,22 +37,36 @@ public class DataSeeder {
                                 .email("admin@sliitnexus.com")
                                 .displayName("Admin User")
                                 .roles(Set.of(AppRole.ADMIN, AppRole.USER))
-                                .provider("seed")
+                                .provider("local")
                                 .providerId("admin-seed")
+                                .passwordHash(passwordEncoder.encode("Admin123!"))
                                 .createdAt(Instant.now())
                                 .updatedAt(Instant.now())
                                 .build()));
+                if (admin.getPasswordHash() == null || admin.getPasswordHash().isBlank()) {
+                    admin.setPasswordHash(passwordEncoder.encode("Admin123!"));
+                    admin.setProvider("local");
+                    admin.setUpdatedAt(Instant.now());
+                    admin = userAccountRepository.save(admin);
+                }
 
                 UserAccount student = userAccountRepository.findByEmailIgnoreCase("student@sliitnexus.com")
                         .orElseGet(() -> userAccountRepository.save(UserAccount.builder()
                                 .email("student@sliitnexus.com")
                                 .displayName("Student User")
                                 .roles(Set.of(AppRole.USER))
-                                .provider("seed")
+                                .provider("local")
                                 .providerId("student-seed")
+                                .passwordHash(passwordEncoder.encode("Student123!"))
                                 .createdAt(Instant.now())
                                 .updatedAt(Instant.now())
                                 .build()));
+                if (student.getPasswordHash() == null || student.getPasswordHash().isBlank()) {
+                    student.setPasswordHash(passwordEncoder.encode("Student123!"));
+                    student.setProvider("local");
+                    student.setUpdatedAt(Instant.now());
+                    student = userAccountRepository.save(student);
+                }
 
                 if (bookingRequestRepository.count() == 0) {
                     bookingRequestRepository.save(BookingRequest.builder()

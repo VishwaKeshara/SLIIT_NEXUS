@@ -30,6 +30,41 @@ public class AuthService {
 
     public AuthResponse devLogin(String email, HttpServletRequest request) {
         UserAccount user = userAccountService.getByEmail(email);
+        return authenticateUser(user, request);
+    }
+
+    public AuthResponse signIn(String email, String password, HttpServletRequest request) {
+        UserAccount user = userAccountService.authenticateLocalUser(email, password);
+        return authenticateUser(user, request);
+    }
+
+    public AuthResponse signUp(String displayName, String email, String password, HttpServletRequest request) {
+        UserAccount user = userAccountService.createLocalUser(displayName, email, password, Set.of());
+        return authenticateUser(user, request);
+    }
+
+    public AuthResponse updateAccount(
+            Authentication authentication,
+            String displayName,
+            String email,
+            String password,
+            HttpServletRequest request
+    ) {
+        UserAccount currentUser = requireCurrentUser(authentication);
+        UserAccount updatedUser = userAccountService.updateOwnAccount(currentUser.getId(), displayName, email, password);
+        return authenticateUser(updatedUser, request);
+    }
+
+    public void deleteAccount(Authentication authentication, HttpServletRequest request) {
+        UserAccount currentUser = requireCurrentUser(authentication);
+        userAccountService.deleteUser(currentUser.getId());
+        if (request.getSession(false) != null) {
+            request.getSession(false).invalidate();
+        }
+        SecurityContextHolder.clearContext();
+    }
+
+    private AuthResponse authenticateUser(UserAccount user, HttpServletRequest request) {
         AppUserPrincipal principal = new AppUserPrincipal(
                 user.getId(),
                 user.getEmail(),

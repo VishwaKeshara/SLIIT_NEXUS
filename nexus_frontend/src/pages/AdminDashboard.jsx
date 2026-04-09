@@ -4,12 +4,22 @@ import { adminApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 const allRoles = ["USER", "ADMIN", "TECHNICIAN", "MANAGER"];
+const emptyForm = {
+  displayName: "",
+  email: "",
+  password: "",
+  roles: ["USER"],
+};
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
+  const [editingUserId, setEditingUserId] = useState(null);
+  const [userForm, setUserForm] = useState(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -37,6 +47,59 @@ const AdminDashboard = () => {
     void loadUsers();
   }, []);
 
+  const resetForm = () => {
+    setEditingUserId(null);
+    setUserForm(emptyForm);
+    setFormError("");
+  };
+
+  const handleFormChange = (event) => {
+    const { name, value } = event.target;
+    setUserForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const toggleFormRole = (role) => {
+    setUserForm((current) => {
+      const hasRole = current.roles.includes(role);
+      const nextRoles = hasRole ? current.roles.filter((item) => item !== role) : [...current.roles, role];
+      return { ...current, roles: nextRoles.length === 0 ? ["USER"] : nextRoles };
+    });
+  };
+
+  const startEdit = (account) => {
+    setEditingUserId(account.id);
+    setUserForm({
+      displayName: account.displayName,
+      email: account.email,
+      password: "",
+      roles: account.roles ?? ["USER"],
+    });
+    setFormError("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setFormError("");
+
+    try {
+      if (editingUserId) {
+        await adminApi.updateUser(editingUserId, {
+          ...userForm,
+          password: userForm.password.trim() ? userForm.password : undefined,
+        });
+      } else {
+        await adminApi.createUser(userForm);
+      }
+      resetForm();
+      await loadUsers();
+    } catch (err) {
+      setFormError(err?.response?.data?.message ?? "Unable to save the user account.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const toggleRole = async (targetUser, role) => {
     const nextRoles = targetUser.roles.includes(role)
       ? targetUser.roles.filter((item) => item !== role)
@@ -47,6 +110,18 @@ const AdminDashboard = () => {
     }
 
     await adminApi.updateRoles(targetUser.id, nextRoles);
+    await loadUsers();
+  };
+
+  const handleDelete = async (userId) => {
+    if (!window.confirm("Delete this user account?")) {
+      return;
+    }
+
+    await adminApi.deleteUser(userId);
+    if (editingUserId === userId) {
+      resetForm();
+    }
     await loadUsers();
   };
 
@@ -84,9 +159,109 @@ const AdminDashboard = () => {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">Access control</p>
           <h2 className="mt-2 text-4xl font-black">Manage platform roles</h2>
           <p className="mt-3 max-w-3xl text-slate-600">
-            Minimum roles `USER` and `ADMIN` are supported, with optional `TECHNICIAN` and `MANAGER` roles
-            included for cleaner separation of permissions.
+            Create, update, and delete user accounts here, then fine-tune their role access across the platform.
           </p>
+
+          <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">
+                  {editingUserId ? "Edit account" : "Create account"}
+                </p>
+                <h3 className="mt-2 text-2xl font-black text-slate-900">
+                  {editingUserId ? "Update an existing user" : "Add a new local user"}
+                </h3>
+              </div>
+              {editingUserId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 font-semibold text-slate-700"
+                >
+                  Cancel edit
+                </button>
+              )}
+            </div>
+
+            <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+              <label className="block">
+                <span className="text-sm font-semibold text-slate-700">Display Name</span>
+                <input
+                  name="displayName"
+                  value={userForm.displayName}
+                  onChange={handleFormChange}
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-400"
+                  required
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-semibold text-slate-700">Email</span>
+                <input
+                  name="email"
+                  type="email"
+                  value={userForm.email}
+                  onChange={handleFormChange}
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-400"
+                  required
+                />
+              </label>
+
+              <label className="block md:col-span-2">
+                <span className="text-sm font-semibold text-slate-700">
+                  Password {editingUserId ? "(optional)" : ""}
+                </span>
+                <input
+                  name="password"
+                  type="password"
+                  value={userForm.password}
+                  onChange={handleFormChange}
+                  placeholder={editingUserId ? "Leave blank to keep current password" : "Set an initial password"}
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-400"
+                  required={!editingUserId}
+                />
+              </label>
+
+              <div className="md:col-span-2">
+                <p className="text-sm font-semibold text-slate-700">Roles</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {allRoles.map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => toggleFormRole(role)}
+                      className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                        userForm.roles.includes(role)
+                          ? "bg-blue-600 text-white"
+                          : "bg-white text-slate-700 ring-1 ring-slate-200"
+                      }`}
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {formError && <p className="md:col-span-2 text-sm text-rose-600">{formError}</p>}
+
+              <div className="md:col-span-2 flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:opacity-60"
+                >
+                  {submitting ? "Saving..." : editingUserId ? "Update User" : "Create User"}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700"
+                >
+                  Reset
+                </button>
+              </div>
+            </form>
+          </div>
 
           <div className="mt-8">
             {loading && (
@@ -118,6 +293,9 @@ const AdminDashboard = () => {
                       <div>
                         <h3 className="text-xl font-bold text-slate-900">{account.displayName}</h3>
                         <p className="text-slate-500">{account.email}</p>
+                        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          {account.provider ?? "local"}
+                        </p>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {(account.roles ?? []).map((role) => (
@@ -132,6 +310,20 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="mt-5 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(account)}
+                        className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+                      >
+                        Edit details
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(account.id)}
+                        className="rounded-xl bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
+                      >
+                        Delete user
+                      </button>
                       {allRoles.map((role) => (
                         <button
                           key={role}

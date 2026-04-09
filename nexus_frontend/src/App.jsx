@@ -4,6 +4,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
+import SignupPage from "./pages/SignupPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BookingsPage from "./pages/BookingsPage";
 import TicketsPage from "./pages/TicketsPage";
@@ -24,6 +25,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignupPage />} />
         <Route path="/login/success" element={<LoginSuccessPage />} />
         <Route
           path="/resources"

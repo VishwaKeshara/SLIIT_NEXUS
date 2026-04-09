@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -11,7 +12,16 @@ const roleStyles = {
 };
 
 const ProfilePage = () => {
-  const { user, unreadCount } = useAuth();
+  const { user, unreadCount, updateAccount, deleteAccount } = useAuth();
+  const [form, setForm] = useState({
+    displayName: user?.displayName ?? "",
+    email: user?.email ?? "",
+    password: "",
+  });
+  const [statusMessage, setStatusMessage] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const initials = user?.displayName
     ?.split(" ")
@@ -45,6 +55,48 @@ const ProfilePage = () => {
       tone: "from-white via-slate-50 to-slate-100 text-slate-900",
     },
   ];
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSave = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    setStatusMessage("");
+
+    try {
+      await updateAccount({
+        displayName: form.displayName,
+        email: form.email,
+        password: form.password.trim() ? form.password : undefined,
+      });
+      setForm((current) => ({ ...current, password: "" }));
+      setStatusMessage("Profile updated successfully.");
+    } catch (err) {
+      setError(err?.response?.data?.message ?? "Unable to update your account.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Delete this account permanently?")) {
+      return;
+    }
+
+    setDeleting(true);
+    setError("");
+    try {
+      await deleteAccount();
+      window.location.href = "/signup";
+    } catch (err) {
+      setError(err?.response?.data?.message ?? "Unable to delete your account.");
+      setDeleting(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#eff6ff_0%,#f8fafc_35%,#ffffff_100%)] px-4 pb-16 pt-28">
@@ -92,26 +144,66 @@ const ProfilePage = () => {
 
               <section className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">Profile Details</p>
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-2xl bg-white p-4 shadow-sm">
+                <form className="mt-5 grid gap-4 md:grid-cols-2" onSubmit={handleSave}>
+                  <label className="rounded-2xl bg-white p-4 shadow-sm">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Display Name</p>
-                    <p className="mt-2 text-lg font-bold text-slate-900">{user?.displayName}</p>
-                  </div>
-                  <div className="rounded-2xl bg-white p-4 shadow-sm">
+                    <input
+                      name="displayName"
+                      value={form.displayName}
+                      onChange={handleChange}
+                      className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                    />
+                  </label>
+                  <label className="rounded-2xl bg-white p-4 shadow-sm">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Email Address</p>
-                    <p className="mt-2 break-all text-lg font-bold text-slate-900">{user?.email}</p>
-                  </div>
-                  <div className="rounded-2xl bg-white p-4 shadow-sm">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Access Level</p>
-                    <p className="mt-2 text-lg font-bold text-slate-900">{formatRole(primaryRole)}</p>
-                  </div>
+                    <input
+                      name="email"
+                      type="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                    />
+                  </label>
+                  <label className="rounded-2xl bg-white p-4 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">New Password</p>
+                    <input
+                      name="password"
+                      type="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      placeholder="Leave blank to keep current password"
+                      className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                    />
+                  </label>
                   <div className="rounded-2xl bg-white p-4 shadow-sm">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Notification Status</p>
-                    <p className="mt-2 text-lg font-bold text-slate-900">
+                    <p className="mt-3 text-lg font-bold text-slate-900">
                       {unreadCount > 0 ? `${unreadCount} alert${unreadCount > 1 ? "s" : ""} waiting` : "All caught up"}
                     </p>
+                    <p className="mt-2 text-sm text-slate-500">Access Level: {formatRole(primaryRole)}</p>
                   </div>
-                </div>
+                  <div className="md:col-span-2">
+                    {statusMessage && <p className="text-sm text-emerald-600">{statusMessage}</p>}
+                    {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        className="rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                      >
+                        {saving ? "Saving..." : "Update Profile"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={deleting}
+                        onClick={handleDelete}
+                        className="rounded-xl border border-rose-200 bg-rose-50 px-5 py-3 font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60"
+                      >
+                        {deleting ? "Deleting..." : "Delete Account"}
+                      </button>
+                    </div>
+                  </div>
+                </form>
               </section>
             </div>
 

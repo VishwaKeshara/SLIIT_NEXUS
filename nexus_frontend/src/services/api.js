@@ -7,7 +7,11 @@ const API = axios.create({
 
 export const authApi = {
   me: () => API.get("/auth/me"),
+  login: (payload) => API.post("/auth/login", payload),
+  signup: (payload) => API.post("/auth/signup", payload),
   devLogin: (email) => API.post("/auth/dev-login", { email }),
+  updateAccount: (payload) => API.patch("/auth/account", payload),
+  deleteAccount: () => API.delete("/auth/account"),
   logout: () => API.post("/auth/logout"),
   googleLoginUrl: "http://localhost:8080/oauth2/authorization/google",
 };
@@ -34,8 +38,11 @@ export const ticketApi = {
 
 export const adminApi = {
   listUsers: () => API.get("/admin/users"),
+  createUser: (payload) => API.post("/admin/users", payload),
+  updateUser: (userId, payload) => API.put(`/admin/users/${userId}`, payload),
   updateRoles: (userId, roles) =>
     API.patch(`/admin/users/${userId}/roles`, { roles }),
+  deleteUser: (userId) => API.delete(`/admin/users/${userId}`),
 };
 
 export default API;
