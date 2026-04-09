@@ -15,7 +15,6 @@ import ResourcesPage from "./pages/ResourcesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AboutUsPage from "./pages/AboutUsPage";
 
-
 function App() {
   const { pathname } = useLocation();
   const hideChrome = pathname.startsWith("/admin");
@@ -41,7 +40,7 @@ function App() {
           path="/incidents"
           element={
             <ProtectedRoute>
-              <ResourcesPage />
+              <Navigate to="/tickets" replace />
             </ProtectedRoute>
           }
         />
@@ -66,14 +65,6 @@ function App() {
           element={
             <ProtectedRoute>
               <AboutUsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/tickets"
-          element={
-            <ProtectedRoute>
-              <Navigate to="/incidents" replace />
             </ProtectedRoute>
           }
         />

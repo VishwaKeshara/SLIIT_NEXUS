@@ -8,13 +8,21 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const refreshUnreadCount = async () => {
+    try {
+      const summary = await notificationApi.summary();
+      setUnreadCount(summary.data.unreadCount ?? 0);
+    } catch {
+      setUnreadCount(0);
+    }
+  };
+
   const refreshAuth = async () => {
     try {
       const { data } = await authApi.me();
       setUser(data.authenticated ? data : null);
       if (data.authenticated) {
-        const summary = await notificationApi.summary();
-        setUnreadCount(summary.data.unreadCount ?? 0);
+        await refreshUnreadCount();
       } else {
         setUnreadCount(0);
       }
@@ -27,22 +35,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    refreshAuth();
+    void refreshAuth();
   }, []);
 
   const loginAsDevUser = async (email) => {
     const { data } = await authApi.devLogin(email);
     setUser(data);
-    const summary = await notificationApi.summary();
-    setUnreadCount(summary.data.unreadCount ?? 0);
+    await refreshUnreadCount();
     return data;
   };
 
   const signIn = async (payload) => {
     const { data } = await authApi.login(payload);
     setUser(data);
-    const summary = await notificationApi.summary();
-    setUnreadCount(summary.data.unreadCount ?? 0);
+    await refreshUnreadCount();
     return data;
   };
 
