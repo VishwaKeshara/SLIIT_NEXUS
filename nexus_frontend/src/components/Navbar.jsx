@@ -13,8 +13,9 @@ const primaryLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, unreadCount, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+
   const roles = user?.roles ?? [];
   const isAdmin = roles.includes("ADMIN");
   const isSeedAdmin = user?.email?.toLowerCase() === "admin@sliitnexus.com";
@@ -240,6 +241,36 @@ const Navbar = () => {
           </div>
         )}
       </div>
+
+      {isOpen && (
+        <div className="mx-auto grid max-w-7xl gap-2 px-4 pb-3 lg:hidden">
+          {primaryLinks
+            .filter((item) => !item.auth || user)
+            .map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={() => setIsOpen(false)}
+                className={({ isActive }) =>
+                  `rounded-xl px-4 py-2 text-sm font-semibold ${
+                    isActive ? "bg-[#2E7D69] text-white" : "bg-[#114238] text-[#d7f3e8]"
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          {user ? (
+            <button type="button" onClick={handleLogout} className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#031B1A]">
+              Sign Out
+            </button>
+          ) : (
+            <Link to="/login" onClick={() => setIsOpen(false)} className="rounded-xl bg-[#2E7D69] px-4 py-2 text-sm font-bold text-white">
+              Sign In
+            </Link>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

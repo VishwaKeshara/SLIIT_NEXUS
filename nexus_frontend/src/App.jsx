@@ -14,6 +14,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ResourcesPage from "./pages/ResourcesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AboutUsPage from "./pages/AboutUsPage";
+import ResourcesPage from "./pages/ResourcesPage";
 
 function App() {
   const { pathname } = useLocation();
@@ -45,6 +46,15 @@ function App() {
         />
         <Route
           path="/incidents"
+          path="/resources"
+          element={
+            <ProtectedRoute>
+              <ResourcesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tickets"
           element={
             <ProtectedRoute>
               <TicketsPage />
