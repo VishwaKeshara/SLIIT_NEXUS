@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/auth/account").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/auth/account").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
-                        .requestMatchers("/api/admin/**").hasRole(AppRole.ADMIN.name())
+                        .requestMatchers("/api/admin/**", "/api/users/**").hasRole(AppRole.ADMIN.name())
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
                 .logout(logout -> logout.logoutUrl("/api/auth/logout")
