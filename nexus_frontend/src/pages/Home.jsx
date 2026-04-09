@@ -1,38 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { bookingApi, resourceApi, ticketApi } from "../services/api";
 import sliitCampusImage from "../assets/SLIIT-malabe.jpg";
 import sliitBuildingImage from "../assets/download.webp";
 import sliitLibraryImage from "../assets/SLIIT-Library-3.jpg";
-
-const Home = () => {
-  const { user } = useAuth();
-  const [resources, setResources] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [tickets, setTickets] = useState([]);
-
-  useEffect(() => {
-    const load = async () => {
-      if (!user) return;
-      try {
-        const [r, b, t] = await Promise.all([resourceApi.list(), bookingApi.list(), ticketApi.list()]);
-        setResources(r.data ?? []);
-        setBookings(b.data ?? []);
-        setTickets(t.data ?? []);
-      } catch {
-        setResources([]);
-        setBookings([]);
-        setTickets([]);
-      }
-    };
-    load();
-  }, [user]);
-
-  const approvedBookings = useMemo(() => bookings.filter((b) => b.status === "APPROVED").length, [bookings]);
-  const openTickets = useMemo(
-    () => tickets.filter((t) => !["CLOSED", "RESOLVED", "REJECTED"].includes(t.status)).length,
-    [tickets]
-  );
-  const pendingBookings = useMemo(() => bookings.filter((b) => b.status === "PENDING").length, [bookings]);
 
 const heroSlides = [
   {
@@ -52,7 +24,17 @@ const heroSlides = [
   },
 ];
 
+const quickActions = [
+  "Reserve halls, labs, and learning spaces quickly.",
+  "Track booking approval status in real time.",
+  "Report campus incidents and monitor progress.",
+];
+
 const Home = () => {
+  const { user } = useAuth();
+  const [resources, setResources] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [tickets, setTickets] = useState([]);
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
@@ -63,8 +45,39 @@ const Home = () => {
     return () => window.clearInterval(intervalId);
   }, []);
 
+  useEffect(() => {
+    const load = async () => {
+      if (!user) {
+        setResources([]);
+        setBookings([]);
+        setTickets([]);
+        return;
+      }
+
+      try {
+        const [r, b, t] = await Promise.all([resourceApi.list(), bookingApi.list(), ticketApi.list()]);
+        setResources(r.data ?? []);
+        setBookings(b.data ?? []);
+        setTickets(t.data ?? []);
+      } catch {
+        setResources([]);
+        setBookings([]);
+        setTickets([]);
+      }
+    };
+
+    load();
+  }, [user]);
+
+  const approvedBookings = useMemo(() => bookings.filter((b) => b.status === "APPROVED").length, [bookings]);
+  const openTickets = useMemo(
+    () => tickets.filter((t) => !["CLOSED", "RESOLVED", "REJECTED"].includes(t.status)).length,
+    [tickets]
+  );
+  const pendingBookings = useMemo(() => bookings.filter((b) => b.status === "PENDING").length, [bookings]);
+
   return (
-    <main className="pt-24 bg-slate-50 min-h-screen">
+    <main className="min-h-screen bg-slate-50 pt-24">
       <section className="mx-auto max-w-7xl px-4 py-10">
         <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 shadow-[0_28px_80px_rgba(15,23,42,0.16)]">
           {heroSlides.map((slide, index) => (
