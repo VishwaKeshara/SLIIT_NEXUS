@@ -8,6 +8,27 @@ const demoAccounts = [
   { label: "Admin Demo", email: "admin@sliitnexus.com", password: "Admin123!" },
 ];
 
+const getFriendlyLoginError = (err, credentials) => {
+  const backendMessage = err?.response?.data?.message;
+  if (backendMessage) {
+    if (backendMessage.toLowerCase().includes("invalid email or password")) {
+      const demoAccount = demoAccounts.find(
+        (account) => account.email.toLowerCase() === credentials.email.trim().toLowerCase()
+      );
+      if (demoAccount) {
+        return `Invalid password. Try ${demoAccount.password} for ${demoAccount.email}.`;
+      }
+    }
+    return backendMessage;
+  }
+
+  if (!err?.response) {
+    return "Cannot reach the backend server (http://localhost:8080). Start backend and try again.";
+  }
+
+  return "Unable to sign in with those credentials.";
+};
+
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [selectedEmail, setSelectedEmail] = useState(demoAccounts[0].email);
@@ -32,7 +53,7 @@ const Login = () => {
       await signIn(credentials);
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.message ?? "Unable to sign in with those credentials.");
+      setError(getFriendlyLoginError(err, credentials));
     } finally {
       setSubmitting(false);
     }
