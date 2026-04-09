@@ -16,6 +16,19 @@ const initialForm = {
   description: "",
 };
 
+const mapErrorMessage = (error, fallback) => {
+  const message = String(error?.response?.data?.message || "");
+  const lower = message.toLowerCase();
+
+  if (lower.includes("mongo") || lower.includes("connection refused") || lower.includes("timed out")) {
+    return "Service is temporarily unavailable. Please check backend database connection and try again.";
+  }
+  if (lower.includes("validation")) return "Please check the form values and try again.";
+  if (lower.includes("unauthorized") || error?.response?.status === 401) return "Please sign in again to continue.";
+  if (lower.includes("forbidden") || error?.response?.status === 403) return "You do not have permission for this action.";
+  return fallback;
+};
+
 const ResourcesPage = () => {
   const { user } = useAuth();
   const [resources, setResources] = useState([]);
@@ -30,9 +43,9 @@ const ResourcesPage = () => {
       setLoading(true);
       setError("");
       const { data } = await resourceApi.list();
-      setResources(data);
+      setResources(data ?? []);
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to load resources.");
+      setError(mapErrorMessage(err, "Failed to load resources. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -59,52 +72,54 @@ const ResourcesPage = () => {
       setForm(initialForm);
       await loadResources();
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to create resource.");
+      setError(mapErrorMessage(err, "Failed to create resource. Please try again."));
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 pt-28 pb-12">
+    <main className="min-h-screen bg-[#F3FBF7] px-4 pb-12 pt-24 text-[#031B1A]">
       <div className="mx-auto max-w-6xl">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">Module A</p>
-          <h1 className="mt-2 text-4xl font-black text-slate-900">Facilities and Assets Catalogue</h1>
-          <p className="mt-3 max-w-3xl text-slate-600">
-            Browse all bookable campus resources. Admin users can register new resources with type, location,
-            availability window, and status.
-          </p>
+        <div className="rounded-3xl border border-[#cfe4dc] bg-[#eef7f3] p-6 shadow-[0_10px_30px_rgba(3,27,26,0.08)]">
+          <h1 className="font-display text-4xl font-extrabold">Facilities and Assets Catalogue</h1>
         </div>
 
         {error && (
-          <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-            {error}
+          <div className="mt-6 rounded-2xl border border-[#efc8d0] bg-[#fff2f5] px-5 py-4">
+            <p className="text-base font-semibold text-[#9a2942]">{error}</p>
+            <button
+              type="button"
+              onClick={loadResources}
+              className="mt-3 rounded-lg bg-[#2E7D69] px-4 py-2 text-sm font-bold text-white hover:bg-[#0E3B34]"
+            >
+              Retry
+            </button>
           </div>
         )}
 
         {isAdmin && (
-          <section className="mt-8 rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">Add New Resource</h2>
+          <section className="mt-8 rounded-3xl border border-[#cfe4dc] bg-white p-6 shadow-[0_10px_30px_rgba(3,27,26,0.08)]">
+            <h2 className="text-3xl font-extrabold text-[#0E3B34]">Add New Resource</h2>
             <form onSubmit={handleSubmit} className="mt-5 grid gap-4 md:grid-cols-2">
-              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+              <label className="grid gap-2 text-base font-semibold text-[#1f4a43]">
                 Name
                 <input
                   name="name"
                   value={form.name}
                   onChange={handleChange}
                   required
-                  className="rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500"
+                  className="rounded-xl border border-[#bddfd3] bg-[#f7fcfa] px-3 py-2.5 outline-none focus:border-[#2E7D69]"
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+              <label className="grid gap-2 text-base font-semibold text-[#1f4a43]">
                 Type
                 <select
                   name="type"
                   value={form.type}
                   onChange={handleChange}
-                  className="rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500"
+                  className="rounded-xl border border-[#bddfd3] bg-[#f7fcfa] px-3 py-2.5 outline-none focus:border-[#2E7D69]"
                 >
                   {resourceTypes.map((type) => (
                     <option key={type} value={type}>
@@ -114,7 +129,7 @@ const ResourcesPage = () => {
                 </select>
               </label>
 
-              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+              <label className="grid gap-2 text-base font-semibold text-[#1f4a43]">
                 Capacity
                 <input
                   type="number"
@@ -123,22 +138,22 @@ const ResourcesPage = () => {
                   value={form.capacity}
                   onChange={handleChange}
                   required
-                  className="rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500"
+                  className="rounded-xl border border-[#bddfd3] bg-[#f7fcfa] px-3 py-2.5 outline-none focus:border-[#2E7D69]"
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+              <label className="grid gap-2 text-base font-semibold text-[#1f4a43]">
                 Location
                 <input
                   name="location"
                   value={form.location}
                   onChange={handleChange}
                   required
-                  className="rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500"
+                  className="rounded-xl border border-[#bddfd3] bg-[#f7fcfa] px-3 py-2.5 outline-none focus:border-[#2E7D69]"
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+              <label className="grid gap-2 text-base font-semibold text-[#1f4a43]">
                 Available From
                 <input
                   type="time"
@@ -146,11 +161,11 @@ const ResourcesPage = () => {
                   value={form.availableFrom}
                   onChange={handleChange}
                   required
-                  className="rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500"
+                  className="rounded-xl border border-[#bddfd3] bg-[#f7fcfa] px-3 py-2.5 outline-none focus:border-[#2E7D69]"
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+              <label className="grid gap-2 text-base font-semibold text-[#1f4a43]">
                 Available To
                 <input
                   type="time"
@@ -158,17 +173,17 @@ const ResourcesPage = () => {
                   value={form.availableTo}
                   onChange={handleChange}
                   required
-                  className="rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500"
+                  className="rounded-xl border border-[#bddfd3] bg-[#f7fcfa] px-3 py-2.5 outline-none focus:border-[#2E7D69]"
                 />
               </label>
 
-              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+              <label className="grid gap-2 text-base font-semibold text-[#1f4a43]">
                 Status
                 <select
                   name="status"
                   value={form.status}
                   onChange={handleChange}
-                  className="rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500"
+                  className="rounded-xl border border-[#bddfd3] bg-[#f7fcfa] px-3 py-2.5 outline-none focus:border-[#2E7D69]"
                 >
                   {resourceStatuses.map((status) => (
                     <option key={status} value={status}>
@@ -178,14 +193,14 @@ const ResourcesPage = () => {
                 </select>
               </label>
 
-              <label className="md:col-span-2 grid gap-2 text-sm font-semibold text-slate-700">
+              <label className="md:col-span-2 grid gap-2 text-base font-semibold text-[#1f4a43]">
                 Description
                 <textarea
                   name="description"
                   value={form.description}
                   onChange={handleChange}
                   rows={3}
-                  className="rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-blue-500"
+                  className="rounded-xl border border-[#bddfd3] bg-[#f7fcfa] px-3 py-2.5 outline-none focus:border-[#2E7D69]"
                 />
               </label>
 
@@ -193,7 +208,7 @@ const ResourcesPage = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-xl bg-blue-600 px-5 py-2.5 font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                  className="rounded-xl bg-[#2E7D69] px-5 py-2.5 text-base font-bold text-white hover:bg-[#0E3B34] disabled:opacity-60"
                 >
                   {submitting ? "Creating..." : "Create Resource"}
                 </button>
@@ -203,33 +218,31 @@ const ResourcesPage = () => {
         )}
 
         <section className="mt-8">
-          <h2 className="text-2xl font-bold text-slate-900">Resource List</h2>
+          <h2 className="text-3xl font-extrabold text-[#0E3B34]">Resource List</h2>
           {loading ? (
-            <p className="mt-4 text-slate-600">Loading resources...</p>
+            <p className="mt-4 text-base text-[#34514a]">Loading resources...</p>
           ) : resources.length === 0 ? (
-            <p className="mt-4 text-slate-600">No resources available yet.</p>
+            <p className="mt-4 text-base text-[#34514a]">No resources available yet.</p>
           ) : (
             <div className="mt-4 grid gap-4">
               {resources.map((resource) => (
-                <article key={resource.id} className="rounded-[1.25rem] border border-slate-200 bg-white p-5 shadow-sm">
+                <article key={resource.id} className="rounded-2xl border border-[#cfe4dc] bg-white p-5 shadow-sm">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-bold text-slate-900">{resource.name}</h3>
-                      <p className="mt-1 text-sm font-semibold uppercase tracking-wide text-slate-500">{resource.type}</p>
-                      <p className="mt-2 text-slate-700">{resource.location}</p>
-                      <p className="text-slate-600">
+                      <h3 className="text-2xl font-extrabold text-[#031B1A]">{resource.name}</h3>
+                      <p className="mt-1 text-sm font-semibold uppercase tracking-wide text-[#2E7D69]">{resource.type}</p>
+                      <p className="mt-2 text-[#34514a]">{resource.location}</p>
+                      <p className="text-[#34514a]">
                         Capacity: <span className="font-semibold">{resource.capacity}</span>
                       </p>
-                      <p className="text-slate-600">
+                      <p className="text-[#34514a]">
                         Available: {resource.availableFrom} - {resource.availableTo}
                       </p>
-                      {resource.description && <p className="mt-3 text-slate-600">{resource.description}</p>}
+                      {resource.description && <p className="mt-3 text-[#34514a]">{resource.description}</p>}
                     </div>
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] ${
-                        resource.status === "ACTIVE"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-rose-100 text-rose-700"
+                        resource.status === "ACTIVE" ? "bg-[#d9f2e8] text-[#0E3B34]" : "bg-[#fde2e8] text-[#9a2942]"
                       }`}
                     >
                       {resource.status}
