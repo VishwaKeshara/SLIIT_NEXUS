@@ -9,6 +9,7 @@ import BookingsPage from "./pages/BookingsPage";
 import TicketsPage from "./pages/TicketsPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import LoginSuccessPage from "./pages/LoginSuccessPage";
+import ResourcesPage from "./pages/ResourcesPage";
 
 function App() {
   const { pathname } = useLocation();
@@ -26,6 +27,14 @@ function App() {
           element={
             <ProtectedRoute>
               <BookingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/resources"
+          element={
+            <ProtectedRoute>
+              <ResourcesPage />
             </ProtectedRoute>
           }
         />

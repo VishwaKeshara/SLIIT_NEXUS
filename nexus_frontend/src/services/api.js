@@ -24,6 +24,11 @@ export const bookingApi = {
     API.patch(`/bookings/${bookingId}/status`, { status }),
 };
 
+export const resourceApi = {
+  list: () => API.get("/resources"),
+  create: (payload) => API.post("/resources", payload),
+};
+
 export const ticketApi = {
   list: () => API.get("/tickets"),
   updateStatus: (ticketId, status) =>
