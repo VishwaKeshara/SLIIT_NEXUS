@@ -22,7 +22,19 @@ public class SupportTicket {
     private String createdByUserId;
     private String title;
     private String description;
+    private String category;
+    private String priority;
+    private String location;
+    private String resourceId;
+    private String preferredContact;
     private TicketStatus status;
+
+    private String assignedToUserId;
+    private String resolutionNotes;
+    private String rejectionReason;
+
+    @Builder.Default
+    private List<String> imageAttachments = new ArrayList<>();
 
     @Builder.Default
     private List<TicketComment> comments = new ArrayList<>();

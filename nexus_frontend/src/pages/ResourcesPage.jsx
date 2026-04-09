@@ -2,7 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { resourceApi } from "../services/api";
 
-const resourceTypeOptions = ["ALL", "LECTURE_HALL", "LAB", "MEETING_ROOM", "EQUIPMENT"];
+const resourceTypeOptions = [
+  "ALL",
+  "LECTURE_HALL",
+  "LAB",
+  "MEETING_ROOM",
+  "EQUIPMENT",
+];
 const resourceStatusOptions = ["ALL", "ACTIVE", "OUT_OF_SERVICE"];
 
 const createInitialForm = () => ({
@@ -68,13 +74,18 @@ const ResourcesPage = () => {
   }, []);
 
   const locationOptions = useMemo(() => {
-    const locations = [...new Set(resources.map((resource) => resource.location).filter(Boolean))];
+    const locations = [
+      ...new Set(
+        resources.map((resource) => resource.location).filter(Boolean),
+      ),
+    ];
     return ["ALL", ...locations];
   }, [resources]);
 
   const filteredResources = useMemo(() => {
     const normalizedSearch = searchText.trim().toLowerCase();
-    const capacityThreshold = minimumCapacity === "" ? null : Number(minimumCapacity);
+    const capacityThreshold =
+      minimumCapacity === "" ? null : Number(minimumCapacity);
 
     return resources.filter((resource) => {
       const matchesSearch =
@@ -83,23 +94,44 @@ const ResourcesPage = () => {
         resource.location?.toLowerCase().includes(normalizedSearch) ||
         resource.description?.toLowerCase().includes(normalizedSearch);
 
-      const matchesType = selectedType === "ALL" || resource.type === selectedType;
-      const matchesStatus = selectedStatus === "ALL" || resource.status === selectedStatus;
-      const matchesLocation = selectedLocation === "ALL" || resource.location === selectedLocation;
-      const matchesCapacity = capacityThreshold === null || (resource.capacity ?? 0) >= capacityThreshold;
+      const matchesType =
+        selectedType === "ALL" || resource.type === selectedType;
+      const matchesStatus =
+        selectedStatus === "ALL" || resource.status === selectedStatus;
+      const matchesLocation =
+        selectedLocation === "ALL" || resource.location === selectedLocation;
+      const matchesCapacity =
+        capacityThreshold === null ||
+        (resource.capacity ?? 0) >= capacityThreshold;
 
-      return matchesSearch && matchesType && matchesStatus && matchesLocation && matchesCapacity;
+      return (
+        matchesSearch &&
+        matchesType &&
+        matchesStatus &&
+        matchesLocation &&
+        matchesCapacity
+      );
     });
-  }, [minimumCapacity, resources, searchText, selectedLocation, selectedStatus, selectedType]);
+  }, [
+    minimumCapacity,
+    resources,
+    searchText,
+    selectedLocation,
+    selectedStatus,
+    selectedType,
+  ]);
 
   const summary = useMemo(
     () => ({
       total: resources.length,
-      active: resources.filter((resource) => resource.status === "ACTIVE").length,
-      outOfService: resources.filter((resource) => resource.status === "OUT_OF_SERVICE").length,
+      active: resources.filter((resource) => resource.status === "ACTIVE")
+        .length,
+      outOfService: resources.filter(
+        (resource) => resource.status === "OUT_OF_SERVICE",
+      ).length,
       filtered: filteredResources.length,
     }),
-    [filteredResources.length, resources]
+    [filteredResources.length, resources],
   );
 
   const handleFormChange = (event) => {
@@ -122,7 +154,9 @@ const ResourcesPage = () => {
       setFormMessage("Resource created successfully.");
       await loadResources();
     } catch {
-      setFormMessage("Failed to create the resource. Please check the values and try again.");
+      setFormMessage(
+        "Failed to create the resource. Please check the values and try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -132,31 +166,46 @@ const ResourcesPage = () => {
     <main className="min-h-screen bg-[linear-gradient(180deg,#f3fbf8_0%,#eef7f3_100%)] px-4 pb-16 pt-28">
       <section className="mx-auto max-w-6xl">
         <div className="rounded-[2rem] border border-[#b9ddd2] bg-[linear-gradient(135deg,#0b3a34,#19584c_60%,#2d7f6b)] p-8 text-white shadow-[0_24px_70px_rgba(6,35,33,0.16)]">
-          <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#bfe8db]">Module A</p>
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#bfe8db]">
+            Module A
+          </p>
           <h1 className="font-display mt-3 text-4xl font-extrabold tracking-[-0.04em] sm:text-5xl">
             Facilities & Assets Catalogue
           </h1>
           <p className="mt-4 max-w-3xl text-base leading-7 text-[#e1f3ec] sm:text-lg">
-            Browse lecture halls, labs, meeting rooms, and equipment with searchable metadata including
-            type, capacity, location, availability window, and operational status.
+            Browse lecture halls, labs, meeting rooms, and equipment with
+            searchable metadata including type, capacity, location, availability
+            window, and operational status.
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             <div className="rounded-[1.2rem] bg-white/12 p-4 backdrop-blur-sm">
-              <p className="text-sm font-bold text-[#bfe8db]">Total Resources</p>
-              <p className="mt-2 font-display text-4xl font-extrabold">{summary.total}</p>
+              <p className="text-sm font-bold text-[#bfe8db]">
+                Total Resources
+              </p>
+              <p className="mt-2 font-display text-4xl font-extrabold">
+                {summary.total}
+              </p>
             </div>
             <div className="rounded-[1.2rem] bg-white/12 p-4 backdrop-blur-sm">
               <p className="text-sm font-bold text-[#bfe8db]">Active</p>
-              <p className="mt-2 font-display text-4xl font-extrabold">{summary.active}</p>
+              <p className="mt-2 font-display text-4xl font-extrabold">
+                {summary.active}
+              </p>
             </div>
             <div className="rounded-[1.2rem] bg-white/12 p-4 backdrop-blur-sm">
               <p className="text-sm font-bold text-[#bfe8db]">Out of Service</p>
-              <p className="mt-2 font-display text-4xl font-extrabold">{summary.outOfService}</p>
+              <p className="mt-2 font-display text-4xl font-extrabold">
+                {summary.outOfService}
+              </p>
             </div>
             <div className="rounded-[1.2rem] bg-white/12 p-4 backdrop-blur-sm">
-              <p className="text-sm font-bold text-[#bfe8db]">Filtered Results</p>
-              <p className="mt-2 font-display text-4xl font-extrabold">{summary.filtered}</p>
+              <p className="text-sm font-bold text-[#bfe8db]">
+                Filtered Results
+              </p>
+              <p className="mt-2 font-display text-4xl font-extrabold">
+                {summary.filtered}
+              </p>
             </div>
           </div>
         </div>
@@ -164,7 +213,9 @@ const ResourcesPage = () => {
         <div className="mt-8 rounded-[1.75rem] border border-[#cfe7df] bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2d7f6b]">Search & Filter</p>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2d7f6b]">
+                Search & Filter
+              </p>
               <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#062321]">
                 Find the right campus resource
               </h2>
@@ -229,14 +280,18 @@ const ResourcesPage = () => {
               >
                 {resourceStatusOptions.map((option) => (
                   <option key={option} value={option}>
-                    {option === "ALL" ? "All Statuses" : formatEnumLabel(option)}
+                    {option === "ALL"
+                      ? "All Statuses"
+                      : formatEnumLabel(option)}
                   </option>
                 ))}
               </select>
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#1a4b43]">Min Capacity</span>
+              <span className="text-sm font-bold text-[#1a4b43]">
+                Min Capacity
+              </span>
               <input
                 type="number"
                 min="0"
@@ -253,17 +308,27 @@ const ResourcesPage = () => {
           <section className="mt-8 rounded-[1.75rem] border border-[#cfe7df] bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2d7f6b]">Admin Tool</p>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2d7f6b]">
+                  Admin Tool
+                </p>
                 <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#062321]">
                   Add a new resource to the catalogue
                 </h2>
               </div>
-              <p className="text-sm text-[#58726c]">Visible only to admin users because `POST /resources` is secured.</p>
+              <p className="text-sm text-[#58726c]">
+                Visible only to admin users because `POST /resources` is
+                secured.
+              </p>
             </div>
 
-            <form className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3" onSubmit={handleCreateResource}>
+            <form
+              className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+              onSubmit={handleCreateResource}
+            >
               <label className="block">
-                <span className="text-sm font-bold text-[#1a4b43]">Resource Name</span>
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Resource Name
+                </span>
                 <input
                   required
                   name="name"
@@ -292,7 +357,9 @@ const ResourcesPage = () => {
               </label>
 
               <label className="block">
-                <span className="text-sm font-bold text-[#1a4b43]">Capacity</span>
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Capacity
+                </span>
                 <input
                   required
                   min="0"
@@ -305,7 +372,9 @@ const ResourcesPage = () => {
               </label>
 
               <label className="block">
-                <span className="text-sm font-bold text-[#1a4b43]">Location</span>
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Location
+                </span>
                 <input
                   required
                   name="location"
@@ -316,7 +385,9 @@ const ResourcesPage = () => {
               </label>
 
               <label className="block">
-                <span className="text-sm font-bold text-[#1a4b43]">Available From</span>
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Available From
+                </span>
                 <input
                   required
                   type="time"
@@ -328,7 +399,9 @@ const ResourcesPage = () => {
               </label>
 
               <label className="block">
-                <span className="text-sm font-bold text-[#1a4b43]">Available To</span>
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Available To
+                </span>
                 <input
                   required
                   type="time"
@@ -358,7 +431,9 @@ const ResourcesPage = () => {
               </label>
 
               <label className="block md:col-span-2 xl:col-span-2">
-                <span className="text-sm font-bold text-[#1a4b43]">Description</span>
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Description
+                </span>
                 <textarea
                   required
                   name="description"
@@ -380,7 +455,11 @@ const ResourcesPage = () => {
               </div>
             </form>
 
-            {formMessage && <p className="mt-4 text-sm font-semibold text-[#205d4f]">{formMessage}</p>}
+            {formMessage && (
+              <p className="mt-4 text-sm font-semibold text-[#205d4f]">
+                {formMessage}
+              </p>
+            )}
           </section>
         )}
 
@@ -424,21 +503,34 @@ const ResourcesPage = () => {
                     </span>
                   </div>
 
-                  <p className="mt-4 text-sm leading-6 text-[#4f6963]">{resource.description}</p>
+                  <p className="mt-4 text-sm leading-6 text-[#4f6963]">
+                    {resource.description}
+                  </p>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-xl bg-[#f3fbf8] p-3">
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5f8f84]">Location</p>
-                      <p className="mt-1 font-semibold text-[#133c35]">{resource.location}</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5f8f84]">
+                        Location
+                      </p>
+                      <p className="mt-1 font-semibold text-[#133c35]">
+                        {resource.location}
+                      </p>
                     </div>
                     <div className="rounded-xl bg-[#f3fbf8] p-3">
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5f8f84]">Capacity</p>
-                      <p className="mt-1 font-semibold text-[#133c35]">{resource.capacity}</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5f8f84]">
+                        Capacity
+                      </p>
+                      <p className="mt-1 font-semibold text-[#133c35]">
+                        {resource.capacity}
+                      </p>
                     </div>
                     <div className="rounded-xl bg-[#f3fbf8] p-3 sm:col-span-2">
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5f8f84]">Availability</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5f8f84]">
+                        Availability
+                      </p>
                       <p className="mt-1 font-semibold text-[#133c35]">
-                        {formatTimeLabel(resource.availableFrom)} - {formatTimeLabel(resource.availableTo)}
+                        {formatTimeLabel(resource.availableFrom)} -{" "}
+                        {formatTimeLabel(resource.availableTo)}
                       </p>
                     </div>
                   </div>

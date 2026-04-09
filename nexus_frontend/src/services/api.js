@@ -37,10 +37,30 @@ export const resourceApi = {
 
 export const ticketApi = {
   list: () => API.get("/tickets"),
-  updateStatus: (ticketId, status) =>
-    API.patch(`/tickets/${ticketId}/status`, { status }),
+  create: (payload) => API.post("/tickets", payload),
+  getById: (ticketId) => API.get(`/tickets/${ticketId}`),
+  remove: (ticketId) => API.delete(`/tickets/${ticketId}`),
+  updateStatus: (ticketId, status, rejectionReason, resolutionNotes) =>
+    API.patch(`/tickets/${ticketId}/status`, { status, rejectionReason, resolutionNotes }),
+  assign: (ticketId, assignedToUserId) =>
+    API.patch(`/tickets/${ticketId}/assign`, { assignedToUserId }),
   addComment: (ticketId, content) =>
     API.post(`/tickets/${ticketId}/comments`, { content }),
+  editComment: (ticketId, commentId, content) =>
+    API.put(`/tickets/${ticketId}/comments/${commentId}`, { content }),
+  deleteComment: (ticketId, commentId) =>
+    API.delete(`/tickets/${ticketId}/comments/${commentId}`),
+  uploadAttachment: (ticketId, file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return API.post(`/tickets/${ticketId}/attachments`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  getAttachmentUrl: (ticketId, filename) =>
+    `http://localhost:8080/api/tickets/${ticketId}/attachments/${filename}`,
+  deleteAttachment: (ticketId, filename) =>
+    API.delete(`/tickets/${ticketId}/attachments/${filename}`),
 };
 
 export const adminApi = {
