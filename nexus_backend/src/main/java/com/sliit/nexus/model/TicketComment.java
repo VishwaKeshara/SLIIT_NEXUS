@@ -16,4 +16,5 @@ public class TicketComment {
     private String authorName;
     private String content;
     private Instant createdAt;
+    private Instant updatedAt;
 }
