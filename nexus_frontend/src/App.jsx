@@ -10,6 +10,9 @@ import TicketsPage from "./pages/TicketsPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import LoginSuccessPage from "./pages/LoginSuccessPage";
 import ProfilePage from "./pages/ProfilePage";
+import ResourcesPage from "./pages/ResourcesPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import AboutUsPage from "./pages/AboutUsPage";
 
 function App() {
   const { pathname } = useLocation();
@@ -23,6 +26,14 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/login/success" element={<LoginSuccessPage />} />
         <Route
+          path="/resources"
+          element={
+            <ProtectedRoute>
+              <ResourcesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/bookings"
           element={
             <ProtectedRoute>
@@ -31,10 +42,34 @@ function App() {
           }
         />
         <Route
-          path="/tickets"
+          path="/incidents"
           element={
             <ProtectedRoute>
               <TicketsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/about-us"
+          element={
+            <ProtectedRoute>
+              <AboutUsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tickets"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/incidents" replace />
             </ProtectedRoute>
           }
         />
