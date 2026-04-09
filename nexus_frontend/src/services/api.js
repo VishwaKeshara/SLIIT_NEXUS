@@ -31,6 +31,8 @@ export const bookingApi = {
 export const resourceApi = {
   list: () => API.get("/resources"),
   create: (payload) => API.post("/resources", payload),
+  update: (resourceId, payload) => API.put(`/resources/${resourceId}`, payload),
+  remove: (resourceId) => API.delete(`/resources/${resourceId}`),
 };
 
 export const ticketApi = {
