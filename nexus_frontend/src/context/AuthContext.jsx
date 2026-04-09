@@ -38,6 +38,33 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const signIn = async (payload) => {
+    const { data } = await authApi.login(payload);
+    setUser(data);
+    const summary = await notificationApi.summary();
+    setUnreadCount(summary.data.unreadCount ?? 0);
+    return data;
+  };
+
+  const signUp = async (payload) => {
+    const { data } = await authApi.signup(payload);
+    setUser(data);
+    setUnreadCount(0);
+    return data;
+  };
+
+  const updateAccount = async (payload) => {
+    const { data } = await authApi.updateAccount(payload);
+    setUser(data);
+    return data;
+  };
+
+  const deleteAccount = async () => {
+    await authApi.deleteAccount();
+    setUser(null);
+    setUnreadCount(0);
+  };
+
   const logout = async () => {
     await authApi.logout();
     setUser(null);
@@ -53,6 +80,10 @@ export const AuthProvider = ({ children }) => {
         setUnreadCount,
         refreshAuth,
         loginAsDevUser,
+        signIn,
+        signUp,
+        updateAccount,
+        deleteAccount,
         logout,
       }}
     >

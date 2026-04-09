@@ -26,6 +26,7 @@ public class UserAccount {
     private String displayName;
     private String provider;
     private String providerId;
+    private String passwordHash;
 
     @Builder.Default
     private Set<AppRole> roles = new HashSet<>();

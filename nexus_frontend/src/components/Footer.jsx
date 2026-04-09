@@ -23,33 +23,13 @@ const Footer = () => {
         </div>
 
         <div>
-          <h3 className="mb-4 text-xl font-extrabold text-white">Quick Links</h3>
-          <ul className="space-y-3 text-base text-[#d6ebe3]">
-            <li>
-              <Link className="transition hover:text-[#BFE8D9]" to="/">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link className="transition hover:text-[#BFE8D9]" to="/resources">
-                Resources
-              </Link>
-            </li>
-            <li>
-              <Link className="transition hover:text-[#BFE8D9]" to="/bookings">
-                Bookings
-              </Link>
-            </li>
-            <li>
-              <Link className="transition hover:text-[#BFE8D9]" to="/tickets">
-                Tickets
-              </Link>
-            </li>
-            <li>
-              <Link className="transition hover:text-[#BFE8D9]" to="/login">
-                Login
-              </Link>
-            </li>
+          <h3 className="font-semibold mb-3">Quick Links</h3>
+          <ul className="space-y-2 text-gray-400 text-sm">
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/bookings">Bookings</Link></li>
+            <li><Link to="/tickets">Tickets</Link></li>
+            <li><Link to="/profile">Profile</Link></li>
+            <li><Link to="/login">Login</Link></li>
           </ul>
         </div>
 

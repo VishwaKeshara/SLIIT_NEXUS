@@ -4,11 +4,16 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
+import SignupPage from "./pages/SignupPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BookingsPage from "./pages/BookingsPage";
 import TicketsPage from "./pages/TicketsPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import LoginSuccessPage from "./pages/LoginSuccessPage";
+import ProfilePage from "./pages/ProfilePage";
+import ResourcesPage from "./pages/ResourcesPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import AboutUsPage from "./pages/AboutUsPage";
 import ResourcesPage from "./pages/ResourcesPage";
 
 function App() {
@@ -21,7 +26,16 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignupPage />} />
         <Route path="/login/success" element={<LoginSuccessPage />} />
+        <Route
+          path="/resources"
+          element={
+            <ProtectedRoute>
+              <ResourcesPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/bookings"
           element={
@@ -31,6 +45,7 @@ function App() {
           }
         />
         <Route
+          path="/incidents"
           path="/resources"
           element={
             <ProtectedRoute>
@@ -43,6 +58,38 @@ function App() {
           element={
             <ProtectedRoute>
               <TicketsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/about-us"
+          element={
+            <ProtectedRoute>
+              <AboutUsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tickets"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/incidents" replace />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />
