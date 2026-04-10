@@ -34,9 +34,12 @@ const Login = () => {
     setError("");
 
     try {
-      await signIn(credentials);
+      const signedInUser = await signIn(credentials);
+      const roles = Array.isArray(signedInUser?.roles)
+        ? signedInUser.roles.map((role) => String(role ?? "").trim().toUpperCase().replace(/^ROLE_/, ""))
+        : [];
 
-      navigate("/", { replace: true });
+      navigate(roles.some((role) => ["ADMIN", "MANAGER"].includes(role)) ? "/profile" : "/", { replace: true });
     } catch (err) {
       setError(getFriendlyLoginError(err));
     } finally {

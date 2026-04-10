@@ -8,8 +8,12 @@ const LoginSuccessPage = () => {
 
   useEffect(() => {
     const finalize = async () => {
-      await refreshAuth();
-      navigate("/", { replace: true });
+      const signedInUser = await refreshAuth();
+      const roles = Array.isArray(signedInUser?.roles)
+        ? signedInUser.roles.map((role) => String(role ?? "").trim().toUpperCase().replace(/^ROLE_/, ""))
+        : [];
+
+      navigate(roles.some((role) => ["ADMIN", "MANAGER"].includes(role)) ? "/profile" : "/", { replace: true });
     };
 
     finalize();
