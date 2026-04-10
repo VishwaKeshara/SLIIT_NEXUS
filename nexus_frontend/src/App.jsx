@@ -17,7 +17,7 @@ import AboutUsPage from "./pages/AboutUsPage";
 
 function App() {
   const { pathname } = useLocation();
-  const hideChrome = pathname.startsWith("/admin");
+  const hideChrome = pathname.startsWith("/admin") || pathname === "/resources";
 
   return (
     <>

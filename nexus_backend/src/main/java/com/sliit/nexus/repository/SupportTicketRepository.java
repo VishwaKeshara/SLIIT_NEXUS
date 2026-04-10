@@ -6,4 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface SupportTicketRepository extends MongoRepository<SupportTicket, String> {
     List<SupportTicket> findByCreatedByUserIdOrderByCreatedAtDesc(String createdByUserId);
+    List<SupportTicket> findAllByOrderByCreatedAtDesc();
+    List<SupportTicket> findByAssignedToUserIdOrderByCreatedAtDesc(String assignedToUserId);
 }

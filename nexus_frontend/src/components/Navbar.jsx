@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import NotificationPanel from "./NotificationPanel";
 import { useAuth } from "../context/AuthContext";
+import { authApi } from "../services/api";
 
 const primaryLinks = [
-  { label: "Module A", to: "/resources", auth: true },
+  { label: "Home", to: "/" },
+  { label: "Resources", to: "/resources" },
   { label: "Bookings", to: "/bookings", auth: true },
-  { label: "Ticketing", to: "/tickets", auth: true },
-  { label: "Admin", to: "/admin/dashboard", auth: true, adminOnly: true },
+  { label: "Maintenance Tickets", to: "/tickets", auth: true },
+  { label: "Notifications", to: "/notifications", auth: true },
 ];
 
 const Navbar = () => {
@@ -17,13 +19,13 @@ const Navbar = () => {
 
   const roles = user?.roles ?? [];
   const isAdmin = roles.includes("ADMIN");
+  const dashboardLink = isAdmin
+    ? { label: "Dashboard", to: "/admin/dashboard", auth: true }
+    : { label: "Dashboard", to: "/bookings", auth: true };
+  const profileLink = { label: "Profile", to: "/profile", auth: true };
 
-  const visibleLinks = primaryLinks.filter((link) => {
+  const visibleLinks = [...primaryLinks, dashboardLink, profileLink].filter((link) => {
     if (link.auth && !user) {
-      return false;
-    }
-
-    if (link.adminOnly && !isAdmin) {
       return false;
     }
 
@@ -55,13 +57,14 @@ const Navbar = () => {
               NX
             </div>
             <div className="min-w-0">
-              <p className="font-display truncate text-2xl font-extrabold tracking-[-0.04em] text-white">
-                sliit nexus
+              <p className="font-display truncate text-2xl font-extrabold tracking-[-0.04em] text-white">SLIIT NEXUS</p>
+              <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-[#bfe8db]">
+                Smart Campus Operations Hub
               </p>
             </div>
           </Link>
 
-          <div className="hidden items-center gap-5 lg:flex">
+          <div className="hidden items-center gap-1 xl:flex">
             {visibleLinks.map((link) => (
               <NavLink key={link.to} to={link.to} className={desktopLinkClass}>
                 {link.label}
@@ -93,15 +96,23 @@ const Navbar = () => {
                 onClick={handleLogout}
                 className="rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#062321] transition hover:bg-[#e7f3ee]"
               >
-                Sign Out
+                Logout
               </button>
             ) : (
-              <Link
-                to="/login"
-                className="rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#062321] transition hover:bg-[#e7f3ee]"
-              >
-                Sign In
-              </Link>
+              <>
+                <a
+                  href={authApi.googleLoginUrl}
+                  className="rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/16"
+                >
+                  Google Sign In
+                </a>
+                <Link
+                  to="/login"
+                  className="rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#062321] transition hover:bg-[#e7f3ee]"
+                >
+                  Login
+                </Link>
+              </>
             )}
           </div>
 
@@ -136,17 +147,25 @@ const Navbar = () => {
                     onClick={handleLogout}
                     className="mt-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-[#062321]"
                   >
-                    Sign Out
+                    Logout
                   </button>
                 </>
               ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="mt-2 rounded-xl bg-white px-4 py-3 text-center text-sm font-bold text-[#062321]"
-                >
-                  Sign In
-                </Link>
+                <>
+                  <a
+                    href={authApi.googleLoginUrl}
+                    className="mt-2 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-center text-sm font-bold text-white"
+                  >
+                    Google Sign In
+                  </a>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="rounded-xl bg-white px-4 py-3 text-center text-sm font-bold text-[#062321]"
+                  >
+                    Login
+                  </Link>
+                </>
               )}
             </div>
           </div>
