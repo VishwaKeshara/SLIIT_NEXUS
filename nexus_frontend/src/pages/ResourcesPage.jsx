@@ -304,6 +304,21 @@ const ResourcesPage = () => {
     [filteredResources.length, resources]
   );
 
+  const resourceTypeSummary = useMemo(
+    () => ({
+      labs: resources.filter((resource) => resource.type === "LAB").length,
+      rooms: resources.filter((resource) => ["LECTURE_HALL", "MEETING_ROOM"].includes(resource.type)).length,
+      equipment: resources.filter((resource) => resource.type === "EQUIPMENT").length,
+    }),
+    [resources]
+  );
+
+  const recentlyAddedResources = useMemo(() => resources.slice(-5).reverse(), [resources]);
+  const maintenanceResources = useMemo(
+    () => resources.filter((resource) => resource.status === "OUT_OF_SERVICE").slice(0, 5),
+    [resources]
+  );
+
   const validateForm = () => {
     const nextErrors = {};
     const name = formState.name.trim();
@@ -467,6 +482,31 @@ const ResourcesPage = () => {
 
   const clearFilters = () => {
     setFilters(initialFilters);
+  };
+
+  const exportResourcesCsv = () => {
+    const escapeCsvCell = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+    const rows = [
+      csvTemplateHeaders,
+      ...filteredResources.map((resource) => [
+        resource.name,
+        formatEnumLabel(resource.type),
+        resource.capacity,
+        resource.location,
+        resource.availableFrom,
+        resource.availableTo,
+        resource.status,
+        resource.description ?? "",
+      ]),
+    ];
+    const csvContent = rows.map((row) => row.map(escapeCsvCell).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "resources-export.csv";
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleLogout = async () => {
@@ -859,24 +899,164 @@ const ResourcesPage = () => {
         </header>
 
         {activePanel === "dashboard" && (
+        <>
         <div className="mt-9 grid gap-6 md:grid-cols-4">
           <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
             <p className="text-base font-extrabold text-[#5b7493]">Total Resources</p>
             <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.total}</p>
           </div>
           <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Active</p>
+            <p className="text-base font-extrabold text-[#5b7493]">Active Resources</p>
             <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.active}</p>
           </div>
           <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Out of Service</p>
+            <p className="text-base font-extrabold text-[#5b7493]">Out of Service Resources</p>
             <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.outOfService}</p>
           </div>
           <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Filtered Results</p>
-            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.filtered}</p>
+            <p className="text-base font-extrabold text-[#5b7493]">Labs / Rooms / Equipment</p>
+            <div className="mt-6 grid grid-cols-3 gap-2">
+              <div>
+                <p className="font-display text-4xl font-extrabold text-[#0f342e]">{resourceTypeSummary.labs}</p>
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">Labs</p>
+              </div>
+              <div>
+                <p className="font-display text-4xl font-extrabold text-[#0f342e]">{resourceTypeSummary.rooms}</p>
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">Rooms</p>
+              </div>
+              <div>
+                <p className="font-display text-4xl font-extrabold text-[#0f342e]">{resourceTypeSummary.equipment}</p>
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">Items</p>
+              </div>
+            </div>
           </div>
         </div>
+
+        <section className="mt-9 rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Quick Actions</p>
+              <h2 className="font-display mt-2 text-4xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
+                Resource Controls
+              </h2>
+            </div>
+            <span className="rounded-[1.2rem] bg-[#f3f8f5] px-5 py-3 text-sm font-black text-[#39766a]">
+              {summary.filtered} current results
+            </span>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setActivePanel("add")}
+                className="rounded-[1.4rem] bg-[#f2d45c] p-5 text-center text-[#103c35] shadow-[0_14px_34px_rgba(16,60,53,0.1)] transition hover:-translate-y-1"
+              >
+                <p className="text-xl font-extrabold">Add Resource</p>
+              </button>
+            )}
+
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setActivePanel("import")}
+                className="rounded-[1.4rem] bg-white p-5 text-center text-[#0f342e] shadow-sm ring-1 ring-[#dbe7df] transition hover:-translate-y-1"
+              >
+                <p className="text-xl font-extrabold">Bulk Import</p>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setActivePanel("availability")}
+              className="rounded-[1.4rem] bg-[#103c35] p-5 text-center text-white shadow-[0_14px_34px_rgba(16,60,53,0.18)] transition hover:-translate-y-1"
+            >
+              <p className="text-xl font-extrabold">View Availability</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={exportResourcesCsv}
+              className="rounded-[1.4rem] bg-white p-5 text-center text-[#0f342e] shadow-sm ring-1 ring-[#dbe7df] transition hover:-translate-y-1"
+            >
+              <p className="text-xl font-extrabold">Export CSV</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="rounded-[1.4rem] bg-white p-5 text-center text-[#0f342e] shadow-sm ring-1 ring-[#dbe7df] transition hover:-translate-y-1"
+            >
+              <p className="text-xl font-extrabold">Reset Filters</p>
+            </button>
+          </div>
+        </section>
+
+        <section className="mt-9 grid gap-6 xl:grid-cols-3">
+          <div className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Recently Added</p>
+            <h3 className="font-display mt-2 text-3xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
+              Recent Resources
+            </h3>
+            <div className="mt-5 space-y-3">
+              {recentlyAddedResources.length === 0 ? (
+                <p className="rounded-[1rem] bg-[#f8fbf9] px-4 py-3 text-sm font-semibold text-[#5c746d]">
+                  No resources yet.
+                </p>
+              ) : (
+                recentlyAddedResources.map((resource) => (
+                  <article key={resource.id} className="rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3">
+                    <p className="font-extrabold text-[#0f342e]">{resource.name}</p>
+                    <p className="mt-1 text-sm font-semibold text-[#5c746d]">{formatEnumLabel(resource.type)}</p>
+                  </article>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Maintenance</p>
+            <h3 className="font-display mt-2 text-3xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
+              Needs Attention
+            </h3>
+            <div className="mt-5 space-y-3">
+              {maintenanceResources.length === 0 ? (
+                <p className="rounded-[1rem] bg-[#f8fbf9] px-4 py-3 text-sm font-semibold text-[#5c746d]">
+                  No out-of-service resources.
+                </p>
+              ) : (
+                maintenanceResources.map((resource) => (
+                  <article key={resource.id} className="rounded-[1rem] border border-red-100 bg-red-50 px-4 py-3">
+                    <p className="font-extrabold text-red-900">{resource.name}</p>
+                    <p className="mt-1 text-sm font-semibold text-red-700">{resource.location}</p>
+                  </article>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Quick Search</p>
+            <h3 className="font-display mt-2 text-3xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
+              Find Resource
+            </h3>
+            <input
+              type="text"
+              value={filters.search}
+              onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))}
+              placeholder="Search name, location, description"
+              className="mt-5 w-full rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#dceee7]"
+            />
+            <button
+              type="button"
+              onClick={() => setActivePanel("resources")}
+              className="mt-4 w-full rounded-[1rem] bg-[#103c35] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0b2e29]"
+            >
+              View Results
+            </button>
+          </div>
+        </section>
+        </>
         )}
 
         {isAdmin && activePanel === "import" && (
