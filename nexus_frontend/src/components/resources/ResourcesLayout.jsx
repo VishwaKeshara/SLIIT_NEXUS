@@ -1,10 +1,10 @@
 import ResourcesSidebar from "./ResourcesSidebar";
 
-const ResourcesLayout = ({ children, isAdmin, onLogout, subtitle, title }) => {
+const ResourcesLayout = ({ children, isAdmin, onLogout, showDashboardBackLink = false, subtitle, title }) => {
   return (
     <main className="min-h-screen bg-[#edf4fb] pt-6">
       <div className="mx-auto flex max-w-[1800px] flex-col gap-8 px-4 pb-16 lg:flex-row lg:items-start lg:px-6">
-        <ResourcesSidebar isAdmin={isAdmin} onLogout={onLogout} />
+        <ResourcesSidebar isAdmin={isAdmin} onLogout={onLogout} showDashboardBackLink={showDashboardBackLink} />
 
         <section className="min-w-0 flex-1">
           <header className="p-1 text-[#0f342e]">

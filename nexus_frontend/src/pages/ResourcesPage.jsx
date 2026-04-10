@@ -916,7 +916,13 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
 
   return (
     <>
-      <ResourcesLayout isAdmin={isAdmin} onLogout={handleLogout} subtitle={panelSubtitle} title={panelTitle}>
+      <ResourcesLayout
+        isAdmin={isAdmin}
+        onLogout={handleLogout}
+        showDashboardBackLink={activePanel === "dashboard"}
+        subtitle={panelSubtitle}
+        title={panelTitle}
+      >
 
         {activePanel === "dashboard" && (
         <>

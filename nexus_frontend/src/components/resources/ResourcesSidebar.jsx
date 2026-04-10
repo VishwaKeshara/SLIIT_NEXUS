@@ -1,11 +1,11 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const linkClass = ({ isActive }) =>
   `rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
     isActive ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
   }`;
 
-const ResourcesSidebar = ({ isAdmin, onLogout }) => {
+const ResourcesSidebar = ({ isAdmin, onLogout, showDashboardBackLink = false }) => {
   return (
     <aside className="sticky top-6 rounded-[1.8rem] bg-[#103c35] p-6 text-white shadow-[0_28px_80px_rgba(16,60,53,0.28)] lg:min-h-[calc(100vh-3rem)] lg:w-80 lg:shrink-0">
       <div className="flex items-center gap-4 border-b border-white/15 pb-7">
@@ -61,6 +61,15 @@ const ResourcesSidebar = ({ isAdmin, onLogout }) => {
             : "Check available resources and continue to booking."}
         </p>
       </div>
+
+      {showDashboardBackLink && (
+        <Link
+          to="/profile"
+          className="mt-6 flex items-center justify-center rounded-[1.15rem] bg-white px-5 py-4 text-center text-sm font-black uppercase tracking-[0.14em] text-[#103c35] shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:bg-[#f2d45c]"
+        >
+          Back to Dashboard
+        </Link>
+      )}
     </aside>
   );
 };
