@@ -11,14 +11,18 @@ import TicketsPage from "./pages/TicketsPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import LoginSuccessPage from "./pages/LoginSuccessPage";
 import ProfilePage from "./pages/ProfilePage";
-import ResourcesPage from "./pages/ResourcesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AboutUsPage from "./pages/AboutUsPage";
 import CheckInPage from "./pages/CheckInPage";
+import AddResourcePage from "./pages/resources/AddResourcePage";
+import AvailabilityPage from "./pages/resources/AvailabilityPage";
+import BulkImportPage from "./pages/resources/BulkImportPage";
+import ResourcesDashboardPage from "./pages/resources/ResourcesDashboardPage";
+import ResourcesListPage from "./pages/resources/ResourcesListPage";
 
 function App() {
   const { pathname } = useLocation();
-  const hideChrome = pathname.startsWith("/admin") || pathname === "/resources" || pathname === "/profile";
+  const hideChrome = pathname.startsWith("/admin") || pathname.startsWith("/resources") || pathname === "/profile";
 
   return (
     <>
@@ -28,7 +32,11 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login/success" element={<LoginSuccessPage />} />
-        <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/resources/dashboard" element={<ResourcesDashboardPage />} />
+        <Route path="/resources" element={<ResourcesListPage />} />
+        <Route path="/resources/add" element={<AddResourcePage />} />
+        <Route path="/resources/bulk-import" element={<BulkImportPage />} />
+        <Route path="/resources/availability" element={<AvailabilityPage />} />
         <Route
           path="/bookings"
           element={
