@@ -5,6 +5,16 @@ import { bookingApi, resourceApi } from "../services/api";
 const resourceTypes = ["LECTURE_HALL", "LAB", "MEETING_ROOM", "EQUIPMENT"];
 const resourceStatuses = ["ACTIVE", "OUT_OF_SERVICE"];
 const calendarSlots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+const csvTemplateHeaders = [
+  "Name",
+  "Type",
+  "Capacity",
+  "Location",
+  "Available From",
+  "Available To",
+  "Status",
+  "Description",
+];
 
 const campusLocations = {
   LECTURE_HALL: [
@@ -88,6 +98,89 @@ const toDateKey = (date) =>
 
 const getAllLocations = () => [...new Set(Object.values(campusLocations).flat())];
 
+const normalizeResourceType = (value) => {
+  const normalized = value.trim().toUpperCase().replaceAll(" ", "_").replaceAll("-", "_");
+  const aliases = {
+    LECTURE_HALL: "LECTURE_HALL",
+    HALL: "LECTURE_HALL",
+    LAB: "LAB",
+    LABORATORY: "LAB",
+    MEETING_ROOM: "MEETING_ROOM",
+    MEETING: "MEETING_ROOM",
+    EQUIPMENT: "EQUIPMENT",
+    PROJECTOR: "EQUIPMENT",
+    CAMERA: "EQUIPMENT",
+  };
+
+  return aliases[normalized] ?? "";
+};
+
+const normalizeStatus = (value) => value.trim().toUpperCase().replaceAll(" ", "_").replaceAll("-", "_");
+
+const parseCsvLine = (line) => {
+  const cells = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const nextChar = line[index + 1];
+
+    if (char === '"' && inQuotes && nextChar === '"') {
+      current += '"';
+      index += 1;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      cells.push(current.trim());
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  cells.push(current.trim());
+  return cells;
+};
+
+const parseCsvText = (csvText) => {
+  const lines = csvText
+    .replace(/^\uFEFF/, "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length <= 1) {
+    return [];
+  }
+
+  const headers = parseCsvLine(lines[0]).map((header) => header.toLowerCase());
+
+  return lines.slice(1).map((line, index) => {
+    const cells = parseCsvLine(line);
+    const getValue = (header) => {
+      const headerIndex = headers.indexOf(header.toLowerCase());
+      return headerIndex >= 0 ? cells[headerIndex]?.trim() ?? "" : "";
+    };
+
+    return {
+      rowNumber: index + 2,
+      raw: {
+        name: getValue("Name"),
+        type: getValue("Type"),
+        capacity: getValue("Capacity"),
+        location: getValue("Location"),
+        availableFrom: getValue("Available From"),
+        availableTo: getValue("Available To"),
+        status: getValue("Status"),
+        description: getValue("Description"),
+      },
+    };
+  });
+};
+
+const buildDuplicateKey = (name, location) => `${name.trim().toLowerCase()}::${location.trim().toLowerCase()}`;
+
 const getFriendlyResourceError = (err) => {
   const message = err?.response?.data?.message;
   if (message) {
@@ -121,6 +214,11 @@ const ResourcesPage = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
   const [availabilityResource, setAvailabilityResource] = useState(null);
+  const [csvFileName, setCsvFileName] = useState("");
+  const [csvRows, setCsvRows] = useState([]);
+  const [csvMessage, setCsvMessage] = useState("");
+  const [importingBulk, setImportingBulk] = useState(false);
+  const [importSummary, setImportSummary] = useState(null);
 
   const loadResources = async () => {
     setLoading(true);
@@ -367,6 +465,197 @@ const ResourcesPage = () => {
     setFilters(initialFilters);
   };
 
+  const validateImportRows = (rows) => {
+    const existingKeys = new Set(resources.map((resource) => buildDuplicateKey(resource.name ?? "", resource.location ?? "")));
+    const csvKeys = new Set();
+
+    return rows.map((row) => {
+      const errors = [];
+      const normalizedType = normalizeResourceType(row.raw.type);
+      const normalizedStatus = normalizeStatus(row.raw.status);
+      const capacity = Number(row.raw.capacity);
+      const duplicateKey = buildDuplicateKey(row.raw.name, row.raw.location);
+
+      if (!row.raw.name.trim()) {
+        errors.push("Name is required.");
+      }
+
+      if (!row.raw.type.trim()) {
+        errors.push("Type is required.");
+      } else if (!normalizedType) {
+        errors.push("Type must be Lecture Hall, Lab, Meeting Room, Equipment, Projector, or Camera.");
+      }
+
+      if (!row.raw.capacity.trim()) {
+        errors.push("Capacity is required.");
+      } else if (!Number.isInteger(capacity) || capacity <= 0) {
+        errors.push("Capacity must be greater than 0.");
+      }
+
+      if (!row.raw.location.trim()) {
+        errors.push("Location is required.");
+      }
+
+      if (!row.raw.availableFrom.trim()) {
+        errors.push("Available From is required.");
+      }
+
+      if (!row.raw.availableTo.trim()) {
+        errors.push("Available To is required.");
+      }
+
+      if (row.raw.availableFrom && row.raw.availableTo && row.raw.availableFrom >= row.raw.availableTo) {
+        errors.push("Available To must be later than Available From.");
+      }
+
+      if (!row.raw.status.trim()) {
+        errors.push("Status is required.");
+      } else if (!resourceStatuses.includes(normalizedStatus)) {
+        errors.push("Status must be either ACTIVE or OUT_OF_SERVICE.");
+      }
+
+      const isDuplicate = duplicateKey !== "::" && (existingKeys.has(duplicateKey) || csvKeys.has(duplicateKey));
+      if (duplicateKey !== "::") {
+        csvKeys.add(duplicateKey);
+      }
+
+      const data = {
+        name: row.raw.name.trim(),
+        type: normalizedType,
+        capacity,
+        location: row.raw.location.trim(),
+        availableFrom: row.raw.availableFrom.trim(),
+        availableTo: row.raw.availableTo.trim(),
+        status: normalizedStatus,
+        description: row.raw.description.trim(),
+      };
+
+      return {
+        ...row,
+        data,
+        errors,
+        isDuplicate,
+      };
+    });
+  };
+
+  const handleCsvUpload = (event) => {
+    const file = event.target.files?.[0];
+    setCsvMessage("");
+    setImportSummary(null);
+
+    if (!file) {
+      setCsvFileName("");
+      setCsvRows([]);
+      return;
+    }
+
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      setCsvFileName(file.name);
+      setCsvRows([]);
+      setCsvMessage("Please upload a valid .csv file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const rows = parseCsvText(String(reader.result ?? ""));
+        const validatedRows = validateImportRows(rows);
+        setCsvFileName(file.name);
+        setCsvRows(validatedRows);
+        setCsvMessage(rows.length === 0 ? "No data rows found in the CSV file." : "CSV file parsed successfully.");
+      } catch {
+        setCsvRows([]);
+        setCsvMessage("Unable to parse the CSV file. Please check the format and try again.");
+      }
+    };
+    reader.onerror = () => {
+      setCsvRows([]);
+      setCsvMessage("Unable to read the CSV file. Please try again.");
+    };
+    reader.readAsText(file);
+  };
+
+  const downloadCsvTemplate = () => {
+    const sampleRows = [
+      csvTemplateHeaders.join(","),
+      [
+        "Main Lecture Hall A",
+        "Lecture Hall",
+        "120",
+        "Main Building - Lecture Hall A",
+        "08:00",
+        "18:00",
+        "ACTIVE",
+        "Large lecture hall with projector and sound system",
+      ].join(","),
+      [
+        "Projector X200",
+        "Projector",
+        "1",
+        "Media Unit - Asset Room",
+        "08:30",
+        "16:30",
+        "OUT_OF_SERVICE",
+        "Portable projector currently under maintenance",
+      ].join(","),
+    ];
+    const blob = new Blob([sampleRows.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "resource-import-template.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importValidCsvRows = async () => {
+    const validRows = csvRows.filter((row) => row.errors.length === 0 && !row.isDuplicate);
+    const duplicateRows = csvRows.filter((row) => row.isDuplicate);
+    const invalidRows = csvRows.filter((row) => row.errors.length > 0);
+
+    if (validRows.length === 0) {
+      setImportSummary({
+        totalRows: csvRows.length,
+        successfulImports: 0,
+        skippedDuplicates: duplicateRows.length,
+        invalidRows: invalidRows.length,
+      });
+      setCsvMessage("No valid rows available to import.");
+      return;
+    }
+
+    setImportingBulk(true);
+    setCsvMessage("");
+
+    let successfulImports = 0;
+    let failedImports = 0;
+
+    for (const row of validRows) {
+      try {
+        await resourceApi.create(row.data);
+        successfulImports += 1;
+      } catch {
+        failedImports += 1;
+      }
+    }
+
+    setImportSummary({
+      totalRows: csvRows.length,
+      successfulImports,
+      skippedDuplicates: duplicateRows.length,
+      invalidRows: invalidRows.length + failedImports,
+    });
+    setCsvMessage(
+      failedImports > 0
+        ? `${successfulImports} resources imported. ${failedImports} rows failed during server import.`
+        : `${successfulImports} resources imported successfully.`
+    );
+    setImportingBulk(false);
+    await loadResources();
+  };
+
   const getSlotStatus = (resource, day, slot) => {
     if (resource.status === "OUT_OF_SERVICE") {
       return "Out of Service";
@@ -433,6 +722,146 @@ const ResourcesPage = () => {
             <p className="mt-2 font-display text-4xl font-extrabold text-[#0f172a]">{summary.filtered}</p>
           </div>
         </div>
+
+        {isAdmin && (
+          <section className="mt-8 rounded-[1.7rem] bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2563eb]">Bulk Import</p>
+                <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#1e3a8a]">
+                  Bulk Import Resources
+                </h2>
+                <p className="mt-2 text-sm font-semibold text-slate-600">
+                  Upload a CSV file, review validation results, then import only valid non-duplicate rows.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={downloadCsvTemplate}
+                className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-bold text-blue-800 transition hover:bg-blue-100"
+              >
+                Download CSV Template
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+              <label className="block">
+                <span className="text-sm font-bold text-slate-700">CSV File</span>
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={handleCsvUpload}
+                  className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:font-bold file:text-blue-800 hover:file:bg-blue-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                />
+                <p className="mt-2 text-sm text-slate-500">
+                  Required columns: Name, Type, Capacity, Location, Available From, Available To, Status, Description.
+                </p>
+              </label>
+
+              <button
+                type="button"
+                onClick={importValidCsvRows}
+                disabled={importingBulk || csvRows.filter((row) => row.errors.length === 0 && !row.isDuplicate).length === 0}
+                className="rounded-xl bg-[#2563eb] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {importingBulk ? "Importing..." : "Import Resources"}
+              </button>
+            </div>
+
+            {(csvFileName || csvMessage) && (
+              <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+                {csvFileName && <span className="mr-2 text-slate-900">Selected: {csvFileName}</span>}
+                {csvMessage}
+              </div>
+            )}
+
+            {importSummary && (
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-xl bg-slate-50 p-4">
+                  <p className="text-sm font-bold text-slate-500">Total Rows</p>
+                  <p className="mt-2 font-display text-3xl font-extrabold text-slate-900">{importSummary.totalRows}</p>
+                </div>
+                <div className="rounded-xl bg-green-50 p-4">
+                  <p className="text-sm font-bold text-green-700">Successful Imports</p>
+                  <p className="mt-2 font-display text-3xl font-extrabold text-green-900">
+                    {importSummary.successfulImports}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-amber-50 p-4">
+                  <p className="text-sm font-bold text-amber-700">Skipped Duplicates</p>
+                  <p className="mt-2 font-display text-3xl font-extrabold text-amber-900">
+                    {importSummary.skippedDuplicates}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-red-50 p-4">
+                  <p className="text-sm font-bold text-red-700">Invalid Rows</p>
+                  <p className="mt-2 font-display text-3xl font-extrabold text-red-900">{importSummary.invalidRows}</p>
+                </div>
+              </div>
+            )}
+
+            {csvRows.length > 0 && (
+              <div className="mt-6 overflow-hidden rounded-[1.4rem] border border-slate-200">
+                <div className="overflow-x-auto">
+                  <table className="min-w-[1100px] w-full border-collapse text-left text-sm">
+                    <thead className="bg-slate-100 text-xs font-black uppercase tracking-[0.12em] text-slate-500">
+                      <tr>
+                        <th className="px-4 py-3">Row</th>
+                        <th className="px-4 py-3">Name</th>
+                        <th className="px-4 py-3">Type</th>
+                        <th className="px-4 py-3">Capacity</th>
+                        <th className="px-4 py-3">Location</th>
+                        <th className="px-4 py-3">Available</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Validation</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 bg-white">
+                      {csvRows.map((row) => {
+                        const isValid = row.errors.length === 0 && !row.isDuplicate;
+                        const statusLabel = row.errors.length > 0 ? "Invalid" : row.isDuplicate ? "Duplicate" : "Ready";
+
+                        return (
+                          <tr key={`${row.rowNumber}-${row.raw.name}-${row.raw.location}`}>
+                            <td className="px-4 py-3 font-bold text-slate-700">{row.rowNumber}</td>
+                            <td className="px-4 py-3 text-slate-700">{row.raw.name || "-"}</td>
+                            <td className="px-4 py-3 text-slate-700">{row.raw.type || "-"}</td>
+                            <td className="px-4 py-3 text-slate-700">{row.raw.capacity || "-"}</td>
+                            <td className="px-4 py-3 text-slate-700">{row.raw.location || "-"}</td>
+                            <td className="px-4 py-3 text-slate-700">
+                              {row.raw.availableFrom || "-"} - {row.raw.availableTo || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-slate-700">{row.raw.status || "-"}</td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.12em] ${
+                                  isValid
+                                    ? "bg-green-100 text-green-800"
+                                    : row.isDuplicate && row.errors.length === 0
+                                      ? "bg-amber-100 text-amber-800"
+                                      : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {statusLabel}
+                              </span>
+                              {(row.errors.length > 0 || row.isDuplicate) && (
+                                <p className="mt-2 max-w-xs text-xs font-semibold leading-5 text-red-700">
+                                  {[...row.errors, row.isDuplicate ? "Duplicate name and location." : ""]
+                                    .filter(Boolean)
+                                    .join(" ")}
+                                </p>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         <div className="mt-8 grid gap-6 xl:grid-cols-[0.9fr_1.7fr]">
           {isAdmin && (
