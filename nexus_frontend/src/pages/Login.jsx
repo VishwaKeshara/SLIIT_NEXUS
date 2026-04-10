@@ -51,7 +51,16 @@ const Login = () => {
 
     try {
       await signIn(credentials);
-      navigate(redirectTo, { replace: true });
+
+      // Check if the logged-in user is the admin
+      const user = await authApi.me(); // Fetch the logged-in user's details
+      const roles = user.data.roles;
+
+      if (roles.includes("ADMIN") || roles.includes("MANAGER")) {
+        navigate("/admindashboard", { replace: true });
+      } else {
+        navigate(redirectTo, { replace: true });
+      }
     } catch (err) {
       setError(getFriendlyLoginError(err, credentials));
     } finally {

@@ -3,6 +3,7 @@
     "axios": "^1.14.0",
     "jwt-decode": "^4.0.0",
     "mongodb": "^7.1.1",
+    "qrcode.react": "^4.2.0",
     "react-router-dom": "^7.14.0"
   }
 }

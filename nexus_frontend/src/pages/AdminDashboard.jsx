@@ -83,13 +83,17 @@ const AdminDashboard = () => {
     setFormError("");
 
     try {
+      console.log("Submitting user form:", userForm);
       if (editingUserId) {
         await adminApi.updateUser(editingUserId, {
           ...userForm,
           password: userForm.password.trim() ? userForm.password : undefined,
         });
       } else {
-        await adminApi.createUser(userForm);
+        await adminApi.createUser({
+          ...userForm,
+          roles: Array.from(userForm.roles), // Ensure roles are sent as an array
+        });
       }
       resetForm();
       await loadUsers();

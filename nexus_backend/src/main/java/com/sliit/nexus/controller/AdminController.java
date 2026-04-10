@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping({"/api/admin", "/api"})
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class AdminController {
 
     private final UserAccountService userAccountService;
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
     @GetMapping("/users")
     public List<UserSummaryResponse> listUsers() {
@@ -34,6 +37,7 @@ public class AdminController {
 
     @PostMapping("/users")
     public UserSummaryResponse createUser(@Valid @RequestBody CreateUserRequest request) {
+        log.info("Received request to create user: {}", request);
         return userAccountService.createUser(request.displayName(), request.email(), request.password(), request.roles());
     }
 
