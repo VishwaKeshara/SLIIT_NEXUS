@@ -1321,7 +1321,7 @@ const ResourcesPage = () => {
         {["add", "resources", "availability"].includes(activePanel) && (
         <div className="mt-9 grid gap-6 xl:grid-cols-[0.9fr_1.7fr]">
           {isAdmin && activePanel === "add" && (
-            <section id="add-resource" className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8 xl:col-span-2">
+            <section id="add-resource" className="overflow-hidden rounded-[2rem] border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(242,212,92,0.2),transparent_32%),linear-gradient(135deg,rgba(255,255,255,0.78),rgba(226,241,235,0.5))] p-7 shadow-[0_24px_58px_rgba(15,52,46,0.14)] backdrop-blur-xl sm:p-8 xl:col-span-2">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Admin Tool</p>
@@ -1340,7 +1340,7 @@ const ResourcesPage = () => {
                 )}
               </div>
 
-              <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
+              <form className="mt-6 rounded-[1.6rem] border border-white/80 bg-white/55 p-5 shadow-inner backdrop-blur-xl sm:p-6" onSubmit={handleSubmit} noValidate>
                 <label className="block">
                   <span className="text-sm font-bold text-[#0f342e]">Resource Name</span>
                   <input
@@ -1355,7 +1355,7 @@ const ResourcesPage = () => {
                   {formErrors.name && <p className="mt-1 text-sm font-semibold text-red-600">{formErrors.name}</p>}
                 </label>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <label className="block">
                     <span className="text-sm font-bold text-[#0f342e]">Resource Type</span>
                     <select
@@ -1395,7 +1395,7 @@ const ResourcesPage = () => {
                   </label>
                 </div>
 
-                <label className="block">
+                <label className="mt-4 block">
                   <span className="text-sm font-bold text-[#0f342e]">Campus Location</span>
                   <select
                     name="location"
@@ -1421,7 +1421,7 @@ const ResourcesPage = () => {
                   </p>
                 </label>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <label className="block">
                     <span className="text-sm font-bold text-[#0f342e]">Available From</span>
                     <input
@@ -1455,7 +1455,7 @@ const ResourcesPage = () => {
                   </label>
                 </div>
 
-                <label className="block">
+                <label className="mt-4 block">
                   <span className="text-sm font-bold text-[#0f342e]">Status</span>
                   <select
                     name="status"
@@ -1475,7 +1475,7 @@ const ResourcesPage = () => {
                   {formErrors.status && <p className="mt-1 text-sm font-semibold text-red-600">{formErrors.status}</p>}
                 </label>
 
-                <label className="block">
+                <label className="mt-4 block">
                   <span className="text-sm font-bold text-[#0f342e]">Description</span>
                   <textarea
                     name="description"
@@ -1492,7 +1492,7 @@ const ResourcesPage = () => {
                   )}
                 </label>
 
-                <div className="flex flex-wrap gap-3">
+                <div className="mt-5 flex flex-wrap gap-3">
                   <button
                     type="submit"
                     disabled={submitting}
@@ -1511,7 +1511,7 @@ const ResourcesPage = () => {
 
                 {formMessage && (
                   <p
-                    className={`rounded-xl px-4 py-3 text-sm font-bold ${
+                    className={`mt-4 rounded-xl px-4 py-3 text-sm font-bold ${
                       formMessage.toLowerCase().includes("success")
                         ? "bg-green-50 text-green-700"
                         : "bg-red-50 text-red-700"
@@ -1521,7 +1521,7 @@ const ResourcesPage = () => {
                   </p>
                 )}
 
-                <p className="text-sm leading-6 text-[#5c746d]">
+                <p className="mt-4 text-sm leading-6 text-[#5c746d]">
                   This version uses predefined campus locations instead of manual typing.
                 </p>
               </form>
