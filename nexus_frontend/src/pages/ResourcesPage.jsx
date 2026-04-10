@@ -743,16 +743,16 @@ const ResourcesPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#edf4fb] pt-24">
+    <main className="min-h-screen bg-[#edf4fb] pt-6">
       <div className="mx-auto flex max-w-[1800px] flex-col gap-8 px-4 pb-16 lg:flex-row lg:items-start lg:px-6">
-        <aside className="sticky top-24 rounded-[1.8rem] bg-[#103c35] p-6 text-white shadow-[0_28px_80px_rgba(16,60,53,0.28)] lg:min-h-[calc(100vh-8rem)] lg:w-80 lg:shrink-0">
+        <aside className="sticky top-6 rounded-[1.8rem] bg-[#103c35] p-6 text-white shadow-[0_28px_80px_rgba(16,60,53,0.28)] lg:min-h-[calc(100vh-3rem)] lg:w-80 lg:shrink-0">
           <div className="flex items-center gap-4 border-b border-white/15 pb-7">
             <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[#f2d45c] text-2xl font-black tracking-[0.12em] text-[#103c35]">
               NX
             </div>
             <div>
               <p className="font-display text-3xl font-extrabold tracking-[-0.06em]">SLIIT Nexus</p>
-              <p className="text-base font-medium tracking-[0.08em] text-[#d5efe6]">Module A</p>
+              <p className="text-base font-medium tracking-[0.08em] text-[#d5efe6]">Resources</p>
             </div>
           </div>
 
@@ -824,14 +824,14 @@ const ResourcesPage = () => {
         </aside>
 
         <section className="min-w-0 flex-1">
-        <header id="dashboard" className="p-1 text-slate-900">
+        <header id="dashboard" className="p-1 text-[#0f342e]">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#39766a]">Smart Campus Operations Hub</p>
               <h1 className="font-display mt-3 text-5xl font-extrabold tracking-[-0.07em] text-[#0f342e] sm:text-6xl">
                 {panelTitle}
               </h1>
-              <p className="mt-3 max-w-3xl text-base font-semibold text-slate-500 sm:text-lg">
+              <p className="mt-3 max-w-3xl text-base font-semibold text-[#5c746d] sm:text-lg">
                 {panelSubtitle}
               </p>
             </div>
@@ -887,7 +887,7 @@ const ResourcesPage = () => {
                 <h2 className="font-display mt-2 text-4xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
                   Bulk Import Resources
                 </h2>
-                <p className="mt-2 text-sm font-semibold text-slate-600">
+                <p className="mt-2 text-sm font-semibold text-[#5c746d]">
                   Upload a CSV file, review validation results, then import only valid non-duplicate rows.
                 </p>
               </div>
@@ -902,32 +902,32 @@ const ResourcesPage = () => {
 
             <div className="mt-6">
               <label className="block">
-                <span className="text-sm font-bold text-slate-700">CSV File</span>
+                <span className="text-sm font-bold text-[#0f342e]">CSV File</span>
                 <input
                   ref={csvInputRef}
                   type="file"
                   accept=".csv,text/csv"
                   onChange={handleCsvUpload}
-                  className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:font-bold file:text-blue-800 hover:file:bg-blue-100 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="mt-2 w-full rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-sm text-[#0f342e] outline-none transition file:mr-4 file:rounded-lg file:border-0 file:bg-[#fff7cf] file:px-4 file:py-2 file:font-bold file:text-[#5c4b06] hover:file:bg-[#fff0a8] focus:border-[#39766a] focus:ring-4 focus:ring-[#dceee7]"
                 />
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-2 text-sm text-[#5c746d]">
                   Required columns: Name, Type, Capacity, Location, Available From, Available To, Status, Description.
                 </p>
               </label>
             </div>
 
             {(csvFileName || csvMessage) && (
-              <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-                {csvFileName && <span className="mr-2 text-slate-900">Selected: {csvFileName}</span>}
+              <div className="mt-5 rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-sm font-semibold text-[#3e6259]">
+                {csvFileName && <span className="mr-2 text-[#0f342e]">Selected: {csvFileName}</span>}
                 {csvMessage}
               </div>
             )}
 
             {importSummary && (
               <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-sm font-bold text-slate-500">Total Rows</p>
-                  <p className="mt-2 font-display text-3xl font-extrabold text-slate-900">{importSummary.totalRows}</p>
+                <div className="rounded-[1rem] bg-[#f8fbf9] p-4">
+                  <p className="text-sm font-bold text-[#5b7493]">Total Rows</p>
+                  <p className="mt-2 font-display text-3xl font-extrabold text-[#0f342e]">{importSummary.totalRows}</p>
                 </div>
                 <div className="rounded-xl bg-green-50 p-4">
                   <p className="text-sm font-bold text-green-700">Successful Imports</p>
@@ -950,10 +950,10 @@ const ResourcesPage = () => {
 
             {csvRows.length > 0 && (
               <div className="mt-6">
-                <div className="overflow-hidden rounded-[1.4rem] border border-slate-200">
+                <div className="overflow-hidden rounded-[1.4rem] border border-[#dbe7df]">
                   <div className="overflow-x-auto">
                     <table className="min-w-[1100px] w-full border-collapse text-left text-sm">
-                      <thead className="bg-slate-100 text-xs font-black uppercase tracking-[0.12em] text-slate-500">
+                      <thead className="bg-[#f3f8f5] text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">
                         <tr>
                           <th className="px-4 py-3">Row</th>
                           <th className="px-4 py-3">Name</th>
@@ -965,7 +965,7 @@ const ResourcesPage = () => {
                           <th className="px-4 py-3">Validation</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 bg-white">
+                      <tbody className="divide-y divide-[#dbe7df] bg-white">
                         {csvRows.map((row) => {
                           const isValid = row.errors.length === 0 && !row.isDuplicate;
                           const statusLabel = row.errors.length > 0 ? "Invalid" : row.isDuplicate ? "Duplicate" : "Ready";
@@ -975,15 +975,15 @@ const ResourcesPage = () => {
                               key={`${row.rowNumber}-${row.raw.name}-${row.raw.location}`}
                               className={isValid ? "" : row.isDuplicate ? "bg-amber-50/60" : "bg-red-50/60"}
                             >
-                              <td className="px-4 py-3 font-bold text-slate-700">{row.rowNumber}</td>
-                              <td className="px-4 py-3 text-slate-700">{row.raw.name || "-"}</td>
-                              <td className="px-4 py-3 text-slate-700">{row.raw.type || "-"}</td>
-                              <td className="px-4 py-3 text-slate-700">{row.raw.capacity || "-"}</td>
-                              <td className="px-4 py-3 text-slate-700">{row.raw.location || "-"}</td>
-                              <td className="px-4 py-3 text-slate-700">
+                              <td className="px-4 py-3 font-bold text-[#0f342e]">{row.rowNumber}</td>
+                              <td className="px-4 py-3 text-[#3e6259]">{row.raw.name || "-"}</td>
+                              <td className="px-4 py-3 text-[#3e6259]">{row.raw.type || "-"}</td>
+                              <td className="px-4 py-3 text-[#3e6259]">{row.raw.capacity || "-"}</td>
+                              <td className="px-4 py-3 text-[#3e6259]">{row.raw.location || "-"}</td>
+                              <td className="px-4 py-3 text-[#3e6259]">
                                 {row.raw.availableFrom || "-"} - {row.raw.availableTo || "-"}
                               </td>
-                              <td className="px-4 py-3 text-slate-700">{row.raw.status || "-"}</td>
+                              <td className="px-4 py-3 text-[#3e6259]">{row.raw.status || "-"}</td>
                               <td className="px-4 py-3">
                                 <span
                                   className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.12em] ${
@@ -1017,7 +1017,7 @@ const ResourcesPage = () => {
                     type="button"
                     onClick={cancelImport}
                     disabled={importingBulk}
-                    className="rounded-xl bg-slate-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-[1rem] bg-[#6b7f78] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#52645f] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Cancel Import
                   </button>
@@ -1025,7 +1025,7 @@ const ResourcesPage = () => {
                     type="button"
                     onClick={importValidCsvRows}
                     disabled={importingBulk || csvRows.filter((row) => row.errors.length === 0 && !row.isDuplicate).length === 0}
-                    className="rounded-xl bg-[#2563eb] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-[1rem] bg-[#103c35] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#0b2e29] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {importingBulk ? "Importing..." : "Confirm Import"}
                   </button>
@@ -1050,7 +1050,7 @@ const ResourcesPage = () => {
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-200"
+                    className="rounded-[1rem] bg-[#f3f8f5] px-4 py-2 text-sm font-bold text-[#0f342e] transition hover:bg-[#e6f0eb]"
                   >
                     Cancel Edit
                   </button>
@@ -1059,14 +1059,14 @@ const ResourcesPage = () => {
 
               <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
                 <label className="block">
-                  <span className="text-sm font-bold text-slate-700">Resource Name</span>
+                  <span className="text-sm font-bold text-[#0f342e]">Resource Name</span>
                   <input
                     name="name"
                     value={formState.name}
                     onChange={handleFormChange}
                     placeholder="Enter resource name"
-                    className={`mt-2 w-full rounded-xl border px-4 py-3 outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                      formErrors.name ? "border-red-400" : "border-slate-300 focus:border-blue-500"
+                    className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] ${
+                      formErrors.name ? "border-red-400" : "border-[#dbe7df] focus:border-[#39766a]"
                     }`}
                   />
                   {formErrors.name && <p className="mt-1 text-sm font-semibold text-red-600">{formErrors.name}</p>}
@@ -1074,13 +1074,13 @@ const ResourcesPage = () => {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block">
-                    <span className="text-sm font-bold text-slate-700">Resource Type</span>
+                    <span className="text-sm font-bold text-[#0f342e]">Resource Type</span>
                     <select
                       name="type"
                       value={formState.type}
                       onChange={handleFormChange}
-                      className={`mt-2 w-full rounded-xl border px-4 py-3 outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                        formErrors.type ? "border-red-400" : "border-slate-300 focus:border-blue-500"
+                      className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] ${
+                        formErrors.type ? "border-red-400" : "border-[#dbe7df] focus:border-[#39766a]"
                       }`}
                     >
                       <option value="">Select type</option>
@@ -1094,7 +1094,7 @@ const ResourcesPage = () => {
                   </label>
 
                   <label className="block">
-                    <span className="text-sm font-bold text-slate-700">Capacity</span>
+                    <span className="text-sm font-bold text-[#0f342e]">Capacity</span>
                     <input
                       name="capacity"
                       type="number"
@@ -1102,8 +1102,8 @@ const ResourcesPage = () => {
                       value={formState.capacity}
                       onChange={handleFormChange}
                       placeholder="Enter capacity"
-                      className={`mt-2 w-full rounded-xl border px-4 py-3 outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                        formErrors.capacity ? "border-red-400" : "border-slate-300 focus:border-blue-500"
+                      className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] ${
+                        formErrors.capacity ? "border-red-400" : "border-[#dbe7df] focus:border-[#39766a]"
                       }`}
                     />
                     {formErrors.capacity && (
@@ -1113,14 +1113,14 @@ const ResourcesPage = () => {
                 </div>
 
                 <label className="block">
-                  <span className="text-sm font-bold text-slate-700">Campus Location</span>
+                  <span className="text-sm font-bold text-[#0f342e]">Campus Location</span>
                   <select
                     name="location"
                     value={formState.location}
                     onChange={handleFormChange}
                     disabled={!formState.type}
-                    className={`mt-2 w-full rounded-xl border px-4 py-3 outline-none transition focus:ring-4 focus:ring-blue-100 disabled:bg-slate-100 ${
-                      formErrors.location ? "border-red-400" : "border-slate-300 focus:border-blue-500"
+                    className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] disabled:bg-[#eef3f0] ${
+                      formErrors.location ? "border-red-400" : "border-[#dbe7df] focus:border-[#39766a]"
                     }`}
                   >
                     <option value="">{formState.type ? "Select campus location" : "Select resource type first"}</option>
@@ -1133,21 +1133,21 @@ const ResourcesPage = () => {
                   {formErrors.location && (
                     <p className="mt-1 text-sm font-semibold text-red-600">{formErrors.location}</p>
                   )}
-                  <p className="mt-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-900">
+                  <p className="mt-2 rounded-[1rem] border border-[#dbe7df] bg-[#f3f8f5] px-3 py-2 text-sm font-semibold text-[#39766a]">
                     Location list updates automatically based on the selected resource type.
                   </p>
                 </label>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block">
-                    <span className="text-sm font-bold text-slate-700">Available From</span>
+                    <span className="text-sm font-bold text-[#0f342e]">Available From</span>
                     <input
                       name="availableFrom"
                       type="time"
                       value={formState.availableFrom}
                       onChange={handleFormChange}
-                      className={`mt-2 w-full rounded-xl border px-4 py-3 outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                        formErrors.availableFrom ? "border-red-400" : "border-slate-300 focus:border-blue-500"
+                      className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] ${
+                        formErrors.availableFrom ? "border-red-400" : "border-[#dbe7df] focus:border-[#39766a]"
                       }`}
                     />
                     {formErrors.availableFrom && (
@@ -1156,14 +1156,14 @@ const ResourcesPage = () => {
                   </label>
 
                   <label className="block">
-                    <span className="text-sm font-bold text-slate-700">Available To</span>
+                    <span className="text-sm font-bold text-[#0f342e]">Available To</span>
                     <input
                       name="availableTo"
                       type="time"
                       value={formState.availableTo}
                       onChange={handleFormChange}
-                      className={`mt-2 w-full rounded-xl border px-4 py-3 outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                        formErrors.availableTo ? "border-red-400" : "border-slate-300 focus:border-blue-500"
+                      className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] ${
+                        formErrors.availableTo ? "border-red-400" : "border-[#dbe7df] focus:border-[#39766a]"
                       }`}
                     />
                     {formErrors.availableTo && (
@@ -1173,13 +1173,13 @@ const ResourcesPage = () => {
                 </div>
 
                 <label className="block">
-                  <span className="text-sm font-bold text-slate-700">Status</span>
+                  <span className="text-sm font-bold text-[#0f342e]">Status</span>
                   <select
                     name="status"
                     value={formState.status}
                     onChange={handleFormChange}
-                    className={`mt-2 w-full rounded-xl border px-4 py-3 outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                      formErrors.status ? "border-red-400" : "border-slate-300 focus:border-blue-500"
+                    className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] ${
+                      formErrors.status ? "border-red-400" : "border-[#dbe7df] focus:border-[#39766a]"
                     }`}
                   >
                     <option value="">Select status</option>
@@ -1193,15 +1193,15 @@ const ResourcesPage = () => {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-bold text-slate-700">Description</span>
+                  <span className="text-sm font-bold text-[#0f342e]">Description</span>
                   <textarea
                     name="description"
                     rows="3"
                     value={formState.description}
                     onChange={handleFormChange}
                     placeholder="Enter short description"
-                    className={`mt-2 w-full rounded-xl border px-4 py-3 outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                      formErrors.description ? "border-red-400" : "border-slate-300 focus:border-blue-500"
+                    className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] ${
+                      formErrors.description ? "border-red-400" : "border-[#dbe7df] focus:border-[#39766a]"
                     }`}
                   />
                   {formErrors.description && (
@@ -1213,14 +1213,14 @@ const ResourcesPage = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="rounded-xl bg-[#2563eb] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-[1rem] bg-[#103c35] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0b2e29] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {submitting ? "Saving..." : editingId ? "Update Resource" : "Save Resource"}
                   </button>
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="rounded-xl bg-slate-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-700"
+                    className="rounded-[1rem] bg-[#6b7f78] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#52645f]"
                   >
                     Clear
                   </button>
@@ -1238,7 +1238,7 @@ const ResourcesPage = () => {
                   </p>
                 )}
 
-                <p className="text-sm leading-6 text-slate-600">
+                <p className="text-sm leading-6 text-[#5c746d]">
                   This version uses predefined campus locations instead of manual typing.
                 </p>
               </form>
@@ -1272,14 +1272,14 @@ const ResourcesPage = () => {
                 value={filters.search}
                 onChange={handleFilterChange}
                 placeholder="Search by name or location..."
-                className="rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 xl:col-span-2"
+                className="rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#dceee7] xl:col-span-2"
               />
 
               <select
                 name="type"
                 value={filters.type}
                 onChange={handleFilterChange}
-                className="rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#dceee7]"
               >
                 <option value="">All Types</option>
                 {resourceTypes.map((type) => (
@@ -1296,14 +1296,14 @@ const ResourcesPage = () => {
                 value={filters.capacity}
                 onChange={handleFilterChange}
                 placeholder="Min Capacity"
-                className="rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#dceee7]"
               />
 
               <select
                 name="status"
                 value={filters.status}
                 onChange={handleFilterChange}
-                className="rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#dceee7]"
               >
                 <option value="">All Status</option>
                 {resourceStatuses.map((status) => (
@@ -1317,7 +1317,7 @@ const ResourcesPage = () => {
                 name="location"
                 value={filters.location}
                 onChange={handleFilterChange}
-                className="rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 md:col-span-2 xl:col-span-5"
+                className="rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#dceee7] md:col-span-2 xl:col-span-5"
               >
                 <option value="">All Locations</option>
                 {filterLocationOptions.map((location) => (
@@ -1331,26 +1331,26 @@ const ResourcesPage = () => {
             <div className="mt-4 flex flex-wrap gap-3">
               <button
                 type="button"
-                className="rounded-xl bg-[#2563eb] px-5 py-3 text-sm font-bold text-white"
+                className="rounded-[1rem] bg-[#103c35] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0b2e29]"
               >
                 Apply Filters
               </button>
               <button
                 type="button"
                 onClick={clearFilters}
-                className="rounded-xl bg-slate-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-700"
+                className="rounded-[1rem] bg-[#6b7f78] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#52645f]"
               >
                 Reset Filters
               </button>
             </div>
 
-            <div id="availability" className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">
+            <div id="availability" className="mt-5 rounded-2xl border border-[#dbe7df] bg-[#f3f8f5] px-4 py-3 text-sm font-semibold text-[#39766a]">
               Use the `View Availability` button on any resource card to open the weekly availability calendar.
             </div>
 
             <div className="mt-6">
               {loading ? (
-                <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-8 text-center font-semibold text-slate-500">
+                <div className="rounded-[1.4rem] border border-[#dbe7df] bg-[#f8fbf9] p-8 text-center font-semibold text-[#5c746d]">
                   Loading resources...
                 </div>
               ) : catalogueError ? (
@@ -1358,7 +1358,7 @@ const ResourcesPage = () => {
                   {catalogueError}
                 </div>
               ) : filteredResources.length === 0 ? (
-                <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-8 text-center font-semibold text-slate-500">
+                <div className="rounded-[1.4rem] border border-[#dbe7df] bg-[#f8fbf9] p-8 text-center font-semibold text-[#5c746d]">
                   No resources found.
                 </div>
               ) : (
@@ -1366,14 +1366,14 @@ const ResourcesPage = () => {
                   {filteredResources.map((resource) => (
                     <article
                       key={resource.id}
-                      className="rounded-[1.4rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(15,23,42,0.08)]"
+                      className="rounded-[1.4rem] border border-[#dbe7df] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(15,52,46,0.1)]"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <h3 className="text-2xl font-extrabold tracking-[-0.03em] text-slate-900">
+                          <h3 className="text-2xl font-extrabold tracking-[-0.03em] text-[#0f342e]">
                             {resource.name}
                           </h3>
-                          <p className="mt-2 text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
+                          <p className="mt-2 text-sm font-bold uppercase tracking-[0.14em] text-[#5b7493]">
                             {formatEnumLabel(resource.type)}
                           </p>
                         </div>
@@ -1388,19 +1388,19 @@ const ResourcesPage = () => {
                         </span>
                       </div>
 
-                      <div className="mt-5 space-y-2 text-sm text-slate-700">
+                      <div className="mt-5 space-y-2 text-sm text-[#3e6259]">
                         <p>
-                          <span className="font-bold text-slate-900">Capacity:</span> {resource.capacity}
+                          <span className="font-bold text-[#0f342e]">Capacity:</span> {resource.capacity}
                         </p>
                         <p>
-                          <span className="font-bold text-slate-900">Location:</span> {resource.location}
+                          <span className="font-bold text-[#0f342e]">Location:</span> {resource.location}
                         </p>
                         <p>
-                          <span className="font-bold text-slate-900">Availability:</span>{" "}
+                          <span className="font-bold text-[#0f342e]">Availability:</span>{" "}
                           {formatTimeLabel(resource.availableFrom)} - {formatTimeLabel(resource.availableTo)}
                         </p>
                         <p>
-                          <span className="font-bold text-slate-900">Description:</span>{" "}
+                          <span className="font-bold text-[#0f342e]">Description:</span>{" "}
                           {resource.description || "N/A"}
                         </p>
                       </div>
@@ -1409,7 +1409,7 @@ const ResourcesPage = () => {
                         <button
                           type="button"
                           onClick={() => setAvailabilityResource(resource)}
-                          className="rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#1d4ed8]"
+                          className="rounded-[1rem] bg-[#103c35] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#0b2e29]"
                         >
                           View Availability
                         </button>
@@ -1420,7 +1420,7 @@ const ResourcesPage = () => {
                           <button
                             type="button"
                             onClick={() => startEdit(resource)}
-                            className="rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-amber-600"
+                            className="rounded-[1rem] bg-[#f2d45c] px-4 py-2.5 text-sm font-bold text-[#103c35] transition hover:bg-[#f7df76]"
                           >
                             Edit
                           </button>
@@ -1447,24 +1447,24 @@ const ResourcesPage = () => {
       </div>
 
       {availabilityResource && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/60 px-4 py-8 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#08231f]/65 px-4 py-8 backdrop-blur-sm">
           <section className="max-h-[90vh] w-full max-w-6xl overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_90px_rgba(15,23,42,0.28)]">
-            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 bg-[linear-gradient(135deg,#1e3a8a,#2563eb)] p-6 text-white">
+            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#dbe7df] bg-[#103c35] p-6 text-white">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-100">
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#d7eee6]">
                   Resource Availability Calendar
                 </p>
                 <h2 className="font-display mt-2 text-3xl font-extrabold tracking-[-0.04em]">
                   {availabilityResource.name}
                 </h2>
-                <p className="mt-2 text-sm font-semibold text-blue-100">
+                <p className="mt-2 text-sm font-semibold text-[#d7eee6]">
                   {formatEnumLabel(availabilityResource.type)} | {availabilityResource.location}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setAvailabilityResource(null)}
-                className="rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-[#1e3a8a] transition hover:bg-blue-50"
+                className="rounded-full bg-[#f2d45c] px-5 py-2.5 text-sm font-extrabold text-[#103c35] transition hover:bg-[#f7df76]"
               >
                 Close
               </button>
@@ -1489,16 +1489,16 @@ const ResourcesPage = () => {
                 </span>
               </div>
 
-              <div className="overflow-x-auto rounded-[1.4rem] border border-slate-200">
+              <div className="overflow-x-auto rounded-[1.4rem] border border-[#dbe7df]">
                 <div className="min-w-[900px]">
-                  <div className="grid grid-cols-[120px_repeat(7,1fr)] bg-slate-100">
-                    <div className="border-r border-slate-200 p-3 text-sm font-black uppercase tracking-[0.12em] text-slate-500">
+                  <div className="grid grid-cols-[120px_repeat(7,1fr)] bg-[#f3f8f5]">
+                    <div className="border-r border-[#dbe7df] p-3 text-sm font-black uppercase tracking-[0.12em] text-[#5b7493]">
                       Time
                     </div>
                     {calendarDays.map((day) => (
                       <div
                         key={toDateKey(day)}
-                        className="border-r border-slate-200 p-3 text-center text-sm font-black text-slate-700 last:border-r-0"
+                        className="border-r border-[#dbe7df] p-3 text-center text-sm font-black text-[#0f342e] last:border-r-0"
                       >
                         {formatCalendarDay(day)}
                       </div>
@@ -1506,15 +1506,15 @@ const ResourcesPage = () => {
                   </div>
 
                   {calendarSlots.map((slot) => (
-                    <div key={slot} className="grid grid-cols-[120px_repeat(7,1fr)] border-t border-slate-200">
-                      <div className="border-r border-slate-200 bg-slate-50 p-3 text-sm font-extrabold text-slate-700">
+                    <div key={slot} className="grid grid-cols-[120px_repeat(7,1fr)] border-t border-[#dbe7df]">
+                      <div className="border-r border-[#dbe7df] bg-[#f8fbf9] p-3 text-sm font-extrabold text-[#3e6259]">
                         {formatTimeLabel(slot)}
                       </div>
                       {calendarDays.map((day) => {
                         const status = getSlotStatus(availabilityResource, day, slot);
 
                         return (
-                          <div key={`${toDateKey(day)}-${slot}`} className="border-r border-slate-200 p-2 last:border-r-0">
+                          <div key={`${toDateKey(day)}-${slot}`} className="border-r border-[#dbe7df] p-2 last:border-r-0">
                             <div className={`rounded-xl border px-3 py-3 text-center text-xs font-black ${getSlotClass(status)}`}>
                               {status}
                             </div>
@@ -1526,7 +1526,7 @@ const ResourcesPage = () => {
                 </div>
               </div>
 
-              <p className="mt-4 text-sm leading-6 text-slate-500">
+              <p className="mt-4 text-sm leading-6 text-[#5c746d]">
                 Booked slots are matched from approved booking records for this resource. Other slots follow the
                 resource availability window.
               </p>
