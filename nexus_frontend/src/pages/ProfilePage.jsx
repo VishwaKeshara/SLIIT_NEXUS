@@ -99,7 +99,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#eff6ff_0%,#f8fafc_35%,#ffffff_100%)] px-4 pb-16 pt-28">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#eff6ff_0%,#f8fafc_35%,#ffffff_100%)] px-4 pb-16 pt-10">
       <div className="mx-auto max-w-6xl">
         <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_25px_80px_rgba(15,23,42,0.08)]">
           <div className="bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.22),_transparent_40%),linear-gradient(135deg,#0f172a,#1e3a8a_55%,#38bdf8)] px-6 py-8 text-white md:px-8 md:py-10">
