@@ -126,49 +126,61 @@ const AdminDashboard = () => {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-6 text-slate-100">
-      <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[280px_1fr]">
-        <aside className="rounded-[2rem] border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">Admin workspace</p>
-          <h1 className="mt-3 text-3xl font-black">Role Management</h1>
-          <p className="mt-3 text-sm leading-relaxed text-slate-400">
-            This dashboard is protected by both frontend route guards and backend role checks. Update account roles
-            here to test authorization behavior across the app.
-          </p>
-
-          <div className="mt-8 space-y-3">
-            <Link to="/bookings" className="block rounded-xl bg-slate-800 px-4 py-3 hover:bg-slate-700">
-              Review bookings
-            </Link>
-            <Link to="/tickets" className="block rounded-xl bg-slate-800 px-4 py-3 hover:bg-slate-700">
-              Review tickets
-            </Link>
-            <Link to="/" className="block rounded-xl bg-slate-800 px-4 py-3 hover:bg-slate-700">
-              Back to home
-            </Link>
+    <main className="min-h-screen bg-[#edf4fb] pt-6">
+      <div className="mx-auto flex max-w-[1800px] flex-col gap-8 px-4 pb-16 lg:flex-row lg:items-start lg:px-6">
+        <aside className="sticky top-6 rounded-[1.8rem] bg-[#103c35] p-6 text-white shadow-[0_28px_80px_rgba(16,60,53,0.28)] lg:min-h-[calc(100vh-3rem)] lg:w-80 lg:shrink-0">
+          <div className="flex items-center gap-4 border-b border-white/15 pb-7">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[#f2d45c] text-2xl font-black tracking-[0.12em] text-[#103c35]">
+              NX
+            </div>
+            <div>
+              <p className="font-display text-3xl font-extrabold">SLIIT Nexus</p>
+              <p className="mt-1 text-sm font-semibold text-[#d7eee6]">Admin Workspace</p>
+            </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950 p-4">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Signed in as</p>
-            <p className="mt-2 font-semibold">{user?.displayName}</p>
-            <p className="text-sm text-slate-400">{user?.email}</p>
+          <div className="mt-7">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#d7eee6]">Role Management</p>
+            <h1 className="mt-3 text-3xl font-black">User Role Management</h1>
+            <p className="mt-3 text-sm leading-relaxed text-[#d7eee6]">
+              Update account roles and manage platform access from one protected workspace.
+            </p>
+          </div>
+
+          <nav className="mt-8 grid gap-4 text-base font-extrabold">
+            <Link to="/profile" className="rounded-[1.15rem] bg-[#f2d45c] px-5 py-4 text-[#103c35] transition hover:bg-[#f7df76]">
+              Profile Dashboard
+            </Link>
+            <Link to="/" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+              Back to home
+            </Link>
+          </nav>
+
+          <div className="mt-8 rounded-[1.5rem] border border-white/15 bg-white/10 p-5">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[#d7eee6]">Signed in as</p>
+            <p className="mt-3 text-lg font-extrabold">{user?.displayName}</p>
+            <p className="mt-1 text-sm font-semibold text-[#d7eee6]">{user?.email}</p>
           </div>
         </aside>
 
-        <section className="rounded-[2rem] border border-slate-800 bg-white p-6 text-slate-900 shadow-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">Access control</p>
-          <h2 className="mt-2 text-4xl font-black">Manage platform roles</h2>
-          <p className="mt-3 max-w-3xl text-slate-600">
-            Create, update, and delete user accounts here, then fine-tune their role access across the platform.
-          </p>
+        <section className="min-w-0 flex-1">
+          <header className="p-1 text-[#0f342e]">
+            <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#39766a]">Smart Campus Access Hub</p>
+            <h2 className="font-display mt-3 text-5xl font-extrabold text-[#0f342e] sm:text-6xl">
+              Manage platform roles
+            </h2>
+            <p className="mt-3 max-w-3xl text-base font-semibold text-[#5c746d] sm:text-lg">
+              Create, update, and delete user accounts, then fine-tune their role access across the platform.
+            </p>
+          </header>
 
-          <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
+          <div className="mt-9 overflow-hidden rounded-[2rem] border border-white/70 bg-[radial-gradient(circle_at_top_left,rgba(242,212,92,0.2),transparent_32%),linear-gradient(135deg,rgba(255,255,255,0.78),rgba(226,241,235,0.5))] p-7 shadow-[0_24px_58px_rgba(15,52,46,0.14)] backdrop-blur-xl sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-700">
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">
                   {editingUserId ? "Edit account" : "Create account"}
                 </p>
-                <h3 className="mt-2 text-2xl font-black text-slate-900">
+                <h3 className="font-display mt-2 text-4xl font-extrabold text-[#0f342e]">
                   {editingUserId ? "Update an existing user" : "Add a new local user"}
                 </h3>
               </div>
@@ -176,39 +188,40 @@ const AdminDashboard = () => {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 font-semibold text-slate-700"
+                  className="rounded-[1rem] bg-white px-5 py-3 text-sm font-bold text-[#0f342e] shadow-sm ring-1 ring-[#dbe7df] transition hover:bg-[#f8fbf9]"
                 >
                   Cancel edit
                 </button>
               )}
             </div>
 
-            <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+            <form className="mt-6 rounded-[1.6rem] border border-white/80 bg-white/55 p-5 shadow-inner backdrop-blur-xl sm:p-6" onSubmit={handleSubmit}>
+              <div className="grid gap-5 md:grid-cols-2">
               <label className="block">
-                <span className="text-sm font-semibold text-slate-700">Display Name</span>
+                <span className="text-sm font-bold text-[#0f342e]">Display Name</span>
                 <input
                   name="displayName"
                   value={userForm.displayName}
                   onChange={handleFormChange}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-400"
+                  className="mt-2 w-full rounded-[1rem] border border-[#dbe7df] bg-white px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a]"
                   required
                 />
               </label>
 
               <label className="block">
-                <span className="text-sm font-semibold text-slate-700">Email</span>
+                <span className="text-sm font-bold text-[#0f342e]">Email</span>
                 <input
                   name="email"
                   type="email"
                   value={userForm.email}
                   onChange={handleFormChange}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-400"
+                  className="mt-2 w-full rounded-[1rem] border border-[#dbe7df] bg-white px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a]"
                   required
                 />
               </label>
 
               <label className="block md:col-span-2">
-                <span className="text-sm font-semibold text-slate-700">
+                <span className="text-sm font-bold text-[#0f342e]">
                   Password {editingUserId ? "(optional)" : ""}
                 </span>
                 <input
@@ -217,23 +230,23 @@ const AdminDashboard = () => {
                   value={userForm.password}
                   onChange={handleFormChange}
                   placeholder={editingUserId ? "Leave blank to keep current password" : "Set an initial password"}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-blue-400"
+                  className="mt-2 w-full rounded-[1rem] border border-[#dbe7df] bg-white px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a]"
                   required={!editingUserId}
                 />
               </label>
 
               <div className="md:col-span-2">
-                <p className="text-sm font-semibold text-slate-700">Roles</p>
+                <p className="text-sm font-bold text-[#0f342e]">Roles</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {allRoles.map((role) => (
                     <button
                       key={role}
                       type="button"
                       onClick={() => toggleFormRole(role)}
-                      className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                      className={`rounded-full px-4 py-2 text-sm font-bold ${
                         userForm.roles.includes(role)
-                          ? "bg-blue-600 text-white"
-                          : "bg-white text-slate-700 ring-1 ring-slate-200"
+                          ? "bg-[#103c35] text-white"
+                          : "bg-white text-[#0f342e] ring-1 ring-[#dbe7df]"
                       }`}
                     >
                       {role}
@@ -241,21 +254,22 @@ const AdminDashboard = () => {
                   ))}
                 </div>
               </div>
+              </div>
 
-              {formError && <p className="md:col-span-2 text-sm text-rose-600">{formError}</p>}
+              {formError && <p className="mt-5 rounded-[1.2rem] bg-red-50 p-4 text-sm font-bold text-red-700 ring-1 ring-red-100">{formError}</p>}
 
-              <div className="md:col-span-2 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-wrap gap-3">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:opacity-60"
+                  className="rounded-[1rem] bg-[#103c35] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_20px_rgba(16,60,53,0.18)] transition hover:bg-[#0b2e29] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? "Saving..." : editingUserId ? "Update User" : "Create User"}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700"
+                  className="rounded-[1rem] bg-white px-5 py-3 text-sm font-bold text-[#0f342e] shadow-sm ring-1 ring-[#dbe7df] transition hover:bg-[#f8fbf9]"
                 >
                   Reset
                 </button>
@@ -265,20 +279,20 @@ const AdminDashboard = () => {
 
           <div className="mt-8">
             {loading && (
-              <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-6 text-slate-600">
+              <div className="rounded-[1.5rem] border border-[#dbe7df] bg-white p-6 font-semibold text-[#5c746d] shadow-sm">
                 Loading admin data...
               </div>
             )}
 
             {!loading && error && (
-              <div className="rounded-[1.5rem] border border-rose-200 bg-rose-50 p-6">
-                <p className="font-semibold text-rose-700">{error}</p>
-                <p className="mt-2 text-sm text-rose-600">
+              <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-6 shadow-sm">
+                <p className="font-bold text-red-700">{error}</p>
+                <p className="mt-2 text-sm font-semibold text-red-600">
                   If you have not signed in yet, open the login page and choose `Admin Demo`.
                 </p>
                 <Link
                   to="/login"
-                  className="mt-4 inline-flex rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-700"
+                  className="mt-4 inline-flex rounded-[1rem] bg-[#103c35] px-4 py-2 font-bold text-white hover:bg-[#0b2e29]"
                 >
                   Go to login
                 </Link>
@@ -286,14 +300,19 @@ const AdminDashboard = () => {
             )}
 
             {!loading && !error && (
-              <div className="space-y-4">
+              <div className="grid gap-4 xl:grid-cols-2">
                 {users.map((account) => (
-                  <article key={account.id} className="rounded-[1.5rem] border border-slate-200 p-5 shadow-sm">
+                  <article
+                    key={account.id}
+                    className="group relative overflow-hidden rounded-[1.7rem] border border-white/70 bg-white/65 p-5 shadow-[0_18px_44px_rgba(15,52,46,0.12)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-[#c5ded4] hover:bg-white/80 hover:shadow-[0_26px_58px_rgba(15,52,46,0.18)]"
+                  >
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,212,92,0.24),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.75),rgba(226,241,235,0.42))]" />
+                    <div className="relative">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
-                        <h3 className="text-xl font-bold text-slate-900">{account.displayName}</h3>
-                        <p className="text-slate-500">{account.email}</p>
-                        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        <h3 className="text-2xl font-extrabold text-[#0f342e]">{account.displayName}</h3>
+                        <p className="mt-1 font-semibold text-[#5c746d]">{account.email}</p>
+                        <p className="mt-2 text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">
                           {account.provider ?? "local"}
                         </p>
                       </div>
@@ -301,7 +320,7 @@ const AdminDashboard = () => {
                         {(account.roles ?? []).map((role) => (
                           <span
                             key={role}
-                            className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white"
+                            className="rounded-full bg-[#103c35] px-3 py-1 text-xs font-bold text-white"
                           >
                             {role}
                           </span>
@@ -313,14 +332,14 @@ const AdminDashboard = () => {
                       <button
                         type="button"
                         onClick={() => startEdit(account)}
-                        className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+                        className="rounded-[1rem] bg-[#103c35] px-4 py-2 text-sm font-bold text-white hover:bg-[#0b2e29]"
                       >
                         Edit details
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDelete(account.id)}
-                        className="rounded-xl bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
+                        className="rounded-[1rem] bg-red-50 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-100"
                       >
                         Delete user
                       </button>
@@ -329,15 +348,16 @@ const AdminDashboard = () => {
                           key={role}
                           type="button"
                           onClick={() => toggleRole(account, role)}
-                          className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+                          className={`rounded-[1rem] px-4 py-2 text-sm font-bold ${
                             (account.roles ?? []).includes(role)
-                              ? "bg-blue-600 text-white hover:bg-blue-700"
-                              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              ? "bg-[#f2d45c] text-[#103c35] hover:bg-[#f7df76]"
+                              : "bg-white text-[#0f342e] ring-1 ring-[#dbe7df] hover:bg-[#f8fbf9]"
                           }`}
                         >
                           {(account.roles ?? []).includes(role) ? `Remove ${role}` : `Add ${role}`}
                         </button>
                       ))}
+                    </div>
                     </div>
                   </article>
                 ))}

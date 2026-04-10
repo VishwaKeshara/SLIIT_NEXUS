@@ -17,12 +17,11 @@ import AboutUsPage from "./pages/AboutUsPage";
 
 function App() {
   const { pathname } = useLocation();
-  const hideChrome = pathname.startsWith("/admin") || pathname === "/resources";
-  const hideNavbar = hideChrome || pathname === "/profile";
+  const hideChrome = pathname.startsWith("/admin") || pathname === "/resources" || pathname === "/profile";
 
   return (
     <>
-      {!hideNavbar && <Navbar />}
+      {!hideChrome && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
