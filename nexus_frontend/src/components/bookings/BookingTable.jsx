@@ -10,9 +10,9 @@ const BookingTable = ({ bookings, onUpdate }) => {
     setLoadingQr(booking.id);
     try {
       // Fetch fresh booking detail for the most up-to-date info
-      const response = await bookingApi.get(booking.id);
+      const response = await bookingApi.getById(booking.id);
       setViewingQr(response.data);
-    } catch (err) {
+    } catch {
       // Fallback: use the booking data we already have if fetch fails
       setViewingQr(booking);
     } finally {
@@ -40,7 +40,7 @@ const BookingTable = ({ bookings, onUpdate }) => {
     try {
       await bookingApi.cancel(id);
       if (onUpdate) onUpdate();
-    } catch (err) {
+    } catch {
       alert("Failed to cancel booking.");
     }
   };
