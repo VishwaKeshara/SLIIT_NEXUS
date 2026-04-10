@@ -70,7 +70,22 @@ const Navbar = () => {
           </div>
 
           <div className="hidden items-center gap-3 lg:flex">
-            {user && <NotificationPanel />}
+            {user && (
+              <div className="flex items-center gap-3">
+                <NotificationPanel />
+                <Link to="/profile" className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-[#2f8a74] text-white flex items-center justify-center font-bold">
+                    {user.displayName
+                      ?.split(" ")
+                      .map((name) => name[0])
+                      .join("")}
+                  </div>
+                  <span className="text-sm font-semibold text-white">
+                    {user.displayName}
+                  </span>
+                </Link>
+              </div>
+            )}
 
             {user ? (
               <button
