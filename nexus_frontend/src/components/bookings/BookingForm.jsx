@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { bookingApi, resourceApi } from "../../services/api";
 
-const BookingForm = ({ onBookingCreated }) => {
+const BookingForm = ({ initialResource, onBookingCreated }) => {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,6 +25,20 @@ const BookingForm = ({ onBookingCreated }) => {
     };
     fetchResources();
   }, []);
+
+  useEffect(() => {
+    if (!initialResource) {
+      return;
+    }
+
+    setFormData((current) => ({
+      ...current,
+      resourceId: initialResource.id ?? "",
+      date: initialResource.date ?? current.date,
+      startTime: initialResource.startTime ?? current.startTime,
+      endTime: initialResource.endTime ?? current.endTime,
+    }));
+  }, [initialResource]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,6 +80,30 @@ const BookingForm = ({ onBookingCreated }) => {
     <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
       <h3 className="text-xl font-bold text-slate-900">New Booking Request</h3>
       <p className="text-sm text-slate-500 mb-6">Select a resource and time slot to place your reservation.</p>
+
+      {initialResource && (
+        <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Selected Resource</p>
+          <div className="mt-3 grid gap-3 text-sm text-emerald-900 md:grid-cols-2">
+            <p>
+              <span className="font-bold">Name:</span> {initialResource.name}
+            </p>
+            <p>
+              <span className="font-bold">Type:</span> {initialResource.type}
+            </p>
+            <p>
+              <span className="font-bold">Location:</span> {initialResource.location}
+            </p>
+            <p>
+              <span className="font-bold">Available:</span> {initialResource.availableFrom || "N/A"} -{" "}
+              {initialResource.availableTo || "N/A"}
+            </p>
+          </div>
+          <p className="mt-3 text-xs font-semibold text-emerald-700">
+            Resource details were filled from availability. You can still edit date, time, purpose, and attendees.
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
         <div className="space-y-4 md:col-span-2">

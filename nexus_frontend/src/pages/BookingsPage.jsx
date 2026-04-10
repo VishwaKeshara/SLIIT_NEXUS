@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { bookingApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import BookingForm from "../components/bookings/BookingForm";
@@ -7,9 +8,11 @@ import AdminBookingDashboard from "../components/bookings/AdminBookingDashboard"
 
 const BookingsPage = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const selectedResource = location.state?.selectedResource;
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("my"); // 'my' or 'admin' or 'new'
+  const [activeTab, setActiveTab] = useState(selectedResource ? "new" : "my"); // 'my' or 'admin' or 'new'
 
   const loadBookings = async () => {
     setLoading(true);
@@ -26,6 +29,12 @@ const BookingsPage = () => {
   useEffect(() => {
     loadBookings();
   }, []);
+
+  useEffect(() => {
+    if (selectedResource) {
+      setActiveTab("new");
+    }
+  }, [selectedResource]);
 
   const isAdmin = user?.roles.some((role) => ["ADMIN", "MANAGER"].includes(role));
 
@@ -78,10 +87,13 @@ const BookingsPage = () => {
         <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {activeTab === "new" && (
             <div className="max-w-2xl mx-auto">
-              <BookingForm onBookingCreated={() => {
-                loadBookings();
-                setActiveTab("my");
-              }} />
+              <BookingForm
+                initialResource={selectedResource}
+                onBookingCreated={() => {
+                  loadBookings();
+                  setActiveTab("my");
+                }}
+              />
             </div>
           )}
 

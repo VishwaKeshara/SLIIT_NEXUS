@@ -592,6 +592,30 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
     setFilters(initialFilters);
   };
 
+  const getNextSlot = (slot) => {
+    const slotIndex = calendarSlots.indexOf(slot);
+    return calendarSlots[slotIndex + 1] ?? availabilityResource?.availableTo ?? "";
+  };
+
+  const handleBookResource = (resource, slotDetails = {}) => {
+    navigate("/bookings", {
+      state: {
+        selectedResource: {
+          id: resource.id,
+          name: resource.name,
+          type: resource.type,
+          location: resource.location,
+          availableFrom: resource.availableFrom,
+          availableTo: resource.availableTo,
+          capacity: resource.capacity,
+          date: slotDetails.date ?? "",
+          startTime: slotDetails.startTime ?? resource.availableFrom ?? "",
+          endTime: slotDetails.endTime ?? resource.availableTo ?? "",
+        },
+      },
+    });
+  };
+
   const exportResourcesCsv = () => {
     const escapeCsvCell = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
     const rows = [
@@ -1734,6 +1758,15 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
                         >
                           View Availability
                         </button>
+                        {resource.status === "ACTIVE" && (
+                          <button
+                            type="button"
+                            onClick={() => handleBookResource(resource)}
+                            className="rounded-[1rem] bg-[#f2d45c] px-4 py-2.5 text-sm font-bold text-[#103c35] shadow-[0_10px_20px_rgba(92,75,6,0.12)] transition hover:bg-[#f7df76]"
+                          >
+                            Book Now
+                          </button>
+                        )}
                       </div>
 
                       {isAdmin && (
@@ -1802,13 +1835,24 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
                   {formatEnumLabel(availabilityResource.type)} | {availabilityResource.location}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setAvailabilityResource(null)}
-                className="rounded-full bg-[#f2d45c] px-5 py-2.5 text-sm font-extrabold text-[#103c35] transition hover:bg-[#f7df76]"
-              >
-                Close
-              </button>
+              <div className="flex flex-wrap gap-3">
+                {availabilityResource.status === "ACTIVE" && (
+                  <button
+                    type="button"
+                    onClick={() => handleBookResource(availabilityResource)}
+                    className="rounded-full bg-[#f2d45c] px-5 py-2.5 text-sm font-extrabold text-[#103c35] transition hover:bg-[#f7df76]"
+                  >
+                    Book Now
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setAvailabilityResource(null)}
+                  className="rounded-full bg-white/12 px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-white/20"
+                >
+                  Close
+                </button>
+              </div>
             </div>
 
             <div className="max-h-[calc(90vh-132px)] overflow-y-auto p-6">
@@ -1854,10 +1898,27 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
                       {calendarDays.map((day) => {
                         const status = getSlotStatus(availabilityResource, day, slot);
 
+                        const isAvailable = status === "Available";
+
                         return (
                           <div key={`${toDateKey(day)}-${slot}`} className="border-r border-[#dbe7df] p-2 last:border-r-0">
                             <div className={`rounded-xl border px-3 py-3 text-center text-xs font-black ${getSlotClass(status)}`}>
-                              {status}
+                              <p>{status}</p>
+                              {isAvailable && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleBookResource(availabilityResource, {
+                                      date: toDateKey(day),
+                                      startTime: slot,
+                                      endTime: getNextSlot(slot),
+                                    })
+                                  }
+                                  className="mt-2 rounded-lg bg-[#103c35] px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-[#0b2e29]"
+                                >
+                                  Book
+                                </button>
+                              )}
                             </div>
                           </div>
                         );
