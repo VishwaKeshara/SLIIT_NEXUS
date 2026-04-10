@@ -59,19 +59,6 @@ const Login = () => {
     }
   };
 
-  const handleDevLogin = async () => {
-    setSubmitting(true);
-    setError("");
-    try {
-      await loginAsDevUser(selectedEmail);
-      navigate(redirectTo, { replace: true });
-    } catch {
-      setError("Unable to sign in with the demo account.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#052d27] px-4 pb-16 pt-28 text-white sm:px-6 lg:px-8">
       <div
@@ -175,47 +162,6 @@ const Login = () => {
             >
               Continue with Google
             </a>
-          </div>
-
-          <div className="mt-6 rounded-[1.5rem] border border-[#b5e0d3] bg-white p-5">
-            <p className="text-sm font-bold text-[#18463d]">Development sign-in</p>
-            <p className="mt-2 text-sm text-[#285a48]">
-              Demo passwords: `Student123!` and `Admin123!`.
-            </p>
-
-            <div className="mt-4 space-y-3">
-              {demoAccounts.map((account) => (
-                <label
-                  key={account.email}
-                  className={`flex cursor-pointer items-center justify-between rounded-2xl border p-4 transition ${
-                    selectedEmail === account.email
-                      ? "border-[#2f8a74] bg-[#dff4eb]"
-                      : "border-[#d4e9df] bg-[#f8fcfa]"
-                  }`}
-                >
-                  <div>
-                    <p className="font-semibold text-[#062321]">{account.label}</p>
-                    <p className="text-sm text-[#285a48]">{account.email}</p>
-                    <p className="text-xs text-[#4d8d7f]">{account.password}</p>
-                  </div>
-                  <input
-                    type="radio"
-                    name="demo-account"
-                    checked={selectedEmail === account.email}
-                    onChange={() => setSelectedEmail(account.email)}
-                  />
-                </label>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleDevLogin}
-              disabled={submitting}
-              className="mt-4 w-full rounded-2xl bg-[#18463d] px-4 py-3 font-extrabold text-white transition hover:bg-[#12342d] disabled:opacity-60"
-            >
-              {submitting ? "Signing in..." : "Use selected demo account"}
-            </button>
           </div>
 
           <p className="mt-6 text-sm font-medium text-[#285a48]">
