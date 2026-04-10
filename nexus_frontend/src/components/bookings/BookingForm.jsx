@@ -1,18 +1,30 @@
 import { useState, useEffect } from "react";
-import { bookingApi } from "../../services/api";
+import { bookingApi, resourceApi } from "../../services/api";
 
 const BookingForm = ({ onBookingCreated }) => {
+  const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    resourceType: "",
-    resourceDetail: "",
+    resourceId: "",
     date: "",
     startTime: "",
     endTime: "",
     purpose: "",
     attendees: "",
   });
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const response = await resourceApi.list();
+        setResources(response.data);
+      } catch (err) {
+        console.error("Failed to fetch resources", err);
+      }
+    };
+    fetchResources();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,19 +36,17 @@ const BookingForm = ({ onBookingCreated }) => {
     setLoading(true);
     setError("");
 
-    // Combine resourceType and resourceDetail for transmission
-    const combinedResourceName = `${formData.resourceType} - ${formData.resourceDetail}`;
+    // Find the selected resource to get its name
+    const selectedResource = resources.find((r) => r.id === formData.resourceId);
 
     try {
       await bookingApi.create({
         ...formData,
-        resourceName: combinedResourceName,
-        resourceId: formData.resourceType, // Using type as ID for now
+        resourceName: selectedResource?.name || "Unknown Resource",
         attendees: parseInt(formData.attendees) || 0,
       });
       setFormData({
-        resourceType: "",
-        resourceDetail: "",
+        resourceId: "",
         date: "",
         startTime: "",
         endTime: "",
@@ -58,51 +68,24 @@ const BookingForm = ({ onBookingCreated }) => {
       <p className="text-sm text-slate-500 mb-6">Select a resource and time slot to place your reservation.</p>
 
       <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-4 md:col-span-2 grid md:grid-cols-2 gap-4">
+        <div className="space-y-4 md:col-span-2">
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700">Select Resource</label>
             <select
-              name="resourceType"
-              value={formData.resourceType}
+              name="resourceId"
+              value={formData.resourceId}
               onChange={handleChange}
               required
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500"
             >
-              <option value="">Choose Resource Type</option>
-              <option value="Lecture Halls">Lecture Halls</option>
-              <option value="Labs">Labs</option>
-              <option value="Meeting Rooms">Meeting Rooms</option>
-              <option value="Equipment">Equipment</option>
-              <option value="Other">Other</option>
+              <option value="">Choose Resource</option>
+              {resources.map((resource) => (
+                <option key={resource.id} value={resource.id}>
+                  {resource.name} {resource.capacity ? `(Capacity: ${resource.capacity})` : ""}
+                </option>
+              ))}
             </select>
           </div>
-
-          {formData.resourceType && (
-            <div className="space-y-2 animate-in fade-in slide-in-from-left-2 duration-300">
-              <label className="text-sm font-semibold text-slate-700">
-                {formData.resourceType === "Lecture Halls" && "Lecture Hall Number"}
-                {formData.resourceType === "Labs" && "Lab Number"}
-                {formData.resourceType === "Meeting Rooms" && "Meeting Room Number"}
-                {formData.resourceType === "Equipment" && "Equipment Name / ID"}
-                {formData.resourceType === "Other" && "Specify Resource"}
-              </label>
-              <input
-                type="text"
-                name="resourceDetail"
-                value={formData.resourceDetail}
-                onChange={handleChange}
-                required
-                placeholder={
-                  formData.resourceType === "Lecture Halls" ? "e.g. LH-01" :
-                  formData.resourceType === "Labs" ? "e.g. LAB-02" :
-                  formData.resourceType === "Meeting Rooms" ? "e.g. MR-03" :
-                  formData.resourceType === "Equipment" ? "e.g. Projector-01" :
-                  "Enter resource name"
-                }
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500"
-              />
-            </div>
-          )}
         </div>
 
         <div className="space-y-2">
