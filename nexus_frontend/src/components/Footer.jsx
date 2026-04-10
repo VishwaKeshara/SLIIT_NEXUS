@@ -17,34 +17,41 @@ const Footer = () => {
           </div>
 
           <p className="mt-4 max-w-sm text-base leading-7 text-[#d6ebe3]">
-            A modern campus operations platform for resource management, booking workflows, and maintenance incident
-            handling.
+            A modern campus operations platform for resource management, booking workflows, maintenance response, and
+            campus-wide notifications.
           </p>
         </div>
 
         <div>
-          <h3 className="font-semibold mb-3">Quick Links</h3>
-          <ul className="space-y-2 text-gray-400 text-sm">
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/bookings">Bookings</Link></li>
-            <li><Link to="/tickets">Tickets</Link></li>
-            <li><Link to="/profile">Profile</Link></li>
-            <li><Link to="/login">Login</Link></li>
+          <h3 className="mb-3 text-lg font-bold text-white">Help / Contact</h3>
+          <ul className="space-y-2 text-sm text-[#d6ebe3]">
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <a href="mailto:support@sliitnexus.com">Campus support</a>
+            </li>
+            <li>
+              <Link to="/login">Login</Link>
+            </li>
+            <li>
+              <Link to="/notifications">Help Centre</Link>
+            </li>
           </ul>
         </div>
 
         <div>
-          <h3 className="mb-4 text-xl font-extrabold text-white">Contact</h3>
+          <h3 className="mb-4 text-xl font-extrabold text-white">Terms / Privacy</h3>
           <div className="space-y-3 text-base text-[#d6ebe3]">
-            <p>Email: support@sliitnexus.com</p>
+            <p>Campus support: support@sliitnexus.com</p>
             <p>Location: SLIIT, Malabe, Sri Lanka</p>
-            <p>System Type: React Client + Spring Boot REST API</p>
+            <p>Use of this platform follows institutional terms, privacy rules, and ICT service policies.</p>
           </div>
         </div>
       </div>
 
       <div className="border-t border-[#1f3d39] py-4 text-center text-sm text-[#9fcdbb]">
-        © 2026 SLIIT NEXUS. All rights reserved.
+        Copyright 2026 SLIIT NEXUS. All rights reserved.
       </div>
     </footer>
   );
