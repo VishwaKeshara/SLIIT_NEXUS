@@ -13,9 +13,12 @@ const ProtectedRoute = ({ children, roles }) => {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  const userRoles = Array.isArray(user.roles) ? user.roles : [];
+  const userRoles = Array.isArray(user.roles)
+    ? user.roles.map((role) => String(role ?? "").trim().toUpperCase().replace(/^ROLE_/, ""))
+    : [];
+  const requiredRoles = roles?.map((role) => String(role ?? "").trim().toUpperCase().replace(/^ROLE_/, ""));
 
-  if (roles?.length && !roles.some((role) => userRoles.includes(role))) {
+  if (requiredRoles?.length && !requiredRoles.some((role) => userRoles.includes(role))) {
     return <Navigate to="/unauthorized" replace />;
   }
 

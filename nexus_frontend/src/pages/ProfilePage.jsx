@@ -33,11 +33,16 @@ const ProfilePage = () => {
       .map((part) => part[0]?.toUpperCase())
       .join("") ?? "NX";
 
-  const primaryRole = user?.roles?.includes("ADMIN")
+  const roles = Array.isArray(user?.roles)
+    ? user.roles.map((role) => String(role ?? "").trim().toUpperCase().replace(/^ROLE_/, ""))
+    : [];
+  const isAdmin = roles.includes("ADMIN");
+
+  const primaryRole = roles.includes("ADMIN")
     ? "ADMIN"
-    : user?.roles?.includes("MANAGER")
+    : roles.includes("MANAGER")
       ? "MANAGER"
-      : user?.roles?.includes("TECHNICIAN")
+      : roles.includes("TECHNICIAN")
         ? "TECHNICIAN"
         : "USER";
 
@@ -45,7 +50,7 @@ const ProfilePage = () => {
     { label: "Profile ID", value: user?.id ?? "Not available" },
     { label: "Primary Role", value: formatRole(primaryRole) },
     { label: "Unread Alerts", value: String(unreadCount) },
-    { label: "Active Roles", value: String(user?.roles?.length ?? 0) },
+    { label: "Active Roles", value: String(roles.length) },
   ];
 
   const panelTitle =
@@ -142,13 +147,15 @@ const ProfilePage = () => {
               </button>
             ))}
 
-            <button
-              type="button"
-              onClick={() => navigate("/admin/dashboard")}
-              className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-left text-white transition hover:bg-white/18"
-            >
-              User Role Management
-            </button>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => navigate("/admin/dashboard")}
+                className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-left text-white transition hover:bg-white/18"
+              >
+                User Role Management
+              </button>
+            )}
             <button
               type="button"
               onClick={() => navigate("/bookings")}
@@ -165,7 +172,7 @@ const ProfilePage = () => {
             </button>
             <button
               type="button"
-              onClick={() => navigate("/resources")}
+              onClick={() => navigate(isAdmin ? "/resources/dashboard" : "/availability")}
               className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-left text-white transition hover:bg-white/18"
             >
               Resources
@@ -388,7 +395,7 @@ const ProfilePage = () => {
                   <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Permissions</p>
                   <h2 className="font-display mt-2 text-4xl font-extrabold text-[#0f342e]">Role Access</h2>
                 </div>
-                {user?.roles?.includes("ADMIN") && (
+                {isAdmin && (
                   <button
                     type="button"
                     onClick={() => navigate("/admin/dashboard")}
@@ -400,7 +407,7 @@ const ProfilePage = () => {
               </div>
 
               <div className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {(user?.roles ?? []).map((role) => (
+                {roles.map((role) => (
                   <article
                     key={role}
                     className="group relative overflow-hidden rounded-[1.7rem] border border-white/70 bg-white/65 p-5 shadow-[0_18px_44px_rgba(15,52,46,0.12)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-[#c5ded4] hover:bg-white/80 hover:shadow-[0_26px_58px_rgba(15,52,46,0.18)]"

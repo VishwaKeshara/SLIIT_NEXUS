@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -44,8 +45,11 @@ public class BookingController {
     }
 
     @GetMapping("/{id}")
-    public Booking getBookingById(@PathVariable String id) {
-        return bookingService.getBookingById(id);
+    public Booking getBookingById(@PathVariable String id, Authentication authentication) {
+        UserAccount userAccount = authService.requireCurrentUser(authentication);
+        Booking booking = bookingService.getBookingById(id);
+        requireBookingOwnerOrAdmin(booking, userAccount, authentication);
+        return booking;
     }
 
     @PutMapping("/{id}/approve")
@@ -62,7 +66,9 @@ public class BookingController {
 
     @PutMapping("/{id}/cancel")
     public Booking cancelBooking(@PathVariable String id, Authentication authentication) {
-        // Option: Check if current user is owner of booking or admin
+        UserAccount userAccount = authService.requireCurrentUser(authentication);
+        Booking booking = bookingService.getBookingById(id);
+        requireBookingOwnerOrAdmin(booking, userAccount, authentication);
         return bookingService.cancelBooking(id);
     }
 
@@ -76,5 +82,14 @@ public class BookingController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteBooking(@PathVariable String id) {
         bookingService.deleteBooking(id);
+    }
+
+    private void requireBookingOwnerOrAdmin(Booking booking, UserAccount userAccount, Authentication authentication) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !userAccount.getId().equals(booking.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only access your own bookings");
+        }
     }
 }

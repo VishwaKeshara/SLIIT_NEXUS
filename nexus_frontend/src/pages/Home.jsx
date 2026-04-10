@@ -8,7 +8,7 @@ const primaryActions = [
     title: "Facilities Catalogue",
     subtitle: "Explore Catalogue",
     cta: "View Catalogue",
-    to: "/resources",
+    to: "/availability",
   },
   {
     title: "Make a Booking",
@@ -25,7 +25,7 @@ const primaryActions = [
 ];
 
 const quickFeatures = [
-  { title: "Find a Room / Lab", to: "/resources" },
+  { title: "Find a Room / Lab", to: "/availability" },
   { title: "Make a Booking", to: "/bookings" },
   { title: "Track Booking Status", to: "/bookings" },
   { title: "Report a Fault", to: "/tickets" },
@@ -33,6 +33,7 @@ const quickFeatures = [
 ];
 
 const resourceTypeOptions = ["ALL", "LECTURE_HALL", "LAB", "MEETING_ROOM", "EQUIPMENT"];
+const publicRoutes = ["/about-us", "/contact-us"];
 
 const formatEnumLabel = (value) =>
   value
@@ -67,6 +68,8 @@ const Home = () => {
   const roleBasedAction = isAdmin
     ? { label: "Go to Admin Dashboard", to: "/admin/dashboard" }
     : { label: "My Bookings", to: "/bookings" };
+  const linkTarget = (to) => (user || publicRoutes.includes(to) ? to : "/login");
+  const linkState = (to) => (user || publicRoutes.includes(to) ? undefined : { from: to });
 
   useEffect(() => {
     const loadResources = async () => {
@@ -187,19 +190,22 @@ const Home = () => {
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              to="/resources"
+              to={linkTarget("/availability")}
+              state={linkState("/availability")}
               className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-extrabold text-[#17352f] transition hover:bg-[#eef6f2]"
             >
               Browse Resources
             </Link>
             <Link
-              to={user ? "/tickets" : "/login"}
+              to={linkTarget("/tickets")}
+              state={linkState("/tickets")}
               className="inline-flex items-center justify-center rounded-full border border-white/40 bg-white/10 px-6 py-3 text-sm font-extrabold text-white transition hover:bg-white/16"
             >
               Report an Incident
             </Link>
             <Link
-              to={user ? roleBasedAction.to : "/login"}
+              to={linkTarget(roleBasedAction.to)}
+              state={linkState(roleBasedAction.to)}
               className="inline-flex items-center justify-center rounded-full border border-[#c9e7dc] bg-[#dff2ea] px-6 py-3 text-sm font-extrabold text-[#17352f] transition hover:bg-[#eef8f3]"
             >
               {user ? roleBasedAction.label : "Login to Continue"}
@@ -215,7 +221,8 @@ const Home = () => {
               className="w-full rounded-full border-none bg-transparent px-5 py-3 text-base text-[#17352f] outline-none placeholder:text-[#9aa8a5]"
             />
             <Link
-              to="/resources"
+              to={linkTarget("/availability")}
+              state={linkState("/availability")}
               className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#3a8a77] px-7 py-3 text-base font-extrabold text-white transition hover:bg-[#2d6e5f]"
             >
               Search
@@ -232,7 +239,8 @@ const Home = () => {
               <h2 className="font-display text-3xl font-extrabold tracking-[-0.04em]">{card.title}</h2>
               <p className="mt-5 text-lg font-extrabold text-[#204b42]">{card.subtitle}</p>
               <Link
-                to={user || card.to === "/resources" ? card.to : "/login"}
+                to={linkTarget(card.to)}
+                state={linkState(card.to)}
                 className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-[#3a8a77] px-4 py-3 text-base font-extrabold text-white transition hover:bg-[#2d6e5f]"
               >
                 {card.cta}
@@ -287,7 +295,8 @@ const Home = () => {
             {quickFeatures.map((feature) => (
               <Link
                 key={feature.title}
-                to={user || feature.to === "/resources" ? feature.to : "/login"}
+                to={linkTarget(feature.to)}
+                state={linkState(feature.to)}
                 className="rounded-[1rem] bg-white px-4 py-5 text-center text-sm font-extrabold text-[#17352f] shadow-sm transition hover:-translate-y-1"
               >
                 {feature.title}
@@ -304,7 +313,8 @@ const Home = () => {
                 <h3 className="mt-2 text-2xl font-extrabold text-[#1a473f]">Search & Filter Preview</h3>
               </div>
               <Link
-                to="/resources"
+                to={linkTarget("/availability")}
+                state={linkState("/availability")}
                 className="rounded-full bg-[#3a8a77] px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#2d6e5f]"
               >
                 View All Resources
@@ -413,7 +423,7 @@ const Home = () => {
           <section className="rounded-[1.6rem] border border-[#c6e3d9] bg-[#edf7f2] p-5 text-[#0b2520] shadow-[0_20px_60px_rgba(6,28,25,0.22)]">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-2xl font-extrabold text-[#1a473f]">Your Recent Bookings</h3>
-              <Link to="/bookings" className="text-sm font-bold text-[#2d6e5f]">
+              <Link to={linkTarget("/bookings")} state={linkState("/bookings")} className="text-sm font-bold text-[#2d6e5f]">
                 View
               </Link>
             </div>
@@ -435,7 +445,7 @@ const Home = () => {
           <section className="rounded-[1.6rem] border border-[#c6e3d9] bg-[#edf7f2] p-5 text-[#0b2520] shadow-[0_20px_60px_rgba(6,28,25,0.22)]">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-2xl font-extrabold text-[#1a473f]">Latest Ticket Updates</h3>
-              <Link to="/tickets" className="text-sm font-bold text-[#2d6e5f]">
+              <Link to={linkTarget("/tickets")} state={linkState("/tickets")} className="text-sm font-bold text-[#2d6e5f]">
                 View
               </Link>
             </div>
@@ -459,7 +469,7 @@ const Home = () => {
           <section className="rounded-[1.6rem] border border-[#c6e3d9] bg-[#edf7f2] p-5 text-[#0b2520] shadow-[0_20px_60px_rgba(6,28,25,0.22)]">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-2xl font-extrabold text-[#1a473f]">Recent Notifications</h3>
-              <Link to="/notifications" className="text-sm font-bold text-[#2d6e5f]">
+              <Link to={linkTarget("/notifications")} state={linkState("/notifications")} className="text-sm font-bold text-[#2d6e5f]">
                 View
               </Link>
             </div>
@@ -482,6 +492,7 @@ const Home = () => {
             </div>
           </section>
         </div>
+
       </section>
     </main>
   );

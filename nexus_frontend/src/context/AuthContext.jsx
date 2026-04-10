@@ -25,9 +25,11 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUnreadCount(0);
       }
+      return data.authenticated ? data : null;
     } catch {
       setUser(null);
       setUnreadCount(0);
+      return null;
     } finally {
       setLoading(false);
     }

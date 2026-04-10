@@ -36,7 +36,9 @@ const BookingsPage = () => {
     }
   }, [selectedResource]);
 
-  const roles = Array.isArray(user?.roles) ? user.roles : [];
+  const roles = Array.isArray(user?.roles)
+    ? user.roles.map((role) => String(role ?? "").trim().toUpperCase().replace(/^ROLE_/, ""))
+    : [];
   const isAdmin = roles.some((role) => ["ADMIN", "MANAGER"].includes(role));
 
   const stats = useMemo(() => {

@@ -19,12 +19,16 @@ const ResourcesSidebar = ({ isAdmin, onLogout }) => {
       </div>
 
       <nav className="mt-7 grid gap-4 text-base font-extrabold">
-        <NavLink to="/resources/dashboard" className={linkClass}>
-          Dashboard
-        </NavLink>
-        <NavLink end to="/resources" className={linkClass}>
-          Resources
-        </NavLink>
+        {isAdmin && (
+          <NavLink to="/resources/dashboard" className={linkClass}>
+            Dashboard
+          </NavLink>
+        )}
+        {isAdmin && (
+          <NavLink end to="/resources" className={linkClass}>
+            Resources
+          </NavLink>
+        )}
         {isAdmin && (
           <NavLink to="/resources/add" className={linkClass}>
             Add Resource
@@ -35,7 +39,7 @@ const ResourcesSidebar = ({ isAdmin, onLogout }) => {
             Bulk Import
           </NavLink>
         )}
-        <NavLink to="/resources/availability" className={linkClass}>
+        <NavLink to="/availability" className={linkClass}>
           Availability
         </NavLink>
         <button
@@ -48,9 +52,13 @@ const ResourcesSidebar = ({ isAdmin, onLogout }) => {
       </nav>
 
       <div className="mt-8 rounded-[1.5rem] border border-white/15 bg-white/10 p-5">
-        <p className="font-display text-2xl font-extrabold tracking-[-0.04em]">Resource Flow</p>
+        <p className="font-display text-2xl font-extrabold tracking-[-0.04em]">
+          {isAdmin ? "Resource Flow" : "Availability"}
+        </p>
         <p className="mt-3 text-sm leading-6 text-[#d7eee6]">
-          Manage resources, imports, and availability through focused pages.
+          {isAdmin
+            ? "Manage resources, imports, and availability through focused pages."
+            : "Check available resources and continue to booking."}
         </p>
       </div>
     </aside>

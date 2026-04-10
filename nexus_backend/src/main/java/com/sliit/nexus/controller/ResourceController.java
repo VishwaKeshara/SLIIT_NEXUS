@@ -31,20 +31,20 @@ public class ResourceController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResourceResponseDTO create(@Valid @RequestBody ResourceRequestDTO request) {
         return resourceService.create(request);
     }
 
     @PutMapping("/{resourceId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public ResourceResponseDTO update(@PathVariable String resourceId, @Valid @RequestBody ResourceRequestDTO request) {
         return resourceService.update(resourceId, request);
     }
 
     @DeleteMapping("/{resourceId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public void delete(@PathVariable String resourceId) {
         resourceService.delete(resourceId);
     }
