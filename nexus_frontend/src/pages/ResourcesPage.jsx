@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { bookingApi, resourceApi } from "../services/api";
 
@@ -199,7 +200,8 @@ const getFriendlyResourceError = (err) => {
 };
 
 const ResourcesPage = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const isAdmin = user?.roles?.includes("ADMIN");
 
   const [resources, setResources] = useState([]);
@@ -466,6 +468,11 @@ const ResourcesPage = () => {
     setFilters(initialFilters);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
+
   const validateImportRows = (rows) => {
     const existingKeys = new Set(resources.map((resource) => buildDuplicateKey(resource.name ?? "", resource.location ?? "")));
     const csvKeys = new Set();
@@ -717,41 +724,119 @@ const ResourcesPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#eef6ff_0%,#f8fbff_45%,#eef7f3_100%)] px-4 pb-16 pt-28">
-      <section className="mx-auto max-w-7xl">
-        <header className="rounded-[2rem] bg-[linear-gradient(135deg,#1e3a8a,#2563eb)] p-8 text-center text-white shadow-[0_24px_70px_rgba(30,58,138,0.22)]">
-          <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#bfdbfe]">Module A</p>
-          <h1 className="font-display mt-3 text-4xl font-extrabold tracking-[-0.04em] sm:text-5xl">
-            Smart Campus Operations Hub
-          </h1>
-          <p className="mt-3 text-base font-semibold text-[#dbeafe]">Facilities & Assets Catalogue</p>
+    <main className="min-h-screen bg-[#edf4fb] pt-24">
+      <div className="mx-auto flex max-w-[1800px] flex-col gap-8 px-4 pb-16 lg:flex-row lg:items-start lg:px-6">
+        <aside className="sticky top-24 rounded-[1.8rem] bg-[#103c35] p-6 text-white shadow-[0_28px_80px_rgba(16,60,53,0.28)] lg:min-h-[calc(100vh-8rem)] lg:w-80 lg:shrink-0">
+          <div className="flex items-center gap-4 border-b border-white/15 pb-7">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[#f2d45c] text-2xl font-black tracking-[0.12em] text-[#103c35]">
+              NX
+            </div>
+            <div>
+              <p className="font-display text-3xl font-extrabold tracking-[-0.06em]">SLIIT Nexus</p>
+              <p className="text-base font-medium tracking-[0.08em] text-[#d5efe6]">Module A</p>
+            </div>
+          </div>
+
+          <nav className="mt-7 grid gap-4 text-base font-extrabold">
+            <a href="#dashboard" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+              Dashboard
+            </a>
+            <a href="#resources" className="rounded-[1.15rem] bg-white/20 px-5 py-4 text-white transition hover:bg-white/26">
+              Resources
+            </a>
+            {isAdmin && (
+              <a href="#add-resource" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+                Add Resource
+              </a>
+            )}
+            {isAdmin && (
+              <a href="#bulk-import" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+                Bulk Import
+              </a>
+            )}
+            <a href="#availability" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+              Availability
+            </a>
+            <Link to="/bookings" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+              Bookings
+            </Link>
+            <Link to="/tickets" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+              Maintenance
+            </Link>
+            <Link to="/notifications" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+              Notifications
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="mt-4 rounded-[1.15rem] bg-[#f2d45c] px-5 py-4 text-left text-base font-black text-[#103c35] transition hover:bg-[#f7df76]"
+            >
+              Logout
+            </button>
+          </nav>
+
+          <div className="mt-8 rounded-[1.5rem] border border-white/15 bg-white/10 p-5">
+            <p className="font-display text-2xl font-extrabold tracking-[-0.04em]">Admin Flow</p>
+            <p className="mt-3 text-sm leading-6 text-[#d7eee6]">
+              Manage resources, imports, availability, bookings, and maintenance operations.
+            </p>
+          </div>
+        </aside>
+
+        <section className="min-w-0 flex-1">
+        <header id="dashboard" className="p-1 text-slate-900">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#39766a]">Smart Campus Operations Hub</p>
+              <h1 className="font-display mt-3 text-5xl font-extrabold tracking-[-0.07em] text-[#0f342e] sm:text-6xl">
+                Resource Management Dashboard
+              </h1>
+              <p className="mt-3 max-w-3xl text-base font-semibold text-slate-500 sm:text-lg">
+                Manage facilities, assets, bulk imports, availability, and operational status from one admin workspace.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <a
+                href="#dashboard"
+                className="rounded-[1.35rem] bg-white px-7 py-4 text-base font-black text-[#0f342e] shadow-[0_12px_28px_rgba(15,52,46,0.08)]"
+              >
+                Dashboard
+              </a>
+              <a
+                href="#resources"
+                className="rounded-[1.35rem] bg-[#f2d45c] px-7 py-4 text-base font-black text-[#103c35] shadow-[0_12px_28px_rgba(16,60,53,0.1)]"
+              >
+                Resources
+              </a>
+            </div>
+          </div>
         </header>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-4">
-          <div className="rounded-[1.4rem] bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
-            <p className="text-sm font-bold text-[#1e3a8a]">Total Resources</p>
-            <p className="mt-2 font-display text-4xl font-extrabold text-[#0f172a]">{summary.total}</p>
+        <div className="mt-9 grid gap-6 md:grid-cols-4">
+          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
+            <p className="text-base font-extrabold text-[#5b7493]">Total Resources</p>
+            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.total}</p>
           </div>
-          <div className="rounded-[1.4rem] bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
-            <p className="text-sm font-bold text-[#166534]">Active</p>
-            <p className="mt-2 font-display text-4xl font-extrabold text-[#0f172a]">{summary.active}</p>
+          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
+            <p className="text-base font-extrabold text-[#5b7493]">Active</p>
+            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.active}</p>
           </div>
-          <div className="rounded-[1.4rem] bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
-            <p className="text-sm font-bold text-[#991b1b]">Out of Service</p>
-            <p className="mt-2 font-display text-4xl font-extrabold text-[#0f172a]">{summary.outOfService}</p>
+          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
+            <p className="text-base font-extrabold text-[#5b7493]">Out of Service</p>
+            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.outOfService}</p>
           </div>
-          <div className="rounded-[1.4rem] bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
-            <p className="text-sm font-bold text-[#475569]">Filtered Results</p>
-            <p className="mt-2 font-display text-4xl font-extrabold text-[#0f172a]">{summary.filtered}</p>
+          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
+            <p className="text-base font-extrabold text-[#5b7493]">Filtered Results</p>
+            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.filtered}</p>
           </div>
         </div>
 
         {isAdmin && (
-          <section className="mt-8 rounded-[1.7rem] bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+          <section id="bulk-import" className="mt-9 rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2563eb]">Bulk Import</p>
-                <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#1e3a8a]">
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Bulk Import</p>
+                <h2 className="font-display mt-2 text-4xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
                   Bulk Import Resources
                 </h2>
                 <p className="mt-2 text-sm font-semibold text-slate-600">
@@ -761,7 +846,7 @@ const ResourcesPage = () => {
               <button
                 type="button"
                 onClick={downloadCsvTemplate}
-                className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-3 text-sm font-bold text-blue-800 transition hover:bg-blue-100"
+                className="rounded-[1.2rem] border border-[#e6d577] bg-[#fff7cf] px-5 py-3 text-sm font-black text-[#5c4b06] transition hover:bg-[#fff0a8]"
               >
                 Download CSV Template
               </button>
@@ -902,13 +987,13 @@ const ResourcesPage = () => {
           </section>
         )}
 
-        <div className="mt-8 grid gap-6 xl:grid-cols-[0.9fr_1.7fr]">
+        <div className="mt-9 grid gap-6 xl:grid-cols-[0.9fr_1.7fr]">
           {isAdmin && (
-            <section className="rounded-[1.7rem] bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+            <section id="add-resource" className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2563eb]">Admin Tool</p>
-                  <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#1e3a8a]">
+                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Admin Tool</p>
+                  <h2 className="font-display mt-2 text-4xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
                     {editingId ? "Edit Resource" : "Add Resource"}
                   </h2>
                 </div>
@@ -1111,18 +1196,18 @@ const ResourcesPage = () => {
             </section>
           )}
 
-          <section className={`rounded-[1.7rem] bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] ${isAdmin ? "" : "xl:col-span-2"}`}>
+          <section id="resources" className={`rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8 ${isAdmin ? "" : "xl:col-span-2"}`}>
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2563eb]">Catalogue</p>
-                <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#1e3a8a]">
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Catalogue</p>
+                <h2 className="font-display mt-2 text-4xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
                   Resource Catalogue
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={loadResources}
-                className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-[1.2rem] bg-[#eef3fb] px-5 py-3 text-sm font-black text-[#0f342e] shadow-sm transition hover:bg-[#e3edf8]"
               >
                 Refresh
               </button>
@@ -1205,6 +1290,10 @@ const ResourcesPage = () => {
               >
                 Reset Filters
               </button>
+            </div>
+
+            <div id="availability" className="mt-5 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">
+              Use the `View Availability` button on any resource card to open the weekly availability calendar.
             </div>
 
             <div className="mt-6">
@@ -1301,6 +1390,7 @@ const ResourcesPage = () => {
           </section>
         </div>
       </section>
+      </div>
 
       {availabilityResource && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/60 px-4 py-8 backdrop-blur-sm">
