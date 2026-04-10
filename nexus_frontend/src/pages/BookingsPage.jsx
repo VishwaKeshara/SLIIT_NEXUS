@@ -66,7 +66,7 @@ const BookingsPage = () => {
               Nexus Booking Center
             </p>
             <h1 className="font-display mt-6 text-5xl font-extrabold tracking-tight sm:text-6xl">
-              Manage your campus <span className="text-[#408a71]">resources</span> in one place.
+              SLIIT <span className="text-[#408a71]">Nexus</span>.
             </h1>
             <p className="mt-6 text-lg text-slate-300 leading-relaxed">
               From study pods to lecture halls, reserve everything you need for your academic success. 
