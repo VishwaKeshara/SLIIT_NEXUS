@@ -3,9 +3,20 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authApi } from "../services/api";
 import { useAuth } from "../context/useAuth";
 
+<<<<<<< HEAD
 const getFriendlyLoginError = (err) => {
   const backendMessage = err?.response?.data?.message;
   if (backendMessage) {
+=======
+const demoAccounts = []; // Removed Admin Demo and Student Demo accounts
+
+const getFriendlyLoginError = (err, credentials) => {
+  const backendMessage = err?.response?.data?.message;
+  if (backendMessage) {
+    if (backendMessage.toLowerCase().includes("invalid email or password")) {
+      return "Invalid email or password.";
+    }
+>>>>>>> d4f4d3951341039eb0f0ec0d076d424ff8dd87d8
     return backendMessage;
   }
 
@@ -18,6 +29,10 @@ const getFriendlyLoginError = (err) => {
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
+<<<<<<< HEAD
+=======
+  const [selectedEmail, setSelectedEmail] = useState("");
+>>>>>>> d4f4d3951341039eb0f0ec0d076d424ff8dd87d8
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { signIn } = useAuth();
