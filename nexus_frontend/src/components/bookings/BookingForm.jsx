@@ -50,7 +50,6 @@ const BookingForm = ({ initialResource, onBookingCreated }) => {
     setLoading(true);
     setError("");
 
-    // Find the selected resource to get its name
     const selectedResource = resources.find((r) => r.id === formData.resourceId);
 
     try {
@@ -77,127 +76,130 @@ const BookingForm = ({ initialResource, onBookingCreated }) => {
   };
 
   return (
-    <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="text-xl font-bold text-slate-900">New Booking Request</h3>
-      <p className="text-sm text-slate-500 mb-6">Select a resource and time slot to place your reservation.</p>
+    <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-2xl shadow-slate-200/50">
+      <div className="mb-8">
+        <h3 className="font-display text-2xl font-bold text-slate-900">New Booking Request</h3>
+        <p className="mt-2 text-slate-500">Fill in the details to reserve your preferred resource.</p>
+      </div>
 
       {initialResource && (
-        <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Selected Resource</p>
-          <div className="mt-3 grid gap-3 text-sm text-emerald-900 md:grid-cols-2">
-            <p>
-              <span className="font-bold">Name:</span> {initialResource.name}
-            </p>
-            <p>
-              <span className="font-bold">Type:</span> {initialResource.type}
-            </p>
-            <p>
-              <span className="font-bold">Location:</span> {initialResource.location}
-            </p>
-            <p>
-              <span className="font-bold">Available:</span> {initialResource.availableFrom || "N/A"} -{" "}
-              {initialResource.availableTo || "N/A"}
-            </p>
+        <div className="mb-8 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5">
+          <div className="flex items-center gap-2 text-emerald-700">
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+            <p className="text-xs font-bold uppercase tracking-widest">Resource Pre-selected</p>
           </div>
-          <p className="mt-3 text-xs font-semibold text-emerald-700">
-            Resource details were filled from availability. You can still edit date, time, purpose, and attendees.
-          </p>
+          <div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
+            <div className="space-y-1">
+              <p className="font-bold text-slate-900">{initialResource.name}</p>
+              <p className="text-slate-600">{initialResource.type?.replace("_", " ")}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-slate-600">Location</p>
+              <p className="font-bold text-slate-900">{initialResource.location}</p>
+            </div>
+          </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-4 md:col-span-2">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-slate-700">Select Resource</label>
+          <select
+            name="resourceId"
+            value={formData.resourceId}
+            onChange={handleChange}
+            required
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#408a71] focus:ring-4 focus:ring-[#408a71]/5"
+          >
+            <option value="">Choose a Facility</option>
+            {resources.map((resource) => (
+              <option key={resource.id} value={resource.id}>
+                {resource.name} {resource.capacity ? `(Cap: ${resource.capacity})` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Select Resource</label>
-            <select
-              name="resourceId"
-              value={formData.resourceId}
+            <label className="text-sm font-bold text-slate-700">Date</label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
               onChange={handleChange}
               required
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500"
-            >
-              <option value="">Choose Resource</option>
-              {resources.map((resource) => (
-                <option key={resource.id} value={resource.id}>
-                  {resource.name} {resource.capacity ? `(Capacity: ${resource.capacity})` : ""}
-                </option>
-              ))}
-            </select>
+              min={new Date().toISOString().split("T")[0]}
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#408a71] focus:ring-4 focus:ring-[#408a71]/5"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-700">Attendees</label>
+            <input
+              type="number"
+              name="attendees"
+              placeholder="0"
+              value={formData.attendees}
+              onChange={handleChange}
+              required
+              min="1"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#408a71] focus:ring-4 focus:ring-[#408a71]/5"
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-700">Start Time</label>
+            <input
+              type="time"
+              name="startTime"
+              value={formData.startTime}
+              onChange={handleChange}
+              required
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#408a71] focus:ring-4 focus:ring-[#408a71]/5"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-700">End Time</label>
+            <input
+              type="time"
+              name="endTime"
+              value={formData.endTime}
+              onChange={handleChange}
+              required
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#408a71] focus:ring-4 focus:ring-[#408a71]/5"
+            />
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Date</label>
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            min={new Date().toISOString().split("T")[0]}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Start Time</label>
-          <input
-            type="time"
-            name="startTime"
-            value={formData.startTime}
-            onChange={handleChange}
-            required
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">End Time</label>
-          <input
-            type="time"
-            name="endTime"
-            value={formData.endTime}
-            onChange={handleChange}
-            required
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div className="space-y-2 md:col-span-2">
-          <label className="text-sm font-semibold text-slate-700">Purpose</label>
+          <label className="text-sm font-bold text-slate-700">Purpose of Reservation</label>
           <input
             type="text"
             name="purpose"
-            placeholder="e.g. Project Meeting"
+            placeholder="e.g. Study Group Session"
             value={formData.purpose}
             onChange={handleChange}
             required
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#408a71] focus:ring-4 focus:ring-[#408a71]/5"
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Number of Attendees</label>
-          <input
-            type="number"
-            name="attendees"
-            placeholder="0"
-            value={formData.attendees}
-            onChange={handleChange}
-            required
-            min="1"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div className="md:col-span-2 pt-4">
-          {error && <p className="mb-4 text-sm font-medium text-rose-600">{error}</p>}
+        <div className="pt-6">
+          {error && (
+            <div className="mb-6 rounded-xl bg-rose-50 p-4 text-sm font-medium text-rose-600 border border-rose-100">
+              {error}
+            </div>
+          )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-slate-900 py-4 font-bold text-white transition hover:bg-slate-800 disabled:opacity-50"
+            className="w-full rounded-2xl bg-[#07251f] py-4 font-bold text-white transition hover:bg-[#1b4332] disabled:opacity-50 shadow-lg shadow-[#07251f]/10"
           >
-            {loading ? "Processing..." : "Submit Reservation"}
+            {loading ? "Processing..." : "Confirm Reservation"}
           </button>
         </div>
       </form>
