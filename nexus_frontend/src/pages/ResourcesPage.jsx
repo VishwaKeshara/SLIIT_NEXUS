@@ -212,7 +212,11 @@ const ResourcesPage = () => {
   const [formErrors, setFormErrors] = useState({});
   const [formMessage, setFormMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [inlineEditingId, setInlineEditingId] = useState(null);
+  const [inlineFormState, setInlineFormState] = useState(emptyResourceForm);
+  const [inlineFormErrors, setInlineFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [inlineSubmitting, setInlineSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
   const [availabilityResource, setAvailabilityResource] = useState(null);
@@ -372,6 +376,58 @@ const ResourcesPage = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
+  const validateResourcePayload = (payload) => {
+    const nextErrors = {};
+    const name = payload.name.trim();
+    const capacity = Number(payload.capacity);
+
+    if (!name) {
+      nextErrors.name = "Resource name is required.";
+    } else if (name.length < 3) {
+      nextErrors.name = "Resource name must be at least 3 characters.";
+    } else if (name.length > 80) {
+      nextErrors.name = "Resource name cannot exceed 80 characters.";
+    }
+
+    if (!payload.type) {
+      nextErrors.type = "Resource type is required.";
+    }
+
+    if (payload.capacity === "") {
+      nextErrors.capacity = "Capacity is required.";
+    } else if (!Number.isInteger(capacity) || capacity < 1) {
+      nextErrors.capacity = "Capacity must be a whole number greater than 0.";
+    } else if (capacity > 500) {
+      nextErrors.capacity = "Capacity cannot exceed 500.";
+    }
+
+    if (!payload.location) {
+      nextErrors.location = "Campus location is required.";
+    }
+
+    if (!payload.availableFrom) {
+      nextErrors.availableFrom = "Available from time is required.";
+    }
+
+    if (!payload.availableTo) {
+      nextErrors.availableTo = "Available to time is required.";
+    }
+
+    if (payload.availableFrom && payload.availableTo && payload.availableFrom >= payload.availableTo) {
+      nextErrors.availableTo = "Available to time must be later than available from time.";
+    }
+
+    if (!payload.status) {
+      nextErrors.status = "Status is required.";
+    }
+
+    if (payload.description.trim().length > 240) {
+      nextErrors.description = "Description cannot exceed 240 characters.";
+    }
+
+    return nextErrors;
+  };
+
   const handleFormChange = (event) => {
     const { name, value } = event.target;
 
@@ -406,9 +462,9 @@ const ResourcesPage = () => {
     setEditingId(null);
   };
 
-  const startEdit = (resource) => {
-    setEditingId(resource.id);
-    setFormState({
+  const startInlineEdit = (resource) => {
+    setInlineEditingId(resource.id);
+    setInlineFormState({
       name: resource.name ?? "",
       type: resource.type ?? "",
       capacity: resource.capacity?.toString() ?? "",
@@ -418,9 +474,28 @@ const ResourcesPage = () => {
       status: resource.status ?? "",
       description: resource.description ?? "",
     });
-    setFormErrors({});
+    setInlineFormErrors({});
     setFormMessage("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelInlineEdit = () => {
+    setInlineEditingId(null);
+    setInlineFormState(emptyResourceForm);
+    setInlineFormErrors({});
+  };
+
+  const handleInlineFormChange = (event) => {
+    const { name, value } = event.target;
+
+    setInlineFormState((current) => {
+      if (name === "type") {
+        return { ...current, type: value, location: "" };
+      }
+
+      return { ...current, [name]: value };
+    });
+
+    setInlineFormErrors((current) => ({ ...current, [name]: "" }));
   };
 
   const handleSubmit = async (event) => {
@@ -455,6 +530,34 @@ const ResourcesPage = () => {
       setFormMessage(getFriendlyResourceError(err));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleInlineSubmit = async (resourceId) => {
+    const nextErrors = validateResourcePayload(inlineFormState);
+    setInlineFormErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+
+    setInlineSubmitting(true);
+    setFormMessage("");
+
+    try {
+      await resourceApi.update(resourceId, {
+        ...inlineFormState,
+        name: inlineFormState.name.trim(),
+        capacity: Number(inlineFormState.capacity),
+        description: inlineFormState.description.trim(),
+      });
+      setFormMessage("Resource updated successfully.");
+      cancelInlineEdit();
+      await loadResources();
+    } catch (err) {
+      setFormMessage(getFriendlyResourceError(err));
+    } finally {
+      setInlineSubmitting(false);
     }
   };
 
@@ -1592,6 +1695,144 @@ const ResourcesPage = () => {
                         </div>
                       </div>
 
+                      {inlineEditingId === resource.id && (
+                        <div className="mt-5 rounded-[1.3rem] border border-[#dbe7df] bg-white/80 p-4 shadow-inner">
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <label className="block md:col-span-2">
+                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Name</span>
+                              <input
+                                name="name"
+                                value={inlineFormState.name}
+                                onChange={handleInlineFormChange}
+                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
+                                  inlineFormErrors.name ? "border-red-400" : "border-[#dbe7df]"
+                                }`}
+                              />
+                              {inlineFormErrors.name && (
+                                <p className="mt-1 text-xs font-bold text-red-600">{inlineFormErrors.name}</p>
+                              )}
+                            </label>
+
+                            <label className="block">
+                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Type</span>
+                              <select
+                                name="type"
+                                value={inlineFormState.type}
+                                onChange={handleInlineFormChange}
+                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
+                                  inlineFormErrors.type ? "border-red-400" : "border-[#dbe7df]"
+                                }`}
+                              >
+                                <option value="">Select type</option>
+                                {resourceTypes.map((type) => (
+                                  <option key={type} value={type}>
+                                    {formatEnumLabel(type)}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+
+                            <label className="block">
+                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Capacity</span>
+                              <input
+                                name="capacity"
+                                type="number"
+                                min="1"
+                                value={inlineFormState.capacity}
+                                onChange={handleInlineFormChange}
+                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
+                                  inlineFormErrors.capacity ? "border-red-400" : "border-[#dbe7df]"
+                                }`}
+                              />
+                            </label>
+
+                            <label className="block md:col-span-2">
+                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Location</span>
+                              <select
+                                name="location"
+                                value={inlineFormState.location}
+                                onChange={handleInlineFormChange}
+                                disabled={!inlineFormState.type}
+                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] disabled:bg-[#eef3f0] ${
+                                  inlineFormErrors.location ? "border-red-400" : "border-[#dbe7df]"
+                                }`}
+                              >
+                                <option value="">{inlineFormState.type ? "Select campus location" : "Select type first"}</option>
+                                {(campusLocations[inlineFormState.type] ?? []).map((location) => (
+                                  <option key={location} value={location}>
+                                    {location}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+
+                            <label className="block">
+                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">From</span>
+                              <input
+                                name="availableFrom"
+                                type="time"
+                                value={inlineFormState.availableFrom}
+                                onChange={handleInlineFormChange}
+                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
+                                  inlineFormErrors.availableFrom ? "border-red-400" : "border-[#dbe7df]"
+                                }`}
+                              />
+                            </label>
+
+                            <label className="block">
+                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">To</span>
+                              <input
+                                name="availableTo"
+                                type="time"
+                                value={inlineFormState.availableTo}
+                                onChange={handleInlineFormChange}
+                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
+                                  inlineFormErrors.availableTo ? "border-red-400" : "border-[#dbe7df]"
+                                }`}
+                              />
+                              {inlineFormErrors.availableTo && (
+                                <p className="mt-1 text-xs font-bold text-red-600">{inlineFormErrors.availableTo}</p>
+                              )}
+                            </label>
+
+                            <label className="block md:col-span-2">
+                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Status</span>
+                              <select
+                                name="status"
+                                value={inlineFormState.status}
+                                onChange={handleInlineFormChange}
+                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
+                                  inlineFormErrors.status ? "border-red-400" : "border-[#dbe7df]"
+                                }`}
+                              >
+                                <option value="">Select status</option>
+                                {resourceStatuses.map((status) => (
+                                  <option key={status} value={status}>
+                                    {status}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+
+                            <label className="block md:col-span-2">
+                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Description</span>
+                              <textarea
+                                name="description"
+                                rows="3"
+                                value={inlineFormState.description}
+                                onChange={handleInlineFormChange}
+                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
+                                  inlineFormErrors.description ? "border-red-400" : "border-[#dbe7df]"
+                                }`}
+                              />
+                              {inlineFormErrors.description && (
+                                <p className="mt-1 text-xs font-bold text-red-600">{inlineFormErrors.description}</p>
+                              )}
+                            </label>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="mt-5 flex flex-wrap gap-3">
                         <button
                           type="button"
@@ -1604,13 +1845,33 @@ const ResourcesPage = () => {
 
                       {isAdmin && (
                         <div className="mt-5 flex flex-wrap gap-3">
-                          <button
-                            type="button"
-                            onClick={() => startEdit(resource)}
-                            className="rounded-[1rem] bg-[#f2d45c] px-4 py-2.5 text-sm font-bold text-[#103c35] shadow-[0_10px_20px_rgba(92,75,6,0.12)] transition hover:bg-[#f7df76]"
-                          >
-                            Edit
-                          </button>
+                          {inlineEditingId === resource.id ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleInlineSubmit(resource.id)}
+                                disabled={inlineSubmitting}
+                                className="rounded-[1rem] bg-[#f2d45c] px-4 py-2.5 text-sm font-bold text-[#103c35] shadow-[0_10px_20px_rgba(92,75,6,0.12)] transition hover:bg-[#f7df76] disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {inlineSubmitting ? "Saving..." : "Save"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelInlineEdit}
+                                className="rounded-[1rem] bg-[#6b7f78] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#52645f]"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => startInlineEdit(resource)}
+                              className="rounded-[1rem] bg-[#f2d45c] px-4 py-2.5 text-sm font-bold text-[#103c35] shadow-[0_10px_20px_rgba(92,75,6,0.12)] transition hover:bg-[#f7df76]"
+                            >
+                              Edit
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => deleteResource(resource)}
