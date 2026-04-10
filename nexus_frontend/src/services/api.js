@@ -9,7 +9,6 @@ export const authApi = {
   me: () => API.get("/auth/me"),
   login: (payload) => API.post("/auth/login", payload),
   signup: (payload) => API.post("/auth/signup", payload),
-  devLogin: (email) => API.post("/auth/dev-login", { email }),
   updateAccount: (payload) => API.patch("/auth/account", payload),
   deleteAccount: () => API.delete("/auth/account"),
   logout: () => API.post("/auth/logout"),

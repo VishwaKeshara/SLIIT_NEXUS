@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import { bookingApi, resourceApi } from "../services/api";
 import ResourcesLayout from "../components/resources/ResourcesLayout";
 

@@ -1,23 +1,22 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { authApi, notificationApi } from "../services/api";
-
-const AuthContext = createContext(null);
+import { AuthContext } from "./AuthContextValue";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const refreshUnreadCount = async () => {
+  const refreshUnreadCount = useCallback(async () => {
     try {
       const summary = await notificationApi.summary();
       setUnreadCount(summary.data.unreadCount ?? 0);
     } catch {
       setUnreadCount(0);
     }
-  };
+  }, []);
 
-  const refreshAuth = async () => {
+  const refreshAuth = useCallback(async () => {
     try {
       const { data } = await authApi.me();
       setUser(data.authenticated ? data : null);
@@ -32,18 +31,11 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [refreshUnreadCount]);
 
   useEffect(() => {
     void refreshAuth();
-  }, []);
-
-  const loginAsDevUser = async (email) => {
-    const { data } = await authApi.devLogin(email);
-    setUser(data);
-    await refreshUnreadCount();
-    return data;
-  };
+  }, [refreshAuth]);
 
   const signIn = async (payload) => {
     const { data } = await authApi.login(payload);
@@ -85,7 +77,6 @@ export const AuthProvider = ({ children }) => {
         unreadCount,
         setUnreadCount,
         refreshAuth,
-        loginAsDevUser,
         signIn,
         signUp,
         updateAccount,
@@ -97,5 +88,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

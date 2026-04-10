@@ -1,24 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authApi } from "../services/api";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
-const demoAccounts = [
-  { label: "Student Demo", email: "student@sliitnexus.com", password: "Student123!" },
-  { label: "Admin Demo", email: "admin@sliitnexus.com", password: "Admin123!" },
-];
-
-const getFriendlyLoginError = (err, credentials) => {
+const getFriendlyLoginError = (err) => {
   const backendMessage = err?.response?.data?.message;
   if (backendMessage) {
-    if (backendMessage.toLowerCase().includes("invalid email or password")) {
-      const demoAccount = demoAccounts.find(
-        (account) => account.email.toLowerCase() === credentials.email.trim().toLowerCase()
-      );
-      if (demoAccount) {
-        return `Invalid password. Try ${demoAccount.password} for ${demoAccount.email}.`;
-      }
-    }
     return backendMessage;
   }
 
@@ -31,10 +18,9 @@ const getFriendlyLoginError = (err, credentials) => {
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
-  const [selectedEmail, setSelectedEmail] = useState(demoAccounts[0].email);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const { loginAsDevUser, signIn } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const redirectTo = location.state?.from ?? "/";
@@ -54,15 +40,15 @@ const Login = () => {
 
       // Check if the logged-in user is the admin
       const user = await authApi.me(); // Fetch the logged-in user's details
-      const roles = user.data.roles;
+      const roles = Array.isArray(user.data.roles) ? user.data.roles : [];
 
       if (roles.includes("ADMIN") || roles.includes("MANAGER")) {
-        navigate("/admindashboard", { replace: true });
+        navigate("/admin/dashboard", { replace: true });
       } else {
         navigate(redirectTo, { replace: true });
       }
     } catch (err) {
-      setError(getFriendlyLoginError(err, credentials));
+      setError(getFriendlyLoginError(err));
     } finally {
       setSubmitting(false);
     }

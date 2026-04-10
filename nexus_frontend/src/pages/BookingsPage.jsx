@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { bookingApi } from "../services/api";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import BookingForm from "../components/bookings/BookingForm";
 import BookingTable from "../components/bookings/BookingTable";
 import AdminBookingDashboard from "../components/bookings/AdminBookingDashboard";
@@ -36,7 +36,8 @@ const BookingsPage = () => {
     }
   }, [selectedResource]);
 
-  const isAdmin = user?.roles.some((role) => ["ADMIN", "MANAGER"].includes(role));
+  const roles = Array.isArray(user?.roles) ? user.roles : [];
+  const isAdmin = roles.some((role) => ["ADMIN", "MANAGER"].includes(role));
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 pt-28 pb-20">

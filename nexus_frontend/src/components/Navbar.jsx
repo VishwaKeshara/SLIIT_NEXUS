@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import NotificationPanel from "./NotificationPanel";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import { authApi } from "../services/api";
 
 const primaryLinks = [

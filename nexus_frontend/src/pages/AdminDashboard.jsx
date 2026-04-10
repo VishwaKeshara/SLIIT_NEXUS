@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { adminApi } from "../services/api";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const allRoles = ["USER", "ADMIN", "TECHNICIAN", "MANAGER"];
 const fallbackRoles = ["USER"];
@@ -53,13 +53,14 @@ const AdminDashboard = () => {
       setUsers(data);
     } catch (err) {
       const status = err?.response?.status;
+      const backendMessage = err?.response?.data?.message;
 
       if (status === 401) {
-        setError("You are not signed in. Log in again with the admin demo account.");
+        setError("You are not signed in. Log in with an account that has the ADMIN role.");
       } else if (status === 403) {
         setError("Your account is signed in, but it does not have the ADMIN role.");
       } else {
-        setError("The admin data could not be loaded. Make sure the backend is running on port 8080.");
+        setError(backendMessage ?? "The admin data could not be loaded. Make sure the backend is running on port 8080.");
       }
     } finally {
       setLoading(false);
@@ -339,7 +340,7 @@ const AdminDashboard = () => {
               <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-6 shadow-sm">
                 <p className="font-bold text-red-700">{error}</p>
                 <p className="mt-2 text-sm font-semibold text-red-600">
-                  If you have not signed in yet, open the login page and choose `Admin Demo`.
+                  If you have not signed in yet, open the login page and use an account with the ADMIN role.
                 </p>
                 <Link
                   to="/login"

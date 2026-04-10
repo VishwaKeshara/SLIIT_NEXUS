@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { notificationApi } from "../services/api";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const NotificationsPage = () => {
   const { unreadCount, setUnreadCount } = useAuth();
