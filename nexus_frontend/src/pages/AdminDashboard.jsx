@@ -4,11 +4,34 @@ import { adminApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 const allRoles = ["USER", "ADMIN", "TECHNICIAN", "MANAGER"];
+const fallbackRoles = ["USER"];
 const emptyForm = {
   displayName: "",
   email: "",
   password: "",
-  roles: ["USER"],
+  roles: fallbackRoles,
+};
+
+const normalizeRoles = (roles) => {
+  const roleValues = Array.isArray(roles) ? roles : [roles];
+  const normalizedRoles = roleValues
+    .map((role) => String(role ?? "").replace(/^ROLE_/, "").trim().toUpperCase())
+    .filter((role) => allRoles.includes(role));
+
+  return normalizedRoles.length > 0 ? [...new Set(normalizedRoles)] : fallbackRoles;
+};
+
+const getAdminFormError = (err) => {
+  const response = err?.response?.data;
+  const fieldErrors = response?.errors
+    ? Object.entries(response.errors).map(([field, message]) => `${field}: ${message}`)
+    : [];
+
+  if (fieldErrors.length > 0) {
+    return fieldErrors.join(" ");
+  }
+
+  return response?.message ?? "Unable to save the user account.";
 };
 
 const AdminDashboard = () => {
@@ -56,13 +79,15 @@ const AdminDashboard = () => {
   const handleFormChange = (event) => {
     const { name, value } = event.target;
     setUserForm((current) => ({ ...current, [name]: value }));
+    setFormError("");
   };
 
   const toggleFormRole = (role) => {
     setUserForm((current) => {
-      const hasRole = current.roles.includes(role);
-      const nextRoles = hasRole ? current.roles.filter((item) => item !== role) : [...current.roles, role];
-      return { ...current, roles: nextRoles.length === 0 ? ["USER"] : nextRoles };
+      const currentRoles = normalizeRoles(current.roles);
+      const hasRole = currentRoles.includes(role);
+      const nextRoles = hasRole ? currentRoles.filter((item) => item !== role) : [...currentRoles, role];
+      return { ...current, roles: normalizeRoles(nextRoles) };
     });
   };
 
@@ -72,7 +97,7 @@ const AdminDashboard = () => {
       displayName: account.displayName,
       email: account.email,
       password: "",
-      roles: account.roles ?? ["USER"],
+      roles: normalizeRoles(account.roles),
     });
     setFormError("");
   };
@@ -82,38 +107,54 @@ const AdminDashboard = () => {
     setSubmitting(true);
     setFormError("");
 
+    if (!editingUserId && userForm.password.trim().length < 8) {
+      setFormError("Password must be at least 8 characters.");
+      setSubmitting(false);
+      return;
+    }
+
+    if (editingUserId && userForm.password.trim() && userForm.password.trim().length < 8) {
+      setFormError("Password must be at least 8 characters, or leave it blank to keep the current password.");
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      console.log("Submitting user form:", userForm);
+      const payload = {
+        ...userForm,
+        roles: normalizeRoles(userForm.roles),
+      };
+
       if (editingUserId) {
         await adminApi.updateUser(editingUserId, {
-          ...userForm,
+          ...payload,
           password: userForm.password.trim() ? userForm.password : undefined,
         });
       } else {
         await adminApi.createUser({
-          ...userForm,
-          roles: Array.from(userForm.roles), // Ensure roles are sent as an array
+          ...payload,
         });
       }
       resetForm();
       await loadUsers();
     } catch (err) {
-      setFormError(err?.response?.data?.message ?? "Unable to save the user account.");
+      setFormError(getAdminFormError(err));
     } finally {
       setSubmitting(false);
     }
   };
 
   const toggleRole = async (targetUser, role) => {
-    const nextRoles = targetUser.roles.includes(role)
-      ? targetUser.roles.filter((item) => item !== role)
-      : [...targetUser.roles, role];
+    const currentRoles = normalizeRoles(targetUser.roles);
+    const nextRoles = currentRoles.includes(role)
+      ? currentRoles.filter((item) => item !== role)
+      : [...currentRoles, role];
 
     if (nextRoles.length === 0) {
       return;
     }
 
-    await adminApi.updateRoles(targetUser.id, nextRoles);
+    await adminApi.updateRoles(targetUser.id, normalizeRoles(nextRoles));
     await loadUsers();
   };
 
@@ -234,9 +275,15 @@ const AdminDashboard = () => {
                   value={userForm.password}
                   onChange={handleFormChange}
                   placeholder={editingUserId ? "Leave blank to keep current password" : "Set an initial password"}
+                  minLength={editingUserId ? undefined : 8}
                   className="mt-2 w-full rounded-[1rem] border border-[#dbe7df] bg-white px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a]"
                   required={!editingUserId}
                 />
+                <p className="mt-2 text-xs font-semibold text-[#5c746d]">
+                  {editingUserId
+                    ? "Use 8 or more characters, or leave blank to keep the current password."
+                    : "Use 8 or more characters."}
+                </p>
               </label>
 
               <div className="md:col-span-2">

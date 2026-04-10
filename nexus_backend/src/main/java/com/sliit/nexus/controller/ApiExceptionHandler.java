@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -33,6 +34,11 @@ public class ApiExceptionHandler {
                         "message", "Request validation failed.",
                         "errors", errors
                 ));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleUnreadableMessage(HttpMessageNotReadableException exception) {
+        return ResponseEntity.badRequest().body(Map.of("message", "Invalid request payload. Check role values and try again."));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
