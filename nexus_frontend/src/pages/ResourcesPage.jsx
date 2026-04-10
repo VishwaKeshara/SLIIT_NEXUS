@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { bookingApi, resourceApi } from "../services/api";
+import ResourcesLayout from "../components/resources/ResourcesLayout";
 
 const resourceTypes = ["LECTURE_HALL", "LAB", "MEETING_ROOM", "EQUIPMENT"];
 const resourceStatuses = ["ACTIVE", "OUT_OF_SERVICE"];
@@ -199,7 +200,7 @@ const getFriendlyResourceError = (err) => {
   return "Something went wrong while saving the resource. Please try again.";
 };
 
-const ResourcesPage = () => {
+const ResourcesPage = ({ initialActivePanel = "resources" }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const isAdmin = user?.roles?.includes("ADMIN");
@@ -225,7 +226,7 @@ const ResourcesPage = () => {
   const [csvMessage, setCsvMessage] = useState("");
   const [importingBulk, setImportingBulk] = useState(false);
   const [importSummary, setImportSummary] = useState(null);
-  const [activePanel, setActivePanel] = useState("dashboard");
+  const [activePanel, setActivePanel] = useState(initialActivePanel);
   const csvInputRef = useRef(null);
 
   const loadResources = async () => {
@@ -246,6 +247,10 @@ const ResourcesPage = () => {
   useEffect(() => {
     void loadResources();
   }, []);
+
+  useEffect(() => {
+    setActivePanel(initialActivePanel);
+  }, [initialActivePanel]);
 
   useEffect(() => {
     const loadBookings = async () => {
@@ -886,120 +891,8 @@ const ResourcesPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#edf4fb] pt-6">
-      <div className="mx-auto flex max-w-[1800px] flex-col gap-8 px-4 pb-16 lg:flex-row lg:items-start lg:px-6">
-        <aside className="sticky top-6 rounded-[1.8rem] bg-[#103c35] p-6 text-white shadow-[0_28px_80px_rgba(16,60,53,0.28)] lg:min-h-[calc(100vh-3rem)] lg:w-80 lg:shrink-0">
-          <div className="flex items-center gap-4 border-b border-white/15 pb-7">
-            <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[#f2d45c] text-2xl font-black tracking-[0.12em] text-[#103c35]">
-              NX
-            </div>
-            <div>
-              <p className="font-display text-3xl font-extrabold tracking-[-0.06em]">SLIIT Nexus</p>
-              <p className="text-base font-medium tracking-[0.08em] text-[#d5efe6]">Resources</p>
-            </div>
-          </div>
-
-          <nav className="mt-7 grid gap-4 text-base font-extrabold">
-            <button
-              type="button"
-              onClick={() => setActivePanel("dashboard")}
-              className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                activePanel === "dashboard" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              type="button"
-              onClick={() => setActivePanel("resources")}
-              className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                activePanel === "resources" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-              }`}
-            >
-              Resources
-            </button>
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setActivePanel("add")}
-                className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                  activePanel === "add" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-                }`}
-              >
-                Add Resource
-              </button>
-            )}
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setActivePanel("import")}
-                className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                  activePanel === "import" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-                }`}
-              >
-                Bulk Import
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setActivePanel("availability")}
-              className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                activePanel === "availability" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-              }`}
-            >
-              Availability
-            </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="mt-4 rounded-[1.15rem] bg-[#f2d45c] px-5 py-4 text-left text-base font-black text-[#103c35] transition hover:bg-[#f7df76]"
-            >
-              Logout
-            </button>
-          </nav>
-
-          <div className="mt-8 rounded-[1.5rem] border border-white/15 bg-white/10 p-5">
-            <p className="font-display text-2xl font-extrabold tracking-[-0.04em]">Admin Flow</p>
-            <p className="mt-3 text-sm leading-6 text-[#d7eee6]">
-              Manage resources, imports, and availability without leaving this dashboard.
-            </p>
-          </div>
-        </aside>
-
-        <section className="min-w-0 flex-1">
-        <header id="dashboard" className="p-1 text-[#0f342e]">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#39766a]">Smart Campus Operations Hub</p>
-              <h1 className="font-display mt-3 text-5xl font-extrabold tracking-[-0.07em] text-[#0f342e] sm:text-6xl">
-                {panelTitle}
-              </h1>
-              <p className="mt-3 max-w-3xl text-base font-semibold text-[#5c746d] sm:text-lg">
-                {panelSubtitle}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setActivePanel("dashboard")}
-                className={`rounded-[1.35rem] px-7 py-4 text-base font-black shadow-[0_12px_28px_rgba(15,52,46,0.08)] ${
-                  activePanel === "dashboard" ? "bg-[#f2d45c] text-[#103c35]" : "bg-white text-[#0f342e]"
-                }`}
-              >
-                Dashboard
-              </button>
-              <button
-                type="button"
-                onClick={() => setActivePanel("resources")}
-                className={`rounded-[1.35rem] px-7 py-4 text-base font-black shadow-[0_12px_28px_rgba(16,60,53,0.1)] ${
-                  activePanel === "resources" ? "bg-[#f2d45c] text-[#103c35]" : "bg-white text-[#0f342e]"
-                }`}
-              >
-                Resources
-              </button>
-            </div>
-          </div>
-        </header>
+    <>
+      <ResourcesLayout isAdmin={isAdmin} onLogout={handleLogout} subtitle={panelSubtitle} title={panelTitle}>
 
         {activePanel === "dashboard" && (
         <>
@@ -1892,8 +1785,7 @@ const ResourcesPage = () => {
           )}
         </div>
         )}
-      </section>
-      </div>
+      </ResourcesLayout>
 
       {availabilityResource && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#08231f]/65 px-4 py-8 backdrop-blur-sm">
@@ -1983,7 +1875,7 @@ const ResourcesPage = () => {
           </section>
         </div>
       )}
-    </main>
+    </>
   );
 };
 
