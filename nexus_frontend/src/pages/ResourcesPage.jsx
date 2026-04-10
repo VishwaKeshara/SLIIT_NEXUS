@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { bookingApi, resourceApi } from "../services/api";
 
@@ -221,6 +221,7 @@ const ResourcesPage = () => {
   const [csvMessage, setCsvMessage] = useState("");
   const [importingBulk, setImportingBulk] = useState(false);
   const [importSummary, setImportSummary] = useState(null);
+  const [activePanel, setActivePanel] = useState("dashboard");
   const csvInputRef = useRef(null);
 
   const loadResources = async () => {
@@ -472,6 +473,24 @@ const ResourcesPage = () => {
     await logout();
     navigate("/");
   };
+
+  const panelTitle =
+    {
+      dashboard: "Resource Management Dashboard",
+      resources: "Resource Catalogue",
+      add: editingId ? "Edit Resource" : "Add Resource",
+      import: "Bulk Import Resources",
+      availability: "Resource Availability",
+    }[activePanel] ?? "Resource Management Dashboard";
+
+  const panelSubtitle =
+    {
+      dashboard: "Manage facilities, assets, imports, availability, and operational status from one admin workspace.",
+      resources: "Search, filter, view, update, and remove campus resources from the catalogue.",
+      add: "Create a new resource or update the selected resource with validated campus data.",
+      import: "Upload a CSV file, preview all rows, then confirm valid non-duplicate resource imports.",
+      availability: "Open weekly availability calendars and check resource status before booking.",
+    }[activePanel] ?? "";
 
   const validateImportRows = (rows) => {
     const existingKeys = new Set(resources.map((resource) => buildDuplicateKey(resource.name ?? "", resource.location ?? "")));
@@ -738,34 +757,55 @@ const ResourcesPage = () => {
           </div>
 
           <nav className="mt-7 grid gap-4 text-base font-extrabold">
-            <a href="#dashboard" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+            <button
+              type="button"
+              onClick={() => setActivePanel("dashboard")}
+              className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
+                activePanel === "dashboard" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
+              }`}
+            >
               Dashboard
-            </a>
-            <a href="#resources" className="rounded-[1.15rem] bg-white/20 px-5 py-4 text-white transition hover:bg-white/26">
+            </button>
+            <button
+              type="button"
+              onClick={() => setActivePanel("resources")}
+              className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
+                activePanel === "resources" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
+              }`}
+            >
               Resources
-            </a>
+            </button>
             {isAdmin && (
-              <a href="#add-resource" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+              <button
+                type="button"
+                onClick={() => setActivePanel("add")}
+                className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
+                  activePanel === "add" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
+                }`}
+              >
                 Add Resource
-              </a>
+              </button>
             )}
             {isAdmin && (
-              <a href="#bulk-import" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+              <button
+                type="button"
+                onClick={() => setActivePanel("import")}
+                className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
+                  activePanel === "import" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
+                }`}
+              >
                 Bulk Import
-              </a>
+              </button>
             )}
-            <a href="#availability" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
+            <button
+              type="button"
+              onClick={() => setActivePanel("availability")}
+              className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
+                activePanel === "availability" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
+              }`}
+            >
               Availability
-            </a>
-            <Link to="/bookings" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
-              Bookings
-            </Link>
-            <Link to="/tickets" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
-              Maintenance
-            </Link>
-            <Link to="/notifications" className="rounded-[1.15rem] bg-white/12 px-5 py-4 text-white transition hover:bg-white/18">
-              Notifications
-            </Link>
+            </button>
             <button
               type="button"
               onClick={handleLogout}
@@ -778,7 +818,7 @@ const ResourcesPage = () => {
           <div className="mt-8 rounded-[1.5rem] border border-white/15 bg-white/10 p-5">
             <p className="font-display text-2xl font-extrabold tracking-[-0.04em]">Admin Flow</p>
             <p className="mt-3 text-sm leading-6 text-[#d7eee6]">
-              Manage resources, imports, availability, bookings, and maintenance operations.
+              Manage resources, imports, and availability without leaving this dashboard.
             </p>
           </div>
         </aside>
@@ -789,29 +829,36 @@ const ResourcesPage = () => {
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#39766a]">Smart Campus Operations Hub</p>
               <h1 className="font-display mt-3 text-5xl font-extrabold tracking-[-0.07em] text-[#0f342e] sm:text-6xl">
-                Resource Management Dashboard
+                {panelTitle}
               </h1>
               <p className="mt-3 max-w-3xl text-base font-semibold text-slate-500 sm:text-lg">
-                Manage facilities, assets, bulk imports, availability, and operational status from one admin workspace.
+                {panelSubtitle}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-4">
-              <a
-                href="#dashboard"
-                className="rounded-[1.35rem] bg-white px-7 py-4 text-base font-black text-[#0f342e] shadow-[0_12px_28px_rgba(15,52,46,0.08)]"
+              <button
+                type="button"
+                onClick={() => setActivePanel("dashboard")}
+                className={`rounded-[1.35rem] px-7 py-4 text-base font-black shadow-[0_12px_28px_rgba(15,52,46,0.08)] ${
+                  activePanel === "dashboard" ? "bg-[#f2d45c] text-[#103c35]" : "bg-white text-[#0f342e]"
+                }`}
               >
                 Dashboard
-              </a>
-              <a
-                href="#resources"
-                className="rounded-[1.35rem] bg-[#f2d45c] px-7 py-4 text-base font-black text-[#103c35] shadow-[0_12px_28px_rgba(16,60,53,0.1)]"
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePanel("resources")}
+                className={`rounded-[1.35rem] px-7 py-4 text-base font-black shadow-[0_12px_28px_rgba(16,60,53,0.1)] ${
+                  activePanel === "resources" ? "bg-[#f2d45c] text-[#103c35]" : "bg-white text-[#0f342e]"
+                }`}
               >
                 Resources
-              </a>
+              </button>
             </div>
           </div>
         </header>
 
+        {activePanel === "dashboard" && (
         <div className="mt-9 grid gap-6 md:grid-cols-4">
           <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
             <p className="text-base font-extrabold text-[#5b7493]">Total Resources</p>
@@ -830,8 +877,9 @@ const ResourcesPage = () => {
             <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.filtered}</p>
           </div>
         </div>
+        )}
 
-        {isAdmin && (
+        {isAdmin && activePanel === "import" && (
           <section id="bulk-import" className="mt-9 rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -987,9 +1035,10 @@ const ResourcesPage = () => {
           </section>
         )}
 
+        {["add", "resources", "availability"].includes(activePanel) && (
         <div className="mt-9 grid gap-6 xl:grid-cols-[0.9fr_1.7fr]">
-          {isAdmin && (
-            <section id="add-resource" className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8">
+          {isAdmin && activePanel === "add" && (
+            <section id="add-resource" className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8 xl:col-span-2">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Admin Tool</p>
@@ -1196,12 +1245,15 @@ const ResourcesPage = () => {
             </section>
           )}
 
-          <section id="resources" className={`rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8 ${isAdmin ? "" : "xl:col-span-2"}`}>
+          {["resources", "availability"].includes(activePanel) && (
+          <section id="resources" className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8 xl:col-span-2">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Catalogue</p>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">
+                  {activePanel === "availability" ? "Availability" : "Catalogue"}
+                </p>
                 <h2 className="font-display mt-2 text-4xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
-                  Resource Catalogue
+                  {activePanel === "availability" ? "Resource Availability Calendar" : "Resource Catalogue"}
                 </h2>
               </div>
               <button
@@ -1388,7 +1440,9 @@ const ResourcesPage = () => {
               )}
             </div>
           </section>
+          )}
         </div>
+        )}
       </section>
       </div>
 
