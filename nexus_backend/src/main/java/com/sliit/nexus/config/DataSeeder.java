@@ -1,12 +1,12 @@
 package com.sliit.nexus.config;
 
 import com.sliit.nexus.model.AppRole;
-import com.sliit.nexus.model.BookingRequest;
+import com.sliit.nexus.model.Booking;
 import com.sliit.nexus.model.BookingStatus;
 import com.sliit.nexus.model.SupportTicket;
 import com.sliit.nexus.model.TicketStatus;
 import com.sliit.nexus.model.UserAccount;
-import com.sliit.nexus.repository.BookingRequestRepository;
+import com.sliit.nexus.repository.BookingRepository;
 import com.sliit.nexus.repository.SupportTicketRepository;
 import com.sliit.nexus.repository.UserAccountRepository;
 import java.time.Instant;
@@ -24,7 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class DataSeeder {
 
     private final UserAccountRepository userAccountRepository;
-    private final BookingRequestRepository bookingRequestRepository;
+    private final BookingRepository bookingRepository;
     private final SupportTicketRepository supportTicketRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -67,11 +67,17 @@ public class DataSeeder {
                 student = userAccountRepository.save(student);
             }
 
-            if (bookingRequestRepository.count() == 0) {
-                bookingRequestRepository.save(BookingRequest.builder()
-                        .requestedByUserId(student.getId())
+            if (bookingRepository.count() == 0) {
+                bookingRepository.save(Booking.builder()
+                        .userId(student.getId())
+                        .userName(student.getDisplayName())
+                        .resourceId("seed-resource-1") // dummy
                         .resourceName("Lecture Hall B")
-                        .dateLabel("2026-04-09 10:00 AM")
+                        .date(java.time.LocalDate.now().plusDays(1))
+                        .startTime(java.time.LocalTime.of(10, 0))
+                        .endTime(java.time.LocalTime.of(12, 0))
+                        .purpose("Weekly Club Meeting")
+                        .attendees(30)
                         .status(BookingStatus.PENDING)
                         .createdAt(Instant.now())
                         .updatedAt(Instant.now())

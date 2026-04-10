@@ -24,8 +24,13 @@ export const notificationApi = {
 
 export const bookingApi = {
   list: () => API.get("/bookings"),
-  updateStatus: (bookingId, status) =>
-    API.patch(`/bookings/${bookingId}/status`, { status }),
+  getById: (id) => API.get(`/bookings/${id}`),
+  create: (payload) => API.post("/bookings", payload),
+  approve: (id) => API.put(`/bookings/${id}/approve`),
+  reject: (id, reason) => API.put(`/bookings/${id}/reject`, { reason }),
+  cancel: (id) => API.put(`/bookings/${id}/cancel`),
+  delete: (id) => API.delete(`/bookings/${id}`),
+  checkIn: (id) => API.get(`/bookings/checkin/${id}`),
 };
 
 export const resourceApi = {

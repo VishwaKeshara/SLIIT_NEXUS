@@ -14,7 +14,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ResourcesPage from "./pages/ResourcesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AboutUsPage from "./pages/AboutUsPage";
-
+import CheckInPage from "./pages/CheckInPage";
 
 function App() {
   const { pathname } = useLocation();
@@ -100,6 +100,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/checkin/:id" element={<CheckInPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
