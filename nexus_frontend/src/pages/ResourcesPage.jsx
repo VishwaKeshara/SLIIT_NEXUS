@@ -3,19 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { bookingApi, resourceApi } from "../services/api";
 
-const resourceTypes = ["LECTURE_HALL", "LAB", "MEETING_ROOM", "EQUIPMENT"];
-const resourceStatuses = ["ACTIVE", "OUT_OF_SERVICE"];
-const calendarSlots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-const csvTemplateHeaders = [
-  "Name",
-  "Type",
-  "Capacity",
-  "Location",
-  "Available From",
-  "Available To",
-  "Status",
-  "Description",
+const resourceTypeOptions = [
+  "ALL",
+  "LECTURE_HALL",
+  "LAB",
+  "MEETING_ROOM",
+  "EQUIPMENT",
 ];
+const resourceStatusOptions = ["ALL", "ACTIVE", "OUT_OF_SERVICE"];
 
 const campusLocations = {
   LECTURE_HALL: [
@@ -247,40 +242,19 @@ const ResourcesPage = () => {
     void loadResources();
   }, []);
 
-  useEffect(() => {
-    const loadBookings = async () => {
-      if (!user) {
-        setBookings([]);
-        return;
-      }
-
-      try {
-        const { data } = await bookingApi.list();
-        setBookings(data ?? []);
-      } catch {
-        setBookings([]);
-      }
-    };
-
-    void loadBookings();
-  }, [user]);
-
-  const calendarDays = useMemo(
-    () =>
-      Array.from({ length: 7 }, (_, index) => {
-        const day = new Date();
-        day.setDate(day.getDate() + index);
-        return day;
-      }),
-    []
-  );
-
-  const formLocationOptions = formState.type ? campusLocations[formState.type] ?? [] : [];
-  const filterLocationOptions = filters.type ? campusLocations[filters.type] ?? [] : getAllLocations();
+  const locationOptions = useMemo(() => {
+    const locations = [
+      ...new Set(
+        resources.map((resource) => resource.location).filter(Boolean),
+      ),
+    ];
+    return ["ALL", ...locations];
+  }, [resources]);
 
   const filteredResources = useMemo(() => {
-    const normalizedSearch = filters.search.trim().toLowerCase();
-    const minCapacity = filters.capacity === "" ? null : Number(filters.capacity);
+    const normalizedSearch = searchText.trim().toLowerCase();
+    const capacityThreshold =
+      minimumCapacity === "" ? null : Number(minimumCapacity);
 
     return resources.filter((resource) => {
       const matchesSearch =
@@ -289,23 +263,44 @@ const ResourcesPage = () => {
         resource.location?.toLowerCase().includes(normalizedSearch) ||
         resource.description?.toLowerCase().includes(normalizedSearch);
 
-      const matchesType = filters.type === "" || resource.type === filters.type;
-      const matchesCapacity = minCapacity === null || (resource.capacity ?? 0) >= minCapacity;
-      const matchesLocation = filters.location === "" || resource.location === filters.location;
-      const matchesStatus = filters.status === "" || resource.status === filters.status;
+      const matchesType =
+        selectedType === "ALL" || resource.type === selectedType;
+      const matchesStatus =
+        selectedStatus === "ALL" || resource.status === selectedStatus;
+      const matchesLocation =
+        selectedLocation === "ALL" || resource.location === selectedLocation;
+      const matchesCapacity =
+        capacityThreshold === null ||
+        (resource.capacity ?? 0) >= capacityThreshold;
 
-      return matchesSearch && matchesType && matchesCapacity && matchesLocation && matchesStatus;
+      return (
+        matchesSearch &&
+        matchesType &&
+        matchesStatus &&
+        matchesLocation &&
+        matchesCapacity
+      );
     });
-  }, [filters, resources]);
+  }, [
+    minimumCapacity,
+    resources,
+    searchText,
+    selectedLocation,
+    selectedStatus,
+    selectedType,
+  ]);
 
   const summary = useMemo(
     () => ({
       total: resources.length,
-      active: resources.filter((resource) => resource.status === "ACTIVE").length,
-      outOfService: resources.filter((resource) => resource.status === "OUT_OF_SERVICE").length,
+      active: resources.filter((resource) => resource.status === "ACTIVE")
+        .length,
+      outOfService: resources.filter(
+        (resource) => resource.status === "OUT_OF_SERVICE",
+      ).length,
       filtered: filteredResources.length,
     }),
-    [filteredResources.length, resources]
+    [filteredResources.length, resources],
   );
 
   const resourceTypeSummary = useMemo(
@@ -576,8 +571,10 @@ const ResourcesPage = () => {
         resetForm();
       }
       await loadResources();
-    } catch (err) {
-      setFormMessage(getFriendlyResourceError(err));
+    } catch {
+      setFormMessage(
+        "Failed to create the resource. Please check the values and try again.",
+      );
     } finally {
       setDeletingId(null);
     }
@@ -886,151 +883,49 @@ const ResourcesPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#edf4fb] pt-6">
-      <div className="mx-auto flex max-w-[1800px] flex-col gap-8 px-4 pb-16 lg:flex-row lg:items-start lg:px-6">
-        <aside className="sticky top-6 rounded-[1.8rem] bg-[#103c35] p-6 text-white shadow-[0_28px_80px_rgba(16,60,53,0.28)] lg:min-h-[calc(100vh-3rem)] lg:w-80 lg:shrink-0">
-          <div className="flex items-center gap-4 border-b border-white/15 pb-7">
-            <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[#f2d45c] text-2xl font-black tracking-[0.12em] text-[#103c35]">
-              NX
-            </div>
-            <div>
-              <p className="font-display text-3xl font-extrabold tracking-[-0.06em]">SLIIT Nexus</p>
-              <p className="text-base font-medium tracking-[0.08em] text-[#d5efe6]">Resources</p>
-            </div>
-          </div>
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f3fbf8_0%,#eef7f3_100%)] px-4 pb-16 pt-28">
+      <section className="mx-auto max-w-6xl">
+        <div className="rounded-[2rem] border border-[#b9ddd2] bg-[linear-gradient(135deg,#0b3a34,#19584c_60%,#2d7f6b)] p-8 text-white shadow-[0_24px_70px_rgba(6,35,33,0.16)]">
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#bfe8db]">
+            Module A
+          </p>
+          <h1 className="font-display mt-3 text-4xl font-extrabold tracking-[-0.04em] sm:text-5xl">
+            Facilities & Assets Catalogue
+          </h1>
+          <p className="mt-4 max-w-3xl text-base leading-7 text-[#e1f3ec] sm:text-lg">
+            Browse lecture halls, labs, meeting rooms, and equipment with
+            searchable metadata including type, capacity, location, availability
+            window, and operational status.
+          </p>
 
-          <nav className="mt-7 grid gap-4 text-base font-extrabold">
-            <button
-              type="button"
-              onClick={() => setActivePanel("dashboard")}
-              className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                activePanel === "dashboard" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              type="button"
-              onClick={() => setActivePanel("resources")}
-              className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                activePanel === "resources" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-              }`}
-            >
-              Resources
-            </button>
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setActivePanel("add")}
-                className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                  activePanel === "add" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-                }`}
-              >
-                Add Resource
-              </button>
-            )}
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setActivePanel("import")}
-                className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                  activePanel === "import" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-                }`}
-              >
-                Bulk Import
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setActivePanel("availability")}
-              className={`rounded-[1.15rem] px-5 py-4 text-left text-white transition ${
-                activePanel === "availability" ? "bg-white/24" : "bg-white/12 hover:bg-white/18"
-              }`}
-            >
-              Availability
-            </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="mt-4 rounded-[1.15rem] bg-[#f2d45c] px-5 py-4 text-left text-base font-black text-[#103c35] transition hover:bg-[#f7df76]"
-            >
-              Logout
-            </button>
-          </nav>
-
-          <div className="mt-8 rounded-[1.5rem] border border-white/15 bg-white/10 p-5">
-            <p className="font-display text-2xl font-extrabold tracking-[-0.04em]">Admin Flow</p>
-            <p className="mt-3 text-sm leading-6 text-[#d7eee6]">
-              Manage resources, imports, and availability without leaving this dashboard.
-            </p>
-          </div>
-        </aside>
-
-        <section className="min-w-0 flex-1">
-        <header id="dashboard" className="p-1 text-[#0f342e]">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#39766a]">Smart Campus Operations Hub</p>
-              <h1 className="font-display mt-3 text-5xl font-extrabold tracking-[-0.07em] text-[#0f342e] sm:text-6xl">
-                {panelTitle}
-              </h1>
-              <p className="mt-3 max-w-3xl text-base font-semibold text-[#5c746d] sm:text-lg">
-                {panelSubtitle}
+          <div className="mt-6 grid gap-4 md:grid-cols-4">
+            <div className="rounded-[1.2rem] bg-white/12 p-4 backdrop-blur-sm">
+              <p className="text-sm font-bold text-[#bfe8db]">
+                Total Resources
+              </p>
+              <p className="mt-2 font-display text-4xl font-extrabold">
+                {summary.total}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setActivePanel("dashboard")}
-                className={`rounded-[1.35rem] px-7 py-4 text-base font-black shadow-[0_12px_28px_rgba(15,52,46,0.08)] ${
-                  activePanel === "dashboard" ? "bg-[#f2d45c] text-[#103c35]" : "bg-white text-[#0f342e]"
-                }`}
-              >
-                Dashboard
-              </button>
-              <button
-                type="button"
-                onClick={() => setActivePanel("resources")}
-                className={`rounded-[1.35rem] px-7 py-4 text-base font-black shadow-[0_12px_28px_rgba(16,60,53,0.1)] ${
-                  activePanel === "resources" ? "bg-[#f2d45c] text-[#103c35]" : "bg-white text-[#0f342e]"
-                }`}
-              >
-                Resources
-              </button>
+            <div className="rounded-[1.2rem] bg-white/12 p-4 backdrop-blur-sm">
+              <p className="text-sm font-bold text-[#bfe8db]">Active</p>
+              <p className="mt-2 font-display text-4xl font-extrabold">
+                {summary.active}
+              </p>
             </div>
-          </div>
-        </header>
-
-        {activePanel === "dashboard" && (
-        <>
-        <div className="mt-9 grid gap-6 md:grid-cols-4">
-          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Total Resources</p>
-            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.total}</p>
-          </div>
-          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Active Resources</p>
-            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.active}</p>
-          </div>
-          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Out of Service Resources</p>
-            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.outOfService}</p>
-          </div>
-          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Labs / Rooms / Equipment</p>
-            <div className="mt-6 grid grid-cols-3 gap-2">
-              <div>
-                <p className="font-display text-4xl font-extrabold text-[#0f342e]">{resourceTypeSummary.labs}</p>
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">Labs</p>
-              </div>
-              <div>
-                <p className="font-display text-4xl font-extrabold text-[#0f342e]">{resourceTypeSummary.rooms}</p>
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">Rooms</p>
-              </div>
-              <div>
-                <p className="font-display text-4xl font-extrabold text-[#0f342e]">{resourceTypeSummary.equipment}</p>
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">Items</p>
-              </div>
+            <div className="rounded-[1.2rem] bg-white/12 p-4 backdrop-blur-sm">
+              <p className="text-sm font-bold text-[#bfe8db]">Out of Service</p>
+              <p className="mt-2 font-display text-4xl font-extrabold">
+                {summary.outOfService}
+              </p>
+            </div>
+            <div className="rounded-[1.2rem] bg-white/12 p-4 backdrop-blur-sm">
+              <p className="text-sm font-bold text-[#bfe8db]">
+                Filtered Results
+              </p>
+              <p className="mt-2 font-display text-4xl font-extrabold">
+                {summary.filtered}
+              </p>
             </div>
           </div>
         </div>
@@ -1038,9 +933,11 @@ const ResourcesPage = () => {
         <section className="mt-9 rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Quick Actions</p>
-              <h2 className="font-display mt-2 text-4xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
-                Resource Controls
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2d7f6b]">
+                Search & Filter
+              </p>
+              <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#062321]">
+                Find the right campus resource
               </h2>
             </div>
             <span className="rounded-[1.2rem] bg-[#f3f8f5] px-5 py-3 text-sm font-black text-[#39766a]">
@@ -1602,77 +1499,65 @@ const ResourcesPage = () => {
                 onChange={handleFilterChange}
                 className="rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#dceee7] md:col-span-2 xl:col-span-5"
               >
-                <option value="">All Locations</option>
-                {filterLocationOptions.map((location) => (
-                  <option key={location} value={location}>
-                    {location}
+                {resourceStatusOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "ALL"
+                      ? "All Statuses"
+                      : formatEnumLabel(option)}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                type="button"
-                className="rounded-[1rem] bg-[#103c35] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0b2e29]"
-              >
-                Apply Filters
-              </button>
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="rounded-[1rem] bg-[#6b7f78] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#52645f]"
-              >
-                Reset Filters
-              </button>
+            <label className="block">
+              <span className="text-sm font-bold text-[#1a4b43]">
+                Min Capacity
+              </span>
+              <input
+                type="number"
+                min="0"
+                value={minimumCapacity}
+                onChange={(event) => setMinimumCapacity(event.target.value)}
+                placeholder="e.g. 50"
+                className="mt-2 w-full rounded-xl border border-[#c9e0d8] bg-white px-4 py-3 text-[#062321] outline-none transition focus:border-[#2d7f6b]"
+              />
+            </label>
+          </div>
+        </div>
+
+        {isAdmin && (
+          <section className="mt-8 rounded-[1.75rem] border border-[#cfe7df] bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#2d7f6b]">
+                  Admin Tool
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#062321]">
+                  Add a new resource to the catalogue
+                </h2>
+              </div>
+              <p className="text-sm text-[#58726c]">
+                Visible only to admin users because `POST /resources` is
+                secured.
+              </p>
             </div>
 
-            <div id="availability" className="mt-5 rounded-2xl border border-[#dbe7df] bg-[#f3f8f5] px-4 py-3 text-sm font-semibold text-[#39766a]">
-              Use the `View Availability` button on any resource card to open the weekly availability calendar.
-            </div>
-
-            <div className="mt-6">
-              {loading ? (
-                <div className="rounded-[1.4rem] border border-[#dbe7df] bg-[#f8fbf9] p-8 text-center font-semibold text-[#5c746d]">
-                  Loading resources...
-                </div>
-              ) : catalogueError ? (
-                <div className="rounded-[1.4rem] border border-red-200 bg-red-50 p-8 text-center font-semibold text-red-700">
-                  {catalogueError}
-                </div>
-              ) : filteredResources.length === 0 ? (
-                <div className="rounded-[1.4rem] border border-[#dbe7df] bg-[#f8fbf9] p-8 text-center font-semibold text-[#5c746d]">
-                  No resources found.
-                </div>
-              ) : (
-                <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
-                  {filteredResources.map((resource) => (
-                    <article
-                      key={resource.id}
-                      className="group relative overflow-hidden rounded-[1.7rem] border border-white/70 bg-white/65 p-5 shadow-[0_18px_44px_rgba(15,52,46,0.12)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-[#c5ded4] hover:bg-white/80 hover:shadow-[0_26px_58px_rgba(15,52,46,0.18)]"
-                    >
-                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,212,92,0.24),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.75),rgba(226,241,235,0.42))]" />
-                      <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#103c35]/10 blur-2xl transition group-hover:bg-[#103c35]/16" />
-                      <div className="relative">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <h3 className="text-2xl font-extrabold tracking-[-0.03em] text-[#0f342e]">
-                            {resource.name}
-                          </h3>
-                          <p className="mt-2 inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-black uppercase tracking-[0.14em] text-[#39766a] ring-1 ring-[#dbe7df]">
-                            {formatEnumLabel(resource.type)}
-                          </p>
-                        </div>
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sm ${
-                            resource.status === "ACTIVE"
-                              ? "bg-green-100/90 text-green-800 ring-1 ring-green-200"
-                              : "bg-red-100/90 text-red-800 ring-1 ring-red-200"
-                          }`}
-                        >
-                          {resource.status}
-                        </span>
-                      </div>
+            <form
+              className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+              onSubmit={handleCreateResource}
+            >
+              <label className="block">
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Resource Name
+                </span>
+                <input
+                  required
+                  name="name"
+                  value={formState.name}
+                  onChange={handleFormChange}
+                  className="mt-2 w-full rounded-xl border border-[#c9e0d8] px-4 py-3 outline-none focus:border-[#2d7f6b]"
+                />
+              </label>
 
                       <div className="mt-5 grid gap-3 text-sm text-[#3e6259]">
                         <div className="rounded-[1rem] bg-white/70 p-3 ring-1 ring-white/80">
@@ -1695,76 +1580,61 @@ const ResourcesPage = () => {
                         </div>
                       </div>
 
-                      {inlineEditingId === resource.id && (
-                        <div className="mt-5 rounded-[1.3rem] border border-[#dbe7df] bg-white/80 p-4 shadow-inner">
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <label className="block md:col-span-2">
-                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Name</span>
-                              <input
-                                name="name"
-                                value={inlineFormState.name}
-                                onChange={handleInlineFormChange}
-                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
-                                  inlineFormErrors.name ? "border-red-400" : "border-[#dbe7df]"
-                                }`}
-                              />
-                              {inlineFormErrors.name && (
-                                <p className="mt-1 text-xs font-bold text-red-600">{inlineFormErrors.name}</p>
-                              )}
-                            </label>
+              <label className="block">
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Capacity
+                </span>
+                <input
+                  required
+                  min="0"
+                  type="number"
+                  name="capacity"
+                  value={formState.capacity}
+                  onChange={handleFormChange}
+                  className="mt-2 w-full rounded-xl border border-[#c9e0d8] px-4 py-3 outline-none focus:border-[#2d7f6b]"
+                />
+              </label>
 
-                            <label className="block">
-                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Type</span>
-                              <select
-                                name="type"
-                                value={inlineFormState.type}
-                                onChange={handleInlineFormChange}
-                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
-                                  inlineFormErrors.type ? "border-red-400" : "border-[#dbe7df]"
-                                }`}
-                              >
-                                <option value="">Select type</option>
-                                {resourceTypes.map((type) => (
-                                  <option key={type} value={type}>
-                                    {formatEnumLabel(type)}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
+              <label className="block">
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Location
+                </span>
+                <input
+                  required
+                  name="location"
+                  value={formState.location}
+                  onChange={handleFormChange}
+                  className="mt-2 w-full rounded-xl border border-[#c9e0d8] px-4 py-3 outline-none focus:border-[#2d7f6b]"
+                />
+              </label>
 
-                            <label className="block">
-                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Capacity</span>
-                              <input
-                                name="capacity"
-                                type="number"
-                                min="1"
-                                value={inlineFormState.capacity}
-                                onChange={handleInlineFormChange}
-                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
-                                  inlineFormErrors.capacity ? "border-red-400" : "border-[#dbe7df]"
-                                }`}
-                              />
-                            </label>
+              <label className="block">
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Available From
+                </span>
+                <input
+                  required
+                  type="time"
+                  name="availableFrom"
+                  value={formState.availableFrom}
+                  onChange={handleFormChange}
+                  className="mt-2 w-full rounded-xl border border-[#c9e0d8] px-4 py-3 outline-none focus:border-[#2d7f6b]"
+                />
+              </label>
 
-                            <label className="block md:col-span-2">
-                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Location</span>
-                              <select
-                                name="location"
-                                value={inlineFormState.location}
-                                onChange={handleInlineFormChange}
-                                disabled={!inlineFormState.type}
-                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] disabled:bg-[#eef3f0] ${
-                                  inlineFormErrors.location ? "border-red-400" : "border-[#dbe7df]"
-                                }`}
-                              >
-                                <option value="">{inlineFormState.type ? "Select campus location" : "Select type first"}</option>
-                                {(campusLocations[inlineFormState.type] ?? []).map((location) => (
-                                  <option key={location} value={location}>
-                                    {location}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
+              <label className="block">
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Available To
+                </span>
+                <input
+                  required
+                  type="time"
+                  name="availableTo"
+                  value={formState.availableTo}
+                  onChange={handleFormChange}
+                  className="mt-2 w-full rounded-xl border border-[#c9e0d8] px-4 py-3 outline-none focus:border-[#2d7f6b]"
+                />
+              </label>
 
                             <label className="block">
                               <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">From</span>
@@ -1779,21 +1649,19 @@ const ResourcesPage = () => {
                               />
                             </label>
 
-                            <label className="block">
-                              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">To</span>
-                              <input
-                                name="availableTo"
-                                type="time"
-                                value={inlineFormState.availableTo}
-                                onChange={handleInlineFormChange}
-                                className={`mt-2 w-full rounded-[0.9rem] border bg-[#f8fbf9] px-3 py-2 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#39766a] ${
-                                  inlineFormErrors.availableTo ? "border-red-400" : "border-[#dbe7df]"
-                                }`}
-                              />
-                              {inlineFormErrors.availableTo && (
-                                <p className="mt-1 text-xs font-bold text-red-600">{inlineFormErrors.availableTo}</p>
-                              )}
-                            </label>
+              <label className="block md:col-span-2 xl:col-span-2">
+                <span className="text-sm font-bold text-[#1a4b43]">
+                  Description
+                </span>
+                <textarea
+                  required
+                  name="description"
+                  value={formState.description}
+                  onChange={handleFormChange}
+                  rows="4"
+                  className="mt-2 w-full rounded-xl border border-[#c9e0d8] px-4 py-3 outline-none focus:border-[#2d7f6b]"
+                />
+              </label>
 
                             <label className="block md:col-span-2">
                               <span className="text-xs font-black uppercase tracking-[0.14em] text-[#39766a]">Status</span>
@@ -1833,61 +1701,11 @@ const ResourcesPage = () => {
                         </div>
                       )}
 
-                      <div className="mt-5 flex flex-wrap gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setAvailabilityResource(resource)}
-                          className="rounded-[1rem] bg-[#103c35] px-4 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(16,60,53,0.18)] transition hover:bg-[#0b2e29]"
-                        >
-                          View Availability
-                        </button>
-                      </div>
-
-                      {isAdmin && (
-                        <div className="mt-5 flex flex-wrap gap-3">
-                          {inlineEditingId === resource.id ? (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => handleInlineSubmit(resource.id)}
-                                disabled={inlineSubmitting}
-                                className="rounded-[1rem] bg-[#f2d45c] px-4 py-2.5 text-sm font-bold text-[#103c35] shadow-[0_10px_20px_rgba(92,75,6,0.12)] transition hover:bg-[#f7df76] disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                {inlineSubmitting ? "Saving..." : "Save"}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={cancelInlineEdit}
-                                className="rounded-[1rem] bg-[#6b7f78] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#52645f]"
-                              >
-                                Cancel
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => startInlineEdit(resource)}
-                              className="rounded-[1rem] bg-[#f2d45c] px-4 py-2.5 text-sm font-bold text-[#103c35] shadow-[0_10px_20px_rgba(92,75,6,0.12)] transition hover:bg-[#f7df76]"
-                            >
-                              Edit
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => deleteResource(resource)}
-                            disabled={deletingId === resource.id}
-                            className="rounded-[1rem] bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(185,28,28,0.14)] transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {deletingId === resource.id ? "Deleting..." : "Delete"}
-                          </button>
-                        </div>
-                      )}
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </div>
+            {formMessage && (
+              <p className="mt-4 text-sm font-semibold text-[#205d4f]">
+                {formMessage}
+              </p>
+            )}
           </section>
           )}
         </div>
@@ -1954,31 +1772,39 @@ const ResourcesPage = () => {
                     ))}
                   </div>
 
-                  {calendarSlots.map((slot) => (
-                    <div key={slot} className="grid grid-cols-[120px_repeat(7,1fr)] border-t border-[#dbe7df]">
-                      <div className="border-r border-[#dbe7df] bg-[#f8fbf9] p-3 text-sm font-extrabold text-[#3e6259]">
-                        {formatTimeLabel(slot)}
-                      </div>
-                      {calendarDays.map((day) => {
-                        const status = getSlotStatus(availabilityResource, day, slot);
+                  <p className="mt-4 text-sm leading-6 text-[#4f6963]">
+                    {resource.description}
+                  </p>
 
-                        return (
-                          <div key={`${toDateKey(day)}-${slot}`} className="border-r border-[#dbe7df] p-2 last:border-r-0">
-                            <div className={`rounded-xl border px-3 py-3 text-center text-xs font-black ${getSlotClass(status)}`}>
-                              {status}
-                            </div>
-                          </div>
-                        );
-                      })}
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl bg-[#f3fbf8] p-3">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5f8f84]">
+                        Location
+                      </p>
+                      <p className="mt-1 font-semibold text-[#133c35]">
+                        {resource.location}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <p className="mt-4 text-sm leading-6 text-[#5c746d]">
-                Booked slots are matched from approved booking records for this resource. Other slots follow the
-                resource availability window.
-              </p>
+                    <div className="rounded-xl bg-[#f3fbf8] p-3">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5f8f84]">
+                        Capacity
+                      </p>
+                      <p className="mt-1 font-semibold text-[#133c35]">
+                        {resource.capacity}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-[#f3fbf8] p-3 sm:col-span-2">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5f8f84]">
+                        Availability
+                      </p>
+                      <p className="mt-1 font-semibold text-[#133c35]">
+                        {formatTimeLabel(resource.availableFrom)} -{" "}
+                        {formatTimeLabel(resource.availableTo)}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
           </section>
         </div>
