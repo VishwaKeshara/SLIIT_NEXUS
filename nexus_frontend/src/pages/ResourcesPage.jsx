@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { bookingApi, resourceApi } from "../services/api";
 
@@ -219,6 +219,7 @@ const ResourcesPage = () => {
   const [csvMessage, setCsvMessage] = useState("");
   const [importingBulk, setImportingBulk] = useState(false);
   const [importSummary, setImportSummary] = useState(null);
+  const csvInputRef = useRef(null);
 
   const loadResources = async () => {
     setLoading(true);
@@ -564,7 +565,11 @@ const ResourcesPage = () => {
         const validatedRows = validateImportRows(rows);
         setCsvFileName(file.name);
         setCsvRows(validatedRows);
-        setCsvMessage(rows.length === 0 ? "No data rows found in the CSV file." : "CSV file parsed successfully.");
+        setCsvMessage(
+          rows.length === 0
+            ? "No data rows found in the CSV file."
+            : "CSV preview ready. Review the rows, then confirm or cancel the import."
+        );
       } catch {
         setCsvRows([]);
         setCsvMessage("Unable to parse the CSV file. Please check the format and try again.");
@@ -650,10 +655,28 @@ const ResourcesPage = () => {
     setCsvMessage(
       failedImports > 0
         ? `${successfulImports} resources imported. ${failedImports} rows failed during server import.`
-        : `${successfulImports} resources imported successfully.`
+        : `Import completed. Total rows: ${csvRows.length}. Imported: ${successfulImports}. Skipped: ${
+            duplicateRows.length + invalidRows.length
+          }.`
     );
+    setCsvRows([]);
+    setCsvFileName("");
+    if (csvInputRef.current) {
+      csvInputRef.current.value = "";
+    }
     setImportingBulk(false);
     await loadResources();
+  };
+
+  const cancelImport = () => {
+    setCsvRows([]);
+    setCsvFileName("");
+    setCsvMessage("Import cancelled. No resources were saved.");
+    setImportSummary(null);
+
+    if (csvInputRef.current) {
+      csvInputRef.current.value = "";
+    }
   };
 
   const getSlotStatus = (resource, day, slot) => {
@@ -744,10 +767,11 @@ const ResourcesPage = () => {
               </button>
             </div>
 
-            <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div className="mt-6">
               <label className="block">
                 <span className="text-sm font-bold text-slate-700">CSV File</span>
                 <input
+                  ref={csvInputRef}
                   type="file"
                   accept=".csv,text/csv"
                   onChange={handleCsvUpload}
@@ -757,15 +781,6 @@ const ResourcesPage = () => {
                   Required columns: Name, Type, Capacity, Location, Available From, Available To, Status, Description.
                 </p>
               </label>
-
-              <button
-                type="button"
-                onClick={importValidCsvRows}
-                disabled={importingBulk || csvRows.filter((row) => row.errors.length === 0 && !row.isDuplicate).length === 0}
-                className="rounded-xl bg-[#2563eb] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {importingBulk ? "Importing..." : "Import Resources"}
-              </button>
             </div>
 
             {(csvFileName || csvMessage) && (
@@ -801,62 +816,86 @@ const ResourcesPage = () => {
             )}
 
             {csvRows.length > 0 && (
-              <div className="mt-6 overflow-hidden rounded-[1.4rem] border border-slate-200">
-                <div className="overflow-x-auto">
-                  <table className="min-w-[1100px] w-full border-collapse text-left text-sm">
-                    <thead className="bg-slate-100 text-xs font-black uppercase tracking-[0.12em] text-slate-500">
-                      <tr>
-                        <th className="px-4 py-3">Row</th>
-                        <th className="px-4 py-3">Name</th>
-                        <th className="px-4 py-3">Type</th>
-                        <th className="px-4 py-3">Capacity</th>
-                        <th className="px-4 py-3">Location</th>
-                        <th className="px-4 py-3">Available</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3">Validation</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white">
-                      {csvRows.map((row) => {
-                        const isValid = row.errors.length === 0 && !row.isDuplicate;
-                        const statusLabel = row.errors.length > 0 ? "Invalid" : row.isDuplicate ? "Duplicate" : "Ready";
+              <div className="mt-6">
+                <div className="overflow-hidden rounded-[1.4rem] border border-slate-200">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-[1100px] w-full border-collapse text-left text-sm">
+                      <thead className="bg-slate-100 text-xs font-black uppercase tracking-[0.12em] text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3">Row</th>
+                          <th className="px-4 py-3">Name</th>
+                          <th className="px-4 py-3">Type</th>
+                          <th className="px-4 py-3">Capacity</th>
+                          <th className="px-4 py-3">Location</th>
+                          <th className="px-4 py-3">Available</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3">Validation</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 bg-white">
+                        {csvRows.map((row) => {
+                          const isValid = row.errors.length === 0 && !row.isDuplicate;
+                          const statusLabel = row.errors.length > 0 ? "Invalid" : row.isDuplicate ? "Duplicate" : "Ready";
 
-                        return (
-                          <tr key={`${row.rowNumber}-${row.raw.name}-${row.raw.location}`}>
-                            <td className="px-4 py-3 font-bold text-slate-700">{row.rowNumber}</td>
-                            <td className="px-4 py-3 text-slate-700">{row.raw.name || "-"}</td>
-                            <td className="px-4 py-3 text-slate-700">{row.raw.type || "-"}</td>
-                            <td className="px-4 py-3 text-slate-700">{row.raw.capacity || "-"}</td>
-                            <td className="px-4 py-3 text-slate-700">{row.raw.location || "-"}</td>
-                            <td className="px-4 py-3 text-slate-700">
-                              {row.raw.availableFrom || "-"} - {row.raw.availableTo || "-"}
-                            </td>
-                            <td className="px-4 py-3 text-slate-700">{row.raw.status || "-"}</td>
-                            <td className="px-4 py-3">
-                              <span
-                                className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.12em] ${
-                                  isValid
-                                    ? "bg-green-100 text-green-800"
-                                    : row.isDuplicate && row.errors.length === 0
-                                      ? "bg-amber-100 text-amber-800"
-                                      : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {statusLabel}
-                              </span>
-                              {(row.errors.length > 0 || row.isDuplicate) && (
-                                <p className="mt-2 max-w-xs text-xs font-semibold leading-5 text-red-700">
-                                  {[...row.errors, row.isDuplicate ? "Duplicate name and location." : ""]
-                                    .filter(Boolean)
-                                    .join(" ")}
-                                </p>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                          return (
+                            <tr
+                              key={`${row.rowNumber}-${row.raw.name}-${row.raw.location}`}
+                              className={isValid ? "" : row.isDuplicate ? "bg-amber-50/60" : "bg-red-50/60"}
+                            >
+                              <td className="px-4 py-3 font-bold text-slate-700">{row.rowNumber}</td>
+                              <td className="px-4 py-3 text-slate-700">{row.raw.name || "-"}</td>
+                              <td className="px-4 py-3 text-slate-700">{row.raw.type || "-"}</td>
+                              <td className="px-4 py-3 text-slate-700">{row.raw.capacity || "-"}</td>
+                              <td className="px-4 py-3 text-slate-700">{row.raw.location || "-"}</td>
+                              <td className="px-4 py-3 text-slate-700">
+                                {row.raw.availableFrom || "-"} - {row.raw.availableTo || "-"}
+                              </td>
+                              <td className="px-4 py-3 text-slate-700">{row.raw.status || "-"}</td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.12em] ${
+                                    isValid
+                                      ? "bg-green-100 text-green-800"
+                                      : row.isDuplicate && row.errors.length === 0
+                                        ? "bg-amber-100 text-amber-800"
+                                        : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {statusLabel}
+                                </span>
+                                {(row.errors.length > 0 || row.isDuplicate) && (
+                                  <p className="mt-2 max-w-xs text-xs font-semibold leading-5 text-red-700">
+                                    {[...row.errors, row.isDuplicate ? "Duplicate name and location." : ""]
+                                      .filter(Boolean)
+                                      .join(" ")}
+                                  </p>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={cancelImport}
+                    disabled={importingBulk}
+                    className="rounded-xl bg-slate-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Cancel Import
+                  </button>
+                  <button
+                    type="button"
+                    onClick={importValidCsvRows}
+                    disabled={importingBulk || csvRows.filter((row) => row.errors.length === 0 && !row.isDuplicate).length === 0}
+                    className="rounded-xl bg-[#2563eb] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {importingBulk ? "Importing..." : "Confirm Import"}
+                  </button>
                 </div>
               </div>
             )}
