@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ticketApi, resourceApi } from "../services/api";
 import { useAuth } from "../context/useAuth";
 
@@ -84,12 +84,16 @@ const TicketsPage = () => {
 
   const fileInputRef = useRef(null);
 
-  const isElevated = user?.roles?.some((r) =>
+  const roles = Array.isArray(user?.roles)
+    ? user.roles.map((role) => String(role ?? "").trim().toUpperCase().replace(/^ROLE_/, ""))
+    : [];
+  const isElevated = roles.some((r) =>
     ["ADMIN", "MANAGER", "TECHNICIAN"].includes(r),
   );
-  const isAdmin = user?.roles?.includes("ADMIN");
+  const isAdmin = roles.includes("ADMIN");
+  const isManager = roles.includes("MANAGER");
 
-  const loadTickets = async () => {
+  const loadTickets = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -101,7 +105,7 @@ const TicketsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [refreshAuth]);
 
   useEffect(() => {
     loadTickets();
@@ -109,7 +113,7 @@ const TicketsPage = () => {
       .list()
       .then(({ data }) => setAllResources(data))
       .catch(() => { });
-  }, []);
+  }, [loadTickets]);
 
   const stats = useMemo(() => {
     const total = tickets.length;
@@ -122,16 +126,6 @@ const TicketsPage = () => {
     () =>
       [...new Set(allResources.map((r) => r.location).filter(Boolean))].sort(),
     [allResources],
-  );
-
-  const resourcesForLocation = useMemo(
-    () =>
-      formState.location
-        ? allResources.filter(
-          (r) => r.location === formState.location && r.status === "ACTIVE",
-        )
-        : [],
-    [allResources, formState.location],
   );
 
   const handleFormChange = (e) => {
@@ -275,9 +269,9 @@ const TicketsPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8fafc]">
+    <main className="min-h-screen bg-[#f4f8f6]">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#07251f] pt-32 pb-24 text-white">
+      <section className="relative overflow-hidden bg-[#07251f] pt-28 pb-16 text-white">
         <div
           className="absolute inset-0 opacity-20"
           style={{
@@ -289,31 +283,28 @@ const TicketsPage = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-[#07251f] via-[#07251f]/95 to-[#1b4332]/90" />
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex flex-col gap-10 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
-              <p className="inline-block rounded-full bg-[#f2d45c] px-4 py-1.5 text-sm font-bold uppercase tracking-wider text-[#07251f]">
+              <p className="inline-block rounded-lg bg-[#f2d45c] px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#07251f]">
                 Incident Management
               </p>
-              <h1 className="font-display mt-6 text-5xl font-extrabold tracking-tight sm:text-6xl">
-                SLIIT <span className="text-[#f2d45c]">Nexus</span>.
+              <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-5xl">
+                Maintenance & Tickets
               </h1>
-              <p className="mt-6 text-lg text-slate-300 leading-relaxed">
-                Notice something broken? Need facility maintenance? Report incidents instantly
-                and track resolution progress in real-time. Our technical team is ready to help.
+              <p className="mt-4 max-w-xl text-base font-medium leading-7 text-slate-300">
+                Report campus issues, track progress, and keep support conversations in one place.
               </p>
             </div>
 
             <button
+              type="button"
               onClick={() => {
                 setShowCreate((v) => !v);
                 setContactError("");
               }}
-              className="group relative flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-[#07251f] shadow-2xl transition hover:scale-110 active:scale-95 sm:h-32 sm:w-32"
+              className="rounded-lg bg-[#f2d45c] px-6 py-3 text-sm font-black uppercase tracking-wider text-[#07251f] shadow-lg shadow-black/10 transition hover:bg-[#f7df76]"
             >
-              <span className="text-4xl sm:text-5xl font-light">{showCreate ? "×" : "+"}</span>
-              <span className="absolute -bottom-1 font-display text-[10px] font-black uppercase tracking-widest opacity-0 transition group-hover:bottom-4 group-hover:opacity-100">
-                {showCreate ? "Close" : "New Ticket"}
-              </span>
+              {showCreate ? "Close Form" : "New Ticket"}
             </button>
           </div>
         </div>
@@ -322,17 +313,17 @@ const TicketsPage = () => {
       {/* Stats Dashboard */}
       <section className="relative -mt-10 z-10 mx-auto max-w-6xl px-4">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-          <div className="rounded-3xl border border-white bg-white/80 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-xl">
+          <div className="rounded-lg border border-white bg-white/90 p-6 shadow-lg shadow-slate-200/50 backdrop-blur-xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Total Incidents</p>
             <h3 className="font-display mt-1 text-4xl font-black text-slate-900">{stats.total}</h3>
             <div className="mt-4 h-1 w-10 rounded-full bg-slate-200" />
           </div>
-          <div className="rounded-3xl border border-white bg-white/80 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-xl">
+          <div className="rounded-lg border border-white bg-white/90 p-6 shadow-lg shadow-slate-200/50 backdrop-blur-xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#39766a]">Open & In Progress</p>
             <h3 className="font-display mt-1 text-4xl font-black text-slate-900">{stats.open}</h3>
             <div className="mt-4 h-1 w-10 rounded-full bg-emerald-100" />
           </div>
-          <div className="rounded-3xl border border-white bg-white/80 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-xl">
+          <div className="rounded-lg border border-white bg-white/90 p-6 shadow-lg shadow-slate-200/50 backdrop-blur-xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">Resolved Lately</p>
             <h3 className="font-display mt-1 text-4xl font-black text-slate-900">{stats.resolved}</h3>
             <div className="mt-4 h-1 w-10 rounded-full bg-blue-100" />
@@ -345,7 +336,7 @@ const TicketsPage = () => {
         {/* Create ticket form */}
         {showCreate && (
           <section className="mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="rounded-[2.5rem] bg-white p-8 shadow-2xl shadow-slate-200/60 ring-1 ring-slate-100">
+            <div className="rounded-lg bg-white p-6 shadow-xl shadow-slate-200/50 ring-1 ring-slate-100">
               <div className="mb-8 flex items-center justify-between">
                 <div>
                   <h2 className="font-display text-3xl font-black text-slate-900">New Incident Report</h2>
@@ -365,7 +356,7 @@ const TicketsPage = () => {
                     value={formState.title}
                     onChange={handleFormChange}
                     placeholder="e.g. Projector not working in Lab 04"
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5"
                   />
                 </div>
 
@@ -386,7 +377,7 @@ const TicketsPage = () => {
                     rows={4}
                     maxLength={250}
                     placeholder="Describe what happened, where, and when..."
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5 resize-none"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5 resize-none"
                   />
                 </div>
 
@@ -397,7 +388,7 @@ const TicketsPage = () => {
                     name="location"
                     value={formState.location}
                     onChange={handleFormChange}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5"
                   >
                     <option value="">Select Location</option>
                     {locationOptions.map((loc) => (
@@ -412,7 +403,7 @@ const TicketsPage = () => {
                     name="category"
                     value={formState.category}
                     onChange={handleFormChange}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5"
                   >
                     <option value="">General Issue</option>
                     {CATEGORIES.map((c) => (
@@ -427,7 +418,7 @@ const TicketsPage = () => {
                     name="priority"
                     value={formState.priority}
                     onChange={handleFormChange}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5"
                   >
                     {PRIORITIES.map((p) => (
                       <option key={p} value={p}>{p}</option>
@@ -445,7 +436,7 @@ const TicketsPage = () => {
                       setContactError("");
                     }}
                     placeholder="How can we reach you?"
-                    className={`w-full rounded-2xl border px-5 py-4 outline-none transition focus:ring-4 ${contactError
+                    className={`w-full rounded-lg border px-5 py-4 outline-none transition focus:ring-4 ${contactError
                         ? "border-red-400 bg-red-50 focus:ring-red-100"
                         : "border-slate-200 bg-slate-50 focus:border-[#39766a] focus:ring-[#39766a]/5"
                       }`}
@@ -466,7 +457,7 @@ const TicketsPage = () => {
                           onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
                           className="text-red-500 hover:text-red-700"
                         >
-                          ✕
+                          x
                         </button>
                       </div>
                     ))}
@@ -474,7 +465,7 @@ const TicketsPage = () => {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-400 transition hover:border-[#39766a] hover:text-[#39766a] hover:bg-slate-50"
+                        className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-400 transition hover:border-[#39766a] hover:text-[#39766a] hover:bg-slate-50"
                       >
                         + Add Image
                       </button>
@@ -498,7 +489,7 @@ const TicketsPage = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full max-w-sm rounded-2xl bg-[#07251f] py-5 font-display text-lg font-black text-white shadow-xl shadow-[#07251f]/10 transition hover:bg-[#1b4332] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full max-w-sm rounded-lg bg-[#07251f] py-3.5 font-display text-lg font-black text-white shadow-xl shadow-[#07251f]/10 transition hover:bg-[#1b4332] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {submitting ? "Submitting Report..." : "Submit Incident Report"}
                   </button>
@@ -519,7 +510,7 @@ const TicketsPage = () => {
         {/* Ticket list */}
         <div className="space-y-6">
           {loading && (
-            <div className="flex h-64 items-center justify-center rounded-[2.5rem] border border-dashed border-slate-200 bg-white">
+            <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white">
               <div className="flex items-center gap-3 text-slate-400">
                 <div className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
                 <div className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:0.2s]" />
@@ -529,12 +520,12 @@ const TicketsPage = () => {
             </div>
           )}
           {!loading && error && (
-            <div className="rounded-[2.5rem] border border-red-100 bg-red-50 p-12 text-center text-red-700">
+            <div className="rounded-lg border border-red-100 bg-red-50 p-12 text-center text-red-700">
               <p className="font-black text-lg">{error}</p>
             </div>
           )}
           {!loading && !error && tickets.length === 0 && (
-            <div className="flex h-64 flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-slate-200 bg-white p-12 text-center">
+            <div className="flex h-64 flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white p-12 text-center">
               <p className="font-bold text-slate-400">No active reports found. Everything seems to be in order!</p>
               <button
                 onClick={() => setShowCreate(true)}
@@ -552,7 +543,7 @@ const TicketsPage = () => {
             return (
               <article
                 key={ticket.id}
-                className={`relative overflow-hidden rounded-[2.5rem] bg-white transition-all duration-300 ${isOpen
+                className={`relative overflow-hidden rounded-lg bg-white transition-all duration-300 ${isOpen
                     ? "shadow-2xl shadow-slate-200/80 ring-2 ring-[#39766a]/10"
                     : "shadow-sm border border-slate-100 hover:shadow-md hover:border-[#39766a]/20"
                   }`}
@@ -560,7 +551,7 @@ const TicketsPage = () => {
                 {/* Status Bar */}
                 <div className={`h-1.5 w-full ${isOpen ? "bg-[#39766a]" : "bg-slate-50 group-hover:bg-slate-100 transition-colors"}`} />
 
-                {/* Ticket header — click to expand */}
+                {/* Ticket header - click to expand */}
                 <button
                   type="button"
                   className="w-full text-left px-8 py-7"
@@ -620,7 +611,7 @@ const TicketsPage = () => {
                         </div>
 
                         {ticket.preferredContact && (
-                          <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm border border-slate-100">
+                          <div className="flex items-center gap-3 rounded-lg bg-white p-4 shadow-sm border border-slate-100">
                             <div className="rounded-full bg-blue-50 p-2">
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                             </div>
@@ -663,7 +654,7 @@ const TicketsPage = () => {
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Attached Evidence</p>
                             <div className="flex flex-wrap gap-4">
                               {ticket.imageAttachments?.map((filename) => (
-                                <div key={filename} className="group relative h-24 w-24 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                                <div key={filename} className="group relative h-24 w-24 overflow-hidden rounded-lg border border-slate-200 bg-white">
                                   <img
                                     src={ticketApi.getAttachmentUrl(ticket.id, filename)}
                                     alt={filename}
@@ -675,13 +666,13 @@ const TicketsPage = () => {
                                       onClick={() => handleDeleteAttachment(ticket.id, filename)}
                                       className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-lg bg-red-500/90 text-[10px] text-white opacity-0 backdrop-blur-sm transition group-hover:opacity-100"
                                     >
-                                      ✕
+                                      x
                                     </button>
                                   )}
                                 </div>
                               ))}
                               {isOwner && ticket.imageAttachments?.length < 3 && (
-                                <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white text-slate-400 transition hover:border-[#39766a] hover:text-[#39766a] hover:bg-slate-50">
+                                <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 bg-white text-slate-400 transition hover:border-[#39766a] hover:text-[#39766a] hover:bg-slate-50">
                                   <span className="text-xl">+</span>
                                   <input
                                     type="file"
@@ -701,7 +692,7 @@ const TicketsPage = () => {
                       {/* Staff actions */}
                       {isElevated && (
                         <div className="flex flex-wrap items-center gap-4">
-                          <div className="flex items-center gap-3 rounded-2xl bg-white border border-slate-200 px-4 py-2">
+                          <div className="flex items-center gap-3 rounded-lg bg-white border border-slate-200 px-4 py-2">
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Update Status</span>
                             <select
                               value={ticket.status}
@@ -722,14 +713,14 @@ const TicketsPage = () => {
                               ))}
                             </select>
                           </div>
-                          {(isAdmin || user?.roles?.includes("MANAGER")) && (
+                          {(isAdmin || isManager) && (
                             <button
                               type="button"
                               onClick={() => {
                                 setAssignModal(ticket.id);
                                 setAssignUserId(ticket.assignedToUserId ?? "");
                               }}
-                              className="rounded-2xl bg-[#f2d45c] px-6 py-2.5 text-sm font-black uppercase tracking-widest text-[#07251f] shadow-lg shadow-[#f2d45c]/10 transition hover:bg-[#f7df76]"
+                              className="rounded-lg bg-[#f2d45c] px-6 py-2.5 text-sm font-black uppercase tracking-widest text-[#07251f] shadow-lg shadow-[#f2d45c]/10 transition hover:bg-[#f7df76]"
                             >
                               {ticket.assignedToUserId ? "Reassign" : "Assign Staff"}
                             </button>
@@ -742,7 +733,7 @@ const TicketsPage = () => {
                           <button
                             type="button"
                             onClick={() => handleDeleteTicket(ticket.id)}
-                            className="rounded-2xl bg-red-50 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-600 border border-red-100 transition hover:bg-red-600 hover:text-white"
+                            className="rounded-lg bg-red-50 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-red-600 border border-red-100 transition hover:bg-red-600 hover:text-white"
                           >
                             Delete Report
                           </button>
@@ -751,7 +742,7 @@ const TicketsPage = () => {
                     </div>
 
                     {/* Comments Section */}
-                    <div className="rounded-[2rem] bg-white p-8 shadow-sm border border-slate-200/60">
+                    <div className="rounded-lg bg-white p-6 shadow-sm border border-slate-200/60">
                       <div className="mb-6 flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-[#39766a]" />
                         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -793,7 +784,7 @@ const TicketsPage = () => {
                                 </div>
                               </div>
 
-                              <div className={`rounded-2xl p-4 text-sm font-medium ${isCommentOwner ? "bg-slate-50 text-slate-700" : "bg-[#39766a]/5 text-[#39766a]"}`}>
+                              <div className={`rounded-lg p-4 text-sm font-medium ${isCommentOwner ? "bg-slate-50 text-slate-700" : "bg-[#39766a]/5 text-[#39766a]"}`}>
                                 {isEditing ? (
                                   <div className="flex flex-col gap-3">
                                     <textarea
@@ -821,12 +812,12 @@ const TicketsPage = () => {
                           value={commentDrafts[ticket.id] ?? ""}
                           onChange={(e) => setCommentDrafts((prev) => ({ ...prev, [ticket.id]: e.target.value }))}
                           placeholder="Type a message or update..."
-                          className="flex-1 rounded-2xl bg-slate-50 border border-slate-100 px-6 py-4 text-sm font-medium outline-none focus:bg-white focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5 transition-all"
+                          className="flex-1 rounded-lg bg-slate-50 border border-slate-100 px-6 py-4 text-sm font-medium outline-none focus:bg-white focus:border-[#39766a] focus:ring-4 focus:ring-[#39766a]/5 transition-all"
                           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitComment(ticket.id); } }}
                         />
                         <button
                           onClick={() => submitComment(ticket.id)}
-                          className="rounded-2xl bg-[#07251f] px-8 py-4 text-sm font-black uppercase tracking-widest text-white shadow-lg shadow-[#07251f]/10 transition hover:bg-[#1b4332]"
+                          className="rounded-lg bg-[#07251f] px-8 py-4 text-sm font-black uppercase tracking-widest text-white shadow-lg shadow-[#07251f]/10 transition hover:bg-[#1b4332]"
                         >
                           Send
                         </button>
@@ -843,7 +834,7 @@ const TicketsPage = () => {
       {/* Status update modal (for RESOLVED / REJECTED) */}
       {statusModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#08231f]/65 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2rem] bg-white p-7 shadow-[0_30px_90px_rgba(15,23,42,0.28)]">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-[0_30px_90px_rgba(15,23,42,0.28)]">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">
               Staff Action
             </p>
@@ -884,14 +875,14 @@ const TicketsPage = () => {
               <button
                 type="button"
                 onClick={() => setStatusModal(null)}
-                className="rounded-2xl bg-slate-100 px-6 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+                className="rounded-lg bg-slate-100 px-6 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleStatusUpdate}
-                className={`rounded-2xl px-8 py-3 text-sm font-black uppercase tracking-widest text-white shadow-lg transition ${statusModal.status === "REJECTED"
+                className={`rounded-lg px-8 py-3 text-sm font-black uppercase tracking-widest text-white shadow-lg transition ${statusModal.status === "REJECTED"
                     ? "bg-rose-600 hover:bg-rose-700 shadow-rose-200"
                     : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
                   }`}
@@ -906,7 +897,7 @@ const TicketsPage = () => {
       {/* Assign modal */}
       {assignModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#08231f]/65 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2rem] bg-white p-7 shadow-[0_30px_90px_rgba(15,23,42,0.28)]">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-[0_30px_90px_rgba(15,23,42,0.28)]">
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">
               Staff Action
             </p>
@@ -928,14 +919,14 @@ const TicketsPage = () => {
               <button
                 type="button"
                 onClick={() => setAssignModal(null)}
-                className="rounded-2xl bg-slate-100 px-6 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+                className="rounded-lg bg-slate-100 px-6 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleAssign}
-                className="rounded-2xl bg-[#07251f] px-8 py-3 text-sm font-black uppercase tracking-widest text-white shadow-lg shadow-[#07251f]/20 transition hover:bg-[#1b4332]"
+                className="rounded-lg bg-[#07251f] px-8 py-3 text-sm font-black uppercase tracking-widest text-white shadow-lg shadow-[#07251f]/20 transition hover:bg-[#1b4332]"
               >
                 Confirm Assignment
               </button>
@@ -948,3 +939,5 @@ const TicketsPage = () => {
 };
 
 export default TicketsPage;
+
+
