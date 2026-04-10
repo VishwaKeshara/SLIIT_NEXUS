@@ -7,6 +7,8 @@ frontend/build/
 # Spring Boot build output
 backend/target/
 
+node_modules/
+
 # Environment variables
 *.env
 

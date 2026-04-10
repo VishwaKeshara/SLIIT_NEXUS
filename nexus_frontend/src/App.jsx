@@ -18,7 +18,7 @@ import CheckInPage from "./pages/CheckInPage";
 
 function App() {
   const { pathname } = useLocation();
-  const hideChrome = pathname.startsWith("/admin");
+  const hideChrome = pathname.startsWith("/admin") || pathname === "/resources" || pathname === "/profile";
 
   return (
     <>
@@ -28,14 +28,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login/success" element={<LoginSuccessPage />} />
-        <Route
-          path="/resources"
-          element={
-            <ProtectedRoute>
-              <ResourcesPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/resources" element={<ResourcesPage />} />
         <Route
           path="/bookings"
           element={
@@ -48,7 +41,7 @@ function App() {
           path="/incidents"
           element={
             <ProtectedRoute>
-              <ResourcesPage />
+              <Navigate to="/tickets" replace />
             </ProtectedRoute>
           }
         />
@@ -73,14 +66,6 @@ function App() {
           element={
             <ProtectedRoute>
               <AboutUsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/tickets"
-          element={
-            <ProtectedRoute>
-              <Navigate to="/incidents" replace />
             </ProtectedRoute>
           }
         />

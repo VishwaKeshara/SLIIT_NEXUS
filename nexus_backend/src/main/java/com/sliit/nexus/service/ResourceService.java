@@ -5,6 +5,7 @@ import com.sliit.nexus.dto.ResourceResponseDTO;
 import com.sliit.nexus.model.Resource;
 import com.sliit.nexus.repository.ResourceRepository;
 import java.util.List;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,23 @@ public class ResourceService {
         return resourceRepository.findAll(Sort.by(Sort.Direction.ASC, "name")).stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public ResourceResponseDTO update(String resourceId, ResourceRequestDTO request) {
+        validateAvailabilityWindow(request);
+
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new NoSuchElementException("Resource not found."));
+
+        applyRequest(resource, request);
+        Resource saved = resourceRepository.save(resource);
+        return toResponse(saved);
+    }
+
+    public void delete(String resourceId) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new NoSuchElementException("Resource not found."));
+        resourceRepository.delete(resource);
     }
 
     private void validateAvailabilityWindow(ResourceRequestDTO request) {
