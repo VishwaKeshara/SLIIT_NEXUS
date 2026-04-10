@@ -156,12 +156,19 @@ const Login = () => {
             <p className="mt-2 text-sm text-[#285a48]">
               Configure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to enable OAuth.
             </p>
-            <a
-              href={authApi.googleLoginUrl}
-              className="mt-4 inline-flex rounded-xl bg-[#dff4eb] px-4 py-3 font-bold text-[#18463d] ring-1 ring-[#b5e0d3] transition hover:bg-[#ccebdd]"
-            >
-              Continue with Google
-            </a>
+            <div className="mt-8 flex justify-center">
+              <a
+                href={authApi.googleLoginUrl}
+                className="flex items-center justify-center rounded-lg bg-white px-6 py-3 font-medium text-[#18463d] shadow-md hover:shadow-lg transition-all border border-[#b5e0d3]"
+              >
+                <img
+                  src="/src/assets/google-logo.jpg"
+                  alt="Google Logo"
+                  className="mr-3 h-6 w-6"
+                />
+                <span className="text-sm font-semibold">Continue with Google</span>
+              </a>
+            </div>
           </div>
 
           <p className="mt-6 text-sm font-medium text-[#285a48]">
