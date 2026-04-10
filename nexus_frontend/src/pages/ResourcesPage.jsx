@@ -927,46 +927,53 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
         {activePanel === "dashboard" && (
         <>
         <div className="mt-9 grid gap-6 md:grid-cols-4">
-          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Total Resources</p>
-            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.total}</p>
+          <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-[linear-gradient(145deg,rgba(255,246,246,0.86),rgba(218,229,241,0.72)_58%,rgba(100,148,164,0.28))] p-7 shadow-[0_22px_58px_rgba(2,26,84,0.18)] backdrop-blur-2xl transition hover:-translate-y-1 hover:border-[#6494a4]/60 hover:bg-[#FFF6F6]/90 hover:shadow-[0_28px_70px_rgba(2,26,84,0.22)]">
+            <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#021A54,#6494a4,#FFF6F6)]" />
+            <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#6494a4]">Total Resources</p>
+            <p className="mt-6 font-display text-5xl font-extrabold text-[#021A54]">{summary.total}</p>
+            <p className="mt-4 text-sm font-semibold text-[#4f6672]">Catalogue items under control</p>
           </div>
-          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Active Resources</p>
-            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.active}</p>
+          <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-[linear-gradient(145deg,rgba(255,246,246,0.84),rgba(214,232,237,0.72)_58%,rgba(100,148,164,0.34))] p-7 shadow-[0_22px_58px_rgba(2,26,84,0.18)] backdrop-blur-2xl transition hover:-translate-y-1 hover:border-[#6494a4]/60 hover:bg-[#FFF6F6]/90 hover:shadow-[0_28px_70px_rgba(2,26,84,0.22)]">
+            <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#6494a4,#FFF6F6)]" />
+            <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#6494a4]">Active Resources</p>
+            <p className="mt-6 font-display text-5xl font-extrabold text-[#021A54]">{summary.active}</p>
+            <p className="mt-4 text-sm font-semibold text-[#4f6672]">Ready for campus bookings</p>
           </div>
-          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Out of Service Resources</p>
-            <p className="mt-6 font-display text-5xl font-extrabold text-[#0f342e]">{summary.outOfService}</p>
+          <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-[linear-gradient(145deg,rgba(255,246,246,0.84),rgba(219,228,242,0.72)_58%,rgba(136,151,189,0.32))] p-7 shadow-[0_22px_58px_rgba(2,26,84,0.18)] backdrop-blur-2xl transition hover:-translate-y-1 hover:border-[#8897BD]/60 hover:bg-[#FFF6F6]/90 hover:shadow-[0_28px_70px_rgba(2,26,84,0.22)]">
+            <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#8897BD,#FFF6F6)]" />
+            <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#8897BD]">Out of Service</p>
+            <p className="mt-6 font-display text-5xl font-extrabold text-[#021A54]">{summary.outOfService}</p>
+            <p className="mt-4 text-sm font-semibold text-[#4f6672]">Needs review before release</p>
           </div>
-          <div className="rounded-[1.8rem] bg-white p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-base font-extrabold text-[#5b7493]">Labs / Rooms / Equipment</p>
-            <div className="mt-6 grid grid-cols-3 gap-2">
-              <div>
-                <p className="font-display text-4xl font-extrabold text-[#0f342e]">{resourceTypeSummary.labs}</p>
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">Labs</p>
+          <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-[linear-gradient(145deg,rgba(255,246,246,0.84),rgba(214,232,237,0.72)_58%,rgba(100,148,164,0.32))] p-7 shadow-[0_22px_58px_rgba(2,26,84,0.18)] backdrop-blur-2xl transition hover:-translate-y-1 hover:border-[#6494a4]/60 hover:bg-[#FFF6F6]/90 hover:shadow-[0_28px_70px_rgba(2,26,84,0.22)]">
+            <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#FFF6F6,#8897BD,#6494a4)]" />
+            <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#6494a4]">Resource Mix</p>
+            <div className="mt-6 grid grid-cols-3 gap-3">
+              <div className="rounded-2xl bg-[#021A54]/8 p-3">
+                <p className="font-display text-3xl font-extrabold text-[#021A54]">{resourceTypeSummary.labs}</p>
+                <p className="mt-1 text-xs font-black uppercase tracking-[0.12em] text-[#4f6672]">Labs</p>
               </div>
-              <div>
-                <p className="font-display text-4xl font-extrabold text-[#0f342e]">{resourceTypeSummary.rooms}</p>
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">Rooms</p>
+              <div className="rounded-2xl bg-[#021A54]/8 p-3">
+                <p className="font-display text-3xl font-extrabold text-[#021A54]">{resourceTypeSummary.rooms}</p>
+                <p className="mt-1 text-xs font-black uppercase tracking-[0.12em] text-[#4f6672]">Rooms</p>
               </div>
-              <div>
-                <p className="font-display text-4xl font-extrabold text-[#0f342e]">{resourceTypeSummary.equipment}</p>
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#5b7493]">Items</p>
+              <div className="rounded-2xl bg-[#021A54]/8 p-3">
+                <p className="font-display text-3xl font-extrabold text-[#021A54]">{resourceTypeSummary.equipment}</p>
+                <p className="mt-1 text-xs font-black uppercase tracking-[0.12em] text-[#4f6672]">Items</p>
               </div>
             </div>
           </div>
         </div>
 
-        <section className="mt-9 rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef] sm:p-8">
+        <section className="mt-9 rounded-3xl border border-white/65 bg-[linear-gradient(145deg,rgba(255,246,246,0.8),rgba(219,228,242,0.68)_58%,rgba(100,148,164,0.36))] p-7 shadow-[0_24px_68px_rgba(2,26,84,0.2)] backdrop-blur-2xl sm:p-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Quick Actions</p>
-              <h2 className="font-display mt-2 text-4xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#6494a4]">Quick Actions</p>
+              <h2 className="font-display mt-2 text-4xl font-extrabold text-[#021A54]">
                 Resource Controls
               </h2>
             </div>
-            <span className="rounded-[1.2rem] bg-[#f3f8f5] px-5 py-3 text-sm font-black text-[#39766a]">
+            <span className="rounded-2xl border border-white/70 bg-[#FFF6F6]/66 px-5 py-3 text-sm font-black text-[#6494a4] shadow-sm backdrop-blur-xl">
               {summary.filtered} current results
             </span>
           </div>
@@ -976,7 +983,7 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
               <button
                 type="button"
                 onClick={() => setActivePanel("add")}
-                className="rounded-[1.4rem] bg-[#f2d45c] p-5 text-center text-[#103c35] shadow-[0_14px_34px_rgba(16,60,53,0.1)] transition hover:-translate-y-1"
+                className="rounded-2xl bg-[#021A54] p-5 text-center text-white shadow-[0_16px_42px_rgba(2,26,84,0.22)] transition hover:-translate-y-1 hover:bg-[#0b2a70]"
               >
                 <p className="text-xl font-extrabold">Add Resource</p>
               </button>
@@ -986,7 +993,7 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
               <button
                 type="button"
                 onClick={() => setActivePanel("import")}
-                className="rounded-[1.4rem] bg-white p-5 text-center text-[#0f342e] shadow-sm ring-1 ring-[#dbe7df] transition hover:-translate-y-1"
+                className="rounded-2xl border border-white/70 bg-[#FFF6F6]/62 p-5 text-center text-[#021A54] shadow-sm backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/82"
               >
                 <p className="text-xl font-extrabold">Bulk Import</p>
               </button>
@@ -995,7 +1002,7 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
             <button
               type="button"
               onClick={() => setActivePanel("availability")}
-              className="rounded-[1.4rem] bg-[#103c35] p-5 text-center text-white shadow-[0_14px_34px_rgba(16,60,53,0.18)] transition hover:-translate-y-1"
+              className="rounded-2xl bg-[#6494a4] p-5 text-center text-white shadow-[0_14px_34px_rgba(2,26,84,0.24)] transition hover:-translate-y-1 hover:bg-[#578797]"
             >
               <p className="text-xl font-extrabold">View Availability</p>
             </button>
@@ -1003,7 +1010,7 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
             <button
               type="button"
               onClick={exportResourcesCsv}
-              className="rounded-[1.4rem] bg-white p-5 text-center text-[#0f342e] shadow-sm ring-1 ring-[#dbe7df] transition hover:-translate-y-1"
+              className="rounded-2xl border border-white/70 bg-[#FFF6F6]/62 p-5 text-center text-[#021A54] shadow-sm backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/82"
             >
               <p className="text-xl font-extrabold">Export CSV</p>
             </button>
@@ -1011,7 +1018,7 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
             <button
               type="button"
               onClick={clearFilters}
-              className="rounded-[1.4rem] bg-white p-5 text-center text-[#0f342e] shadow-sm ring-1 ring-[#dbe7df] transition hover:-translate-y-1"
+              className="rounded-2xl border border-white/70 bg-[#FFF6F6]/62 p-5 text-center text-[#021A54] shadow-sm backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/82"
             >
               <p className="text-xl font-extrabold">Reset Filters</p>
             </button>
@@ -1019,20 +1026,21 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
         </section>
 
         <section className="mt-9 grid gap-6 xl:grid-cols-3">
-          <div className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Recently Added</p>
-            <h3 className="font-display mt-2 text-3xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
+          <div className="relative overflow-hidden rounded-3xl border border-[#FFF6F6]/22 bg-[linear-gradient(145deg,rgba(255,246,246,0.78),rgba(218,229,241,0.74))] p-7 shadow-[0_24px_64px_rgba(2,26,84,0.2)] backdrop-blur-2xl">
+            <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#021A54,#6494a4)]" />
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#6494a4]">Recently Added</p>
+            <h3 className="font-display mt-2 text-3xl font-extrabold text-[#021A54]">
               Recent Resources
             </h3>
             <div className="mt-5 space-y-3">
               {recentlyAddedResources.length === 0 ? (
-                <p className="rounded-[1rem] bg-[#f8fbf9] px-4 py-3 text-sm font-semibold text-[#5c746d]">
+                <p className="rounded-2xl border border-[#021A54]/10 bg-white/58 px-4 py-3 text-sm font-semibold text-[#5c746d] backdrop-blur-xl">
                   No resources yet.
                 </p>
               ) : (
                 recentlyAddedResources.map((resource) => (
-                  <article key={resource.id} className="rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3">
-                    <p className="font-extrabold text-[#0f342e]">{resource.name}</p>
+                  <article key={resource.id} className="rounded-2xl border border-[#021A54]/10 bg-white/58 px-4 py-3 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/80">
+                    <p className="font-extrabold text-[#021A54]">{resource.name}</p>
                     <p className="mt-1 text-sm font-semibold text-[#5c746d]">{formatEnumLabel(resource.type)}</p>
                   </article>
                 ))
@@ -1040,30 +1048,32 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
             </div>
           </div>
 
-          <div className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Maintenance</p>
-            <h3 className="font-display mt-2 text-3xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
+          <div className="relative overflow-hidden rounded-3xl border border-[#FFF6F6]/22 bg-[linear-gradient(145deg,rgba(255,246,246,0.78),rgba(218,229,241,0.74))] p-7 shadow-[0_24px_64px_rgba(2,26,84,0.2)] backdrop-blur-2xl">
+            <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#6494a4,#8897BD)]" />
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#6494a4]">Maintenance</p>
+            <h3 className="font-display mt-2 text-3xl font-extrabold text-[#021A54]">
               Needs Attention
             </h3>
             <div className="mt-5 space-y-3">
               {maintenanceResources.length === 0 ? (
-                <p className="rounded-[1rem] bg-[#f8fbf9] px-4 py-3 text-sm font-semibold text-[#5c746d]">
+                <p className="rounded-2xl border border-[#021A54]/10 bg-white/58 px-4 py-3 text-sm font-semibold text-[#5c746d] backdrop-blur-xl">
                   No out-of-service resources.
                 </p>
               ) : (
                 maintenanceResources.map((resource) => (
-                  <article key={resource.id} className="rounded-[1rem] border border-red-100 bg-red-50 px-4 py-3">
-                    <p className="font-extrabold text-red-900">{resource.name}</p>
-                    <p className="mt-1 text-sm font-semibold text-red-700">{resource.location}</p>
+                  <article key={resource.id} className="rounded-2xl border border-[#021A54]/20 bg-[#021A54]/8 px-4 py-3 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-[#021A54]/12">
+                    <p className="font-extrabold text-[#021A54]">{resource.name}</p>
+                    <p className="mt-1 text-sm font-semibold text-[#415985]">{resource.location}</p>
                   </article>
                 ))
               )}
             </div>
           </div>
 
-          <div className="rounded-[2rem] bg-white p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-[#dbe7ef]">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#39766a]">Quick Search</p>
-            <h3 className="font-display mt-2 text-3xl font-extrabold tracking-[-0.06em] text-[#0f342e]">
+          <div className="relative overflow-hidden rounded-3xl border border-[#FFF6F6]/22 bg-[linear-gradient(145deg,rgba(255,246,246,0.78),rgba(218,229,241,0.74))] p-7 shadow-[0_24px_64px_rgba(2,26,84,0.2)] backdrop-blur-2xl">
+            <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#8897BD,#6494a4)]" />
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#6494a4]">Quick Search</p>
+            <h3 className="font-display mt-2 text-3xl font-extrabold text-[#021A54]">
               Find Resource
             </h3>
             <input
@@ -1071,12 +1081,12 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
               value={filters.search}
               onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))}
               placeholder="Search name, location, description"
-              className="mt-5 w-full rounded-[1rem] border border-[#dbe7df] bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:border-[#39766a] focus:ring-4 focus:ring-[#dceee7]"
+              className="mt-5 w-full rounded-2xl border border-[#FFF6F6]/80 bg-[#FFF6F6]/66 px-4 py-3 text-[#021A54] outline-none transition focus:border-[#6494a4] focus:bg-[#FFF6F6]"
             />
             <button
               type="button"
               onClick={() => setActivePanel("resources")}
-              className="mt-4 w-full rounded-[1rem] bg-[#103c35] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0b2e29]"
+              className="mt-4 w-full rounded-2xl bg-[#021A54] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#0b2a70]"
             >
               View Results
             </button>

@@ -212,7 +212,8 @@ const ProfilePage = () => {
             </SidebarButton>
             <SidebarButton
               onClick={() => navigate(canManageResources ? "/resources/dashboard" : "/availability")}
-              fillClass="bg-[linear-gradient(90deg,#a7f3d0,#fde68a)]"
+              fillClass="bg-[linear-gradient(90deg,#6f7da6,#4f7f8d)]"
+              tone="dark"
             >
               Resources
             </SidebarButton>
