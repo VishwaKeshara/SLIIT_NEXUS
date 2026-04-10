@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-import { useEffect, useRef, useState } from "react";
-import { ticketApi } from "../services/api";
-import { useAuth } from "../context/useAuth";
-=======
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ticketApi, resourceApi } from "../services/api";
-import { useAuth } from "../context/AuthContext";
->>>>>>> d4f4d3951341039eb0f0ec0d076d424ff8dd87d8
+import { useAuth } from "../context/useAuth";
 
 const CATEGORIES = [
   "Hardware",

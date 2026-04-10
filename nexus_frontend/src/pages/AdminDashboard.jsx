@@ -340,11 +340,7 @@ const AdminDashboard = () => {
               <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-6 shadow-sm">
                 <p className="font-bold text-red-700">{error}</p>
                 <p className="mt-2 text-sm font-semibold text-red-600">
-<<<<<<< HEAD
                   If you have not signed in yet, open the login page and use an account with the ADMIN role.
-=======
-                  If you have not signed in yet, open the login page.
->>>>>>> d4f4d3951341039eb0f0ec0d076d424ff8dd87d8
                 </p>
                 <Link
                   to="/login"
