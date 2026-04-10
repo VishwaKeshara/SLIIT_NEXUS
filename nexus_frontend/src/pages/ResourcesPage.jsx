@@ -1546,50 +1546,57 @@ const ResourcesPage = () => {
                   {filteredResources.map((resource) => (
                     <article
                       key={resource.id}
-                      className="rounded-[1.4rem] border border-[#dbe7df] bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(15,52,46,0.1)]"
+                      className="group relative overflow-hidden rounded-[1.7rem] border border-white/70 bg-white/65 p-5 shadow-[0_18px_44px_rgba(15,52,46,0.12)] backdrop-blur-xl transition hover:-translate-y-1 hover:border-[#c5ded4] hover:bg-white/80 hover:shadow-[0_26px_58px_rgba(15,52,46,0.18)]"
                     >
+                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,212,92,0.24),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.75),rgba(226,241,235,0.42))]" />
+                      <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#103c35]/10 blur-2xl transition group-hover:bg-[#103c35]/16" />
+                      <div className="relative">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <h3 className="text-2xl font-extrabold tracking-[-0.03em] text-[#0f342e]">
                             {resource.name}
                           </h3>
-                          <p className="mt-2 text-sm font-bold uppercase tracking-[0.14em] text-[#5b7493]">
+                          <p className="mt-2 inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-black uppercase tracking-[0.14em] text-[#39766a] ring-1 ring-[#dbe7df]">
                             {formatEnumLabel(resource.type)}
                           </p>
                         </div>
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.12em] ${
+                          className={`rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sm ${
                             resource.status === "ACTIVE"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
+                              ? "bg-green-100/90 text-green-800 ring-1 ring-green-200"
+                              : "bg-red-100/90 text-red-800 ring-1 ring-red-200"
                           }`}
                         >
                           {resource.status}
                         </span>
                       </div>
 
-                      <div className="mt-5 space-y-2 text-sm text-[#3e6259]">
-                        <p>
-                          <span className="font-bold text-[#0f342e]">Capacity:</span> {resource.capacity}
-                        </p>
-                        <p>
-                          <span className="font-bold text-[#0f342e]">Location:</span> {resource.location}
-                        </p>
-                        <p>
-                          <span className="font-bold text-[#0f342e]">Availability:</span>{" "}
-                          {formatTimeLabel(resource.availableFrom)} - {formatTimeLabel(resource.availableTo)}
-                        </p>
-                        <p>
-                          <span className="font-bold text-[#0f342e]">Description:</span>{" "}
-                          {resource.description || "N/A"}
-                        </p>
+                      <div className="mt-5 grid gap-3 text-sm text-[#3e6259]">
+                        <div className="rounded-[1rem] bg-white/70 p-3 ring-1 ring-white/80">
+                          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#7a918a]">Capacity</p>
+                          <p className="mt-1 font-extrabold text-[#0f342e]">{resource.capacity}</p>
+                        </div>
+                        <div className="rounded-[1rem] bg-white/70 p-3 ring-1 ring-white/80">
+                          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#7a918a]">Location</p>
+                          <p className="mt-1 font-extrabold text-[#0f342e]">{resource.location}</p>
+                        </div>
+                        <div className="rounded-[1rem] bg-white/70 p-3 ring-1 ring-white/80">
+                          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#7a918a]">Availability</p>
+                          <p className="mt-1 font-extrabold text-[#0f342e]">
+                            {formatTimeLabel(resource.availableFrom)} - {formatTimeLabel(resource.availableTo)}
+                          </p>
+                        </div>
+                        <div className="rounded-[1rem] bg-white/70 p-3 ring-1 ring-white/80">
+                          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#7a918a]">Description</p>
+                          <p className="mt-1 font-semibold text-[#3e6259]">{resource.description || "N/A"}</p>
+                        </div>
                       </div>
 
                       <div className="mt-5 flex flex-wrap gap-3">
                         <button
                           type="button"
                           onClick={() => setAvailabilityResource(resource)}
-                          className="rounded-[1rem] bg-[#103c35] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#0b2e29]"
+                          className="rounded-[1rem] bg-[#103c35] px-4 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(16,60,53,0.18)] transition hover:bg-[#0b2e29]"
                         >
                           View Availability
                         </button>
@@ -1600,7 +1607,7 @@ const ResourcesPage = () => {
                           <button
                             type="button"
                             onClick={() => startEdit(resource)}
-                            className="rounded-[1rem] bg-[#f2d45c] px-4 py-2.5 text-sm font-bold text-[#103c35] transition hover:bg-[#f7df76]"
+                            className="rounded-[1rem] bg-[#f2d45c] px-4 py-2.5 text-sm font-bold text-[#103c35] shadow-[0_10px_20px_rgba(92,75,6,0.12)] transition hover:bg-[#f7df76]"
                           >
                             Edit
                           </button>
@@ -1608,12 +1615,13 @@ const ResourcesPage = () => {
                             type="button"
                             onClick={() => deleteResource(resource)}
                             disabled={deletingId === resource.id}
-                            className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-[1rem] bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_10px_20px_rgba(185,28,28,0.14)] transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {deletingId === resource.id ? "Deleting..." : "Delete"}
                           </button>
                         </div>
                       )}
+                      </div>
                     </article>
                   ))}
                 </div>
