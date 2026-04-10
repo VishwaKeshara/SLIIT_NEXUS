@@ -339,7 +339,7 @@ const AdminDashboard = () => {
               <div className="rounded-[1.5rem] border border-red-200 bg-red-50 p-6 shadow-sm">
                 <p className="font-bold text-red-700">{error}</p>
                 <p className="mt-2 text-sm font-semibold text-red-600">
-                  If you have not signed in yet, open the login page and choose `Admin Demo`.
+                  If you have not signed in yet, open the login page.
                 </p>
                 <Link
                   to="/login"

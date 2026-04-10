@@ -3,21 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
-const demoAccounts = [
-  { label: "Student Demo", email: "student@sliitnexus.com", password: "Student123!" },
-  { label: "Admin Demo", email: "admin@sliitnexus.com", password: "Admin123!" },
-];
+const demoAccounts = []; // Removed Admin Demo and Student Demo accounts
 
 const getFriendlyLoginError = (err, credentials) => {
   const backendMessage = err?.response?.data?.message;
   if (backendMessage) {
     if (backendMessage.toLowerCase().includes("invalid email or password")) {
-      const demoAccount = demoAccounts.find(
-        (account) => account.email.toLowerCase() === credentials.email.trim().toLowerCase()
-      );
-      if (demoAccount) {
-        return `Invalid password. Try ${demoAccount.password} for ${demoAccount.email}.`;
-      }
+      return "Invalid email or password.";
     }
     return backendMessage;
   }
@@ -31,7 +23,7 @@ const getFriendlyLoginError = (err, credentials) => {
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
-  const [selectedEmail, setSelectedEmail] = useState(demoAccounts[0].email);
+  const [selectedEmail, setSelectedEmail] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { loginAsDevUser, signIn } = useAuth();
