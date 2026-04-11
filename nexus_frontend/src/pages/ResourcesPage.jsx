@@ -657,7 +657,7 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
 
   const panelSubtitle =
     {
-      dashboard: "Manage facilities, assets, imports, availability, and operational status from one admin workspace.",
+      dashboard: "",
       resources: "Search, filter, view, update, and remove campus resources from the catalogue.",
       add: "Create a new resource or update the selected resource with validated campus data.",
       import: "Upload a CSV file, preview all rows, then confirm valid non-duplicate resource imports.",

@@ -17,7 +17,9 @@ const ResourcesLayout = ({ children, isAdmin, onLogout, showDashboardBackLink = 
                 <h1 className="font-display mt-3 text-4xl font-extrabold text-[#021A54] sm:text-5xl">
                   {title}
                 </h1>
-                <p className="mt-3 max-w-3xl text-base font-semibold text-[#5c746d] sm:text-lg">{subtitle}</p>
+                {subtitle ? (
+                  <p className="mt-3 max-w-3xl text-base font-semibold text-[#5c746d] sm:text-lg">{subtitle}</p>
+                ) : null}
               </div>
             </div>
           </header>
