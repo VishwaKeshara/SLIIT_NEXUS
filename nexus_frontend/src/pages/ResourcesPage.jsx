@@ -49,6 +49,108 @@ const campusLocations = {
   ],
 };
 
+const resourceNameBases = {
+  LECTURE_HALL: "Lecture Hall",
+  LAB: "Computer Lab",
+  MEETING_ROOM: "Meeting Room",
+  EQUIPMENT: "Projector",
+};
+
+const resourceSuggestionTemplates = {
+  LECTURE_HALL: [
+    {
+      capacity: "120",
+      availableFrom: "08:00",
+      availableTo: "17:00",
+      status: "ACTIVE",
+      description: "Large lecture hall with projector, sound, and front podium access.",
+    },
+    {
+      capacity: "90",
+      availableFrom: "08:00",
+      availableTo: "16:00",
+      status: "ACTIVE",
+      description: "Mid-size lecture space suited for daily academic sessions.",
+    },
+    {
+      capacity: "150",
+      availableFrom: "09:00",
+      availableTo: "17:00",
+      status: "ACTIVE",
+      description: "High-capacity hall with presentation support for major classes.",
+    },
+  ],
+  LAB: [
+    {
+      capacity: "40",
+      availableFrom: "08:00",
+      availableTo: "17:00",
+      status: "ACTIVE",
+      description: "Practical lab with workstation seating and instructor console.",
+    },
+    {
+      capacity: "30",
+      availableFrom: "08:00",
+      availableTo: "16:00",
+      status: "ACTIVE",
+      description: "Compact lab ideal for focused software or networking sessions.",
+    },
+    {
+      capacity: "50",
+      availableFrom: "09:00",
+      availableTo: "17:00",
+      status: "ACTIVE",
+      description: "Shared teaching lab with strong power and connectivity coverage.",
+    },
+  ],
+  MEETING_ROOM: [
+    {
+      capacity: "12",
+      availableFrom: "08:00",
+      availableTo: "17:00",
+      status: "ACTIVE",
+      description: "Small meeting room for staff briefings and project discussions.",
+    },
+    {
+      capacity: "18",
+      availableFrom: "08:00",
+      availableTo: "17:00",
+      status: "ACTIVE",
+      description: "Discussion room with presentation screen and shared table space.",
+    },
+    {
+      capacity: "24",
+      availableFrom: "09:00",
+      availableTo: "17:00",
+      status: "ACTIVE",
+      description: "Formal meeting room suited for reviews, planning, and workshops.",
+    },
+  ],
+  EQUIPMENT: [
+    {
+      capacity: "1",
+      availableFrom: "08:00",
+      availableTo: "17:00",
+      status: "ACTIVE",
+      description: "Portable projector unit reserved through the resource desk.",
+    },
+    {
+      capacity: "1",
+      availableFrom: "08:00",
+      availableTo: "17:00",
+      status: "ACTIVE",
+      description: "Shared camera kit for media capture and event documentation.",
+    },
+    {
+      capacity: "1",
+      availableFrom: "09:00",
+      availableTo: "16:00",
+      status: "ACTIVE",
+      description: "Bookable AV asset for short-term teaching and event support.",
+    },
+  ],
+};
+
 const emptyResourceForm = {
   name: "",
   type: "",
@@ -98,7 +200,48 @@ const toDateKey = (date) =>
     day: "2-digit",
   }).format(date);
 
+const toTimeKey = (value) => String(value ?? "").slice(0, 5);
+
+const isBookingActiveForAvailability = (booking) =>
+  !["REJECTED", "CANCELLED"].includes(String(booking?.status ?? "").toUpperCase());
+
+const doesBookingMatchResource = (booking, resource) =>
+  (booking?.resourceId && booking.resourceId === resource.id) ||
+  String(booking?.resourceName ?? "").trim().toLowerCase() === String(resource?.name ?? "").trim().toLowerCase();
+
+const isBookingCoveringSlot = (booking, dayKey, slot) => {
+  const bookingDay = String(booking?.date ?? "").slice(0, 10);
+  const bookingStart = toTimeKey(booking?.startTime);
+  const bookingEnd = toTimeKey(booking?.endTime);
+
+  return bookingDay === dayKey && bookingStart <= slot && bookingEnd > slot;
+};
+
 const getAllLocations = () => [...new Set(Object.values(campusLocations).flat())];
+
+const getNextResourceSequence = (resources, type) => {
+  const resourceCount = resources.filter((resource) => resource.type === type).length;
+  return resourceCount + 1;
+};
+
+const buildSuggestedResourceDrafts = (type, resources, selectedLocation = "") => {
+  if (!type) {
+    return [];
+  }
+
+  const templates = resourceSuggestionTemplates[type] ?? [];
+  const locations = [selectedLocation, ...(campusLocations[type] ?? [])].filter(Boolean);
+  const uniqueLocations = [...new Set(locations)];
+  const startIndex = getNextResourceSequence(resources, type);
+  const nameBase = resourceNameBases[type] ?? "Resource";
+
+  return templates.map((template, index) => ({
+    ...template,
+    name: `${nameBase} ${startIndex + index}`,
+    type,
+    location: uniqueLocations[index] ?? uniqueLocations[0] ?? "",
+  }));
+};
 
 const normalizeResourceType = (value) => {
   const normalized = value.trim().toUpperCase().replaceAll(" ", "_").replaceAll("-", "_");
@@ -282,6 +425,10 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
 
   const formLocationOptions = formState.type ? campusLocations[formState.type] ?? [] : [];
   const filterLocationOptions = filters.type ? campusLocations[filters.type] ?? [] : getAllLocations();
+  const suggestedResourceDrafts = useMemo(
+    () => buildSuggestedResourceDrafts(formState.type, resources, formState.location),
+    [formState.location, formState.type, resources]
+  );
 
   const filteredResources = useMemo(() => {
     const normalizedSearch = filters.search.trim().toLowerCase();
@@ -465,6 +612,22 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
     setFormErrors({});
     setFormMessage("");
     setEditingId(null);
+  };
+
+  const applySuggestedResource = (suggestion) => {
+    setFormState((current) => ({
+      ...current,
+      name: suggestion.name,
+      type: suggestion.type,
+      capacity: suggestion.capacity,
+      location: suggestion.location,
+      availableFrom: suggestion.availableFrom,
+      availableTo: suggestion.availableTo,
+      status: suggestion.status,
+      description: suggestion.description,
+    }));
+    setFormErrors({});
+    setFormMessage("");
   };
 
   const startInlineEdit = (resource) => {
@@ -890,13 +1053,11 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
     }
 
     const dayKey = toDateKey(day);
-    const slotLabel = formatTimeLabel(slot);
     const isBooked = bookings.some(
       (booking) =>
-        booking.status === "APPROVED" &&
-        booking.resourceName === resource.name &&
-        booking.dateLabel?.includes(dayKey) &&
-        booking.dateLabel?.includes(slotLabel)
+        isBookingActiveForAvailability(booking) &&
+        doesBookingMatchResource(booking, resource) &&
+        isBookingCoveringSlot(booking, dayKey, slot)
     );
 
     return isBooked ? "Booked" : "Available";
@@ -1327,6 +1488,43 @@ const ResourcesPage = ({ initialActivePanel = "resources" }) => {
                     )}
                   </label>
                 </div>
+
+                {formState.type && (
+                  <div className="mt-4 rounded-[1.3rem] border border-[#dbe7df] bg-[#f3f8f5] p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-bold text-[#0f342e]">Suggested Resources</p>
+                        <p className="text-xs font-semibold text-[#5c746d]">
+                          Pick a suggestion to auto-fill the form with a ready-made setup.
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-[#39766a]">
+                        {formatEnumLabel(formState.type)}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                      {suggestedResourceDrafts.map((suggestion) => (
+                        <button
+                          key={`${suggestion.type}-${suggestion.name}-${suggestion.location}`}
+                          type="button"
+                          onClick={() => applySuggestedResource(suggestion)}
+                          className="rounded-[1.1rem] border border-white bg-white px-4 py-4 text-left shadow-[0_12px_30px_rgba(15,52,46,0.07)] transition hover:-translate-y-0.5 hover:border-[#bfd5cc]"
+                        >
+                          <p className="text-sm font-extrabold text-[#0f342e]">{suggestion.name}</p>
+                          <p className="mt-1 text-xs font-semibold text-[#5c746d]">{suggestion.location || "Select location"}</p>
+                          <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-black uppercase tracking-[0.1em] text-[#39766a]">
+                            <span className="rounded-full bg-[#eef5f1] px-2.5 py-1">Cap {suggestion.capacity}</span>
+                            <span className="rounded-full bg-[#eef5f1] px-2.5 py-1">
+                              {suggestion.availableFrom} - {suggestion.availableTo}
+                            </span>
+                          </div>
+                          <p className="mt-3 text-xs leading-5 text-[#5c746d]">{suggestion.description}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <label className="mt-4 block">
                   <span className="text-sm font-bold text-[#0f342e]">Campus Location</span>
