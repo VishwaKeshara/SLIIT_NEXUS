@@ -19,6 +19,8 @@ public class ResourceRequestDTO {
     @Min(value = 1, message = "Capacity must be at least 1")
     private Integer capacity;
 
+    private Boolean sharedResource;
+
     @NotBlank(message = "Location is required")
     private String location;
 
@@ -42,6 +44,9 @@ public class ResourceRequestDTO {
 
     public Integer getCapacity() { return capacity; }
     public void setCapacity(Integer capacity) { this.capacity = capacity; }
+
+    public Boolean getSharedResource() { return sharedResource; }
+    public void setSharedResource(Boolean sharedResource) { this.sharedResource = sharedResource; }
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }

@@ -10,6 +10,7 @@ public class ResourceResponseDTO {
     private String name;
     private ResourceType type;
     private Integer capacity;
+    private Boolean sharedResource;
     private String location;
     private LocalTime availableFrom;
     private LocalTime availableTo;
@@ -28,6 +29,9 @@ public class ResourceResponseDTO {
 
     public Integer getCapacity() { return capacity; }
     public void setCapacity(Integer capacity) { this.capacity = capacity; }
+
+    public Boolean getSharedResource() { return sharedResource; }
+    public void setSharedResource(Boolean sharedResource) { this.sharedResource = sharedResource; }
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }

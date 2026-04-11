@@ -20,6 +20,8 @@ public class Resource {
 
     private Integer capacity;
 
+    private Boolean sharedResource;
+
     @Indexed
     private String location;
 
@@ -64,6 +66,14 @@ public class Resource {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    public Boolean getSharedResource() {
+        return sharedResource;
+    }
+
+    public void setSharedResource(Boolean sharedResource) {
+        this.sharedResource = sharedResource;
     }
 
     public String getLocation() {

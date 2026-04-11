@@ -1,6 +1,9 @@
 import ResourcesPageShell from "../ResourcesPageShell";
 import {
   formatEnumLabel,
+  getResourceAvailabilityLabel,
+  getResourceCapacityLabel,
+  isSharedEquipmentResource,
   resourceStatuses,
   resourceTypes,
   useResourcesModule,
@@ -96,14 +99,66 @@ const AddResourcePageView = () => {
                 min="1"
                 value={formState.capacity}
                 onChange={handleFormChange}
-                placeholder="Enter capacity"
-                className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] ${
+                disabled={formState.type === "EQUIPMENT" && !formState.sharedResource}
+                placeholder={formState.type === "EQUIPMENT" && !formState.sharedResource ? "Locked to 1 for individual equipment" : "Enter capacity"}
+                className={`mt-2 w-full rounded-[1rem] border bg-[#f8fbf9] px-4 py-3 text-[#0f342e] outline-none transition focus:ring-4 focus:ring-[#dceee7] disabled:cursor-not-allowed disabled:bg-[#eef3f0] ${
                   formErrors.capacity ? "border-red-400" : "border-[#dbe7df] focus:border-[#39766a]"
                 }`}
               />
               {formErrors.capacity && <p className="mt-1 text-sm font-semibold text-red-600">{formErrors.capacity}</p>}
             </label>
           </div>
+
+          {formState.type === "EQUIPMENT" && (
+            <div className="mt-4 rounded-[1.3rem] border border-[#dbe7df] bg-[#f8fbf9] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold text-[#0f342e]">Equipment Capacity Mode</p>
+                  <p className="text-xs font-semibold leading-5 text-[#5c746d]">
+                    Individual equipment such as cameras and laptops stay fixed at 1. Turn this on only for grouped or
+                    shared equipment pools.
+                  </p>
+                </div>
+                <label className="inline-flex items-center gap-3 rounded-full border border-[#dbe7df] bg-white px-4 py-2 text-sm font-bold text-[#0f342e]">
+                  <input
+                    name="sharedResource"
+                    type="checkbox"
+                    checked={formState.sharedResource}
+                    onChange={handleFormChange}
+                    className="h-4 w-4 rounded border-[#b6ccc4] text-[#103c35] focus:ring-[#39766a]"
+                  />
+                  Shared equipment pool
+                </label>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-[1rem] border border-white bg-white p-4 shadow-sm">
+                  <p className="text-xs font-black uppercase tracking-[0.12em] text-[#7a918a]">Capacity Rule</p>
+                  <p className="mt-2 text-sm font-bold text-[#0f342e]">
+                    {formState.sharedResource
+                      ? "Shared equipment can accept multiple concurrent bookings until all units are reserved."
+                      : "Individual equipment is limited to a single unit and one active booking per time slot."}
+                  </p>
+                </div>
+                <div className="rounded-[1rem] border border-white bg-white p-4 shadow-sm">
+                  <p className="text-xs font-black uppercase tracking-[0.12em] text-[#7a918a]">Display Preview</p>
+                  <p className="mt-2 text-sm font-bold text-[#0f342e]">
+                    {getResourceCapacityLabel({
+                      type: formState.type,
+                      capacity: Number(formState.capacity || 0),
+                      sharedResource: formState.sharedResource,
+                    })}
+                  </p>
+                  <p className="mt-1 text-xs font-semibold text-[#5c746d]">
+                    {getResourceAvailabilityLabel({
+                      type: formState.type,
+                      status: formState.status,
+                      sharedResource: formState.sharedResource,
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {formState.type && (
             <div className="mt-4 rounded-[1.3rem] border border-[#dbe7df] bg-[#f3f8f5] p-4">
@@ -130,7 +185,14 @@ const AddResourcePageView = () => {
                     <p className="text-sm font-extrabold text-[#0f342e]">{suggestion.name}</p>
                     <p className="mt-1 text-xs font-semibold text-[#5c746d]">{suggestion.location || "Select location"}</p>
                     <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-black uppercase tracking-[0.1em] text-[#39766a]">
-                      <span className="rounded-full bg-[#eef5f1] px-2.5 py-1">Cap {suggestion.capacity}</span>
+                      <span className="rounded-full bg-[#eef5f1] px-2.5 py-1">
+                        {isSharedEquipmentResource(suggestion) ? `${suggestion.capacity} Unit Pool` : `Cap ${suggestion.capacity}`}
+                      </span>
+                      {suggestion.type === "EQUIPMENT" && (
+                        <span className="rounded-full bg-[#fff7db] px-2.5 py-1 text-[#856404]">
+                          {isSharedEquipmentResource(suggestion) ? "Shared" : "Individual"}
+                        </span>
+                      )}
                       <span className="rounded-full bg-[#eef5f1] px-2.5 py-1">
                         {suggestion.availableFrom} - {suggestion.availableTo}
                       </span>

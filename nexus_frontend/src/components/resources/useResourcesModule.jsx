@@ -118,25 +118,28 @@ const resourceSuggestionTemplates = {
   ],
   EQUIPMENT: [
     {
+      sharedResource: false,
       capacity: "1",
       availableFrom: "08:00",
       availableTo: "17:00",
       status: "ACTIVE",
-      description: "Portable projector unit reserved through the resource desk.",
+      description: "Individual projector unit reserved through the resource desk.",
     },
     {
+      sharedResource: false,
       capacity: "1",
       availableFrom: "08:00",
       availableTo: "17:00",
       status: "ACTIVE",
-      description: "Shared camera kit for media capture and event documentation.",
+      description: "Individual camera kit for media capture and event documentation.",
     },
     {
-      capacity: "1",
+      sharedResource: true,
+      capacity: "4",
       availableFrom: "09:00",
       availableTo: "16:00",
       status: "ACTIVE",
-      description: "Bookable AV asset for short-term teaching and event support.",
+      description: "Shared equipment pool with multiple bookable AV units for concurrent requests.",
     },
   ],
 };
@@ -145,6 +148,7 @@ const emptyResourceForm = {
   name: "",
   type: "",
   capacity: "",
+  sharedResource: false,
   location: "",
   availableFrom: "",
   availableTo: "",
@@ -166,6 +170,35 @@ export const formatEnumLabel = (value) =>
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ") ?? "";
+
+export const isSharedEquipmentResource = (resource) =>
+  resource?.type === "EQUIPMENT" && (Boolean(resource?.sharedResource) || Number(resource?.capacity ?? 0) > 1);
+
+export const getResourceCapacityLabel = (resource) => {
+  const capacity = Number(resource?.capacity ?? 0);
+
+  if (resource?.type === "EQUIPMENT") {
+    return isSharedEquipmentResource(resource)
+      ? `${capacity} units in shared pool`
+      : "1 individually assigned unit";
+  }
+
+  return `${capacity} person capacity`;
+};
+
+export const getResourceAvailabilityLabel = (resource) => {
+  if (resource?.status === "OUT_OF_SERVICE") {
+    return "Currently unavailable";
+  }
+
+  if (resource?.type === "EQUIPMENT") {
+    return isSharedEquipmentResource(resource)
+      ? "Concurrent reservations allowed until all units are booked"
+      : "Single active booking per time slot";
+  }
+
+  return "Single room reservation per time slot";
+};
 
 export const formatTimeLabel = (timeValue) =>
   timeValue
@@ -206,6 +239,14 @@ const isBookingCoveringSlot = (booking, dayKey, slot) => {
 
   return bookingDay === dayKey && bookingStart <= slot && bookingEnd > slot;
 };
+
+const getOverlappingBookingCount = (bookings, resource, dayKey, slot) =>
+  bookings.filter(
+    (booking) =>
+      isBookingActiveForAvailability(booking) &&
+      doesBookingMatchResource(booking, resource) &&
+      isBookingCoveringSlot(booking, dayKey, slot)
+  ).length;
 
 const getAllLocations = () => [...new Set(Object.values(campusLocations).flat())];
 
@@ -475,8 +516,16 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
       nextErrors.name = "Resource name cannot exceed 80 characters.";
     }
 
-    if (!payload.type) {
+      if (!payload.type) {
       nextErrors.type = "Resource type is required.";
+    }
+
+    if (payload.type === "EQUIPMENT" && !payload.sharedResource && payload.capacity !== "1" && capacity !== 1) {
+      nextErrors.capacity = "Individual equipment must keep capacity at 1.";
+    }
+
+    if (payload.type === "EQUIPMENT" && payload.sharedResource && capacity <= 1) {
+      nextErrors.capacity = "Shared equipment pools must have more than 1 unit.";
     }
 
     if (payload.capacity === "") {
@@ -525,7 +574,22 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
 
     setFormState((current) => {
       if (name === "type") {
-        return { ...current, type: value, location: "" };
+        return {
+          ...current,
+          type: value,
+          location: "",
+          sharedResource: value === "EQUIPMENT" ? current.sharedResource : false,
+          capacity: value === "EQUIPMENT" && !current.sharedResource ? "1" : current.capacity,
+        };
+      }
+
+      if (name === "sharedResource") {
+        const nextSharedState = event.target.checked;
+        return {
+          ...current,
+          sharedResource: nextSharedState,
+          capacity: nextSharedState ? current.capacity === "1" || current.capacity === "" ? "2" : current.capacity : "1",
+        };
       }
 
       return { ...current, [name]: value };
@@ -560,6 +624,7 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
       name: suggestion.name,
       type: suggestion.type,
       capacity: suggestion.capacity,
+      sharedResource: Boolean(suggestion.sharedResource),
       location: suggestion.location,
       availableFrom: suggestion.availableFrom,
       availableTo: suggestion.availableTo,
@@ -576,6 +641,7 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
       name: resource.name ?? "",
       type: resource.type ?? "",
       capacity: resource.capacity?.toString() ?? "",
+      sharedResource: Boolean(resource.sharedResource),
       location: resource.location ?? "",
       availableFrom: resource.availableFrom ?? "",
       availableTo: resource.availableTo ?? "",
@@ -597,7 +663,22 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
 
     setInlineFormState((current) => {
       if (name === "type") {
-        return { ...current, type: value, location: "" };
+        return {
+          ...current,
+          type: value,
+          location: "",
+          sharedResource: value === "EQUIPMENT" ? current.sharedResource : false,
+          capacity: value === "EQUIPMENT" && !current.sharedResource ? "1" : current.capacity,
+        };
+      }
+
+      if (name === "sharedResource") {
+        const nextSharedState = event.target.checked;
+        return {
+          ...current,
+          sharedResource: nextSharedState,
+          capacity: nextSharedState ? current.capacity === "1" || current.capacity === "" ? "2" : current.capacity : "1",
+        };
       }
 
       return { ...current, [name]: value };
@@ -618,6 +699,7 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
       ...formState,
       name: formState.name.trim(),
       capacity: Number(formState.capacity),
+      sharedResource: formState.type === "EQUIPMENT" && Boolean(formState.sharedResource),
       description: formState.description.trim(),
     };
 
@@ -657,6 +739,7 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
         ...inlineFormState,
         name: inlineFormState.name.trim(),
         capacity: Number(inlineFormState.capacity),
+        sharedResource: inlineFormState.type === "EQUIPMENT" && Boolean(inlineFormState.sharedResource),
         description: inlineFormState.description.trim(),
       });
       setFormMessage("Resource updated successfully.");
@@ -711,6 +794,7 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
           availableFrom: resource.availableFrom,
           availableTo: resource.availableTo,
           capacity: resource.capacity,
+          sharedResource: Boolean(resource.sharedResource),
           date: slotDetails.date ?? "",
           startTime: slotDetails.startTime ?? resource.availableFrom ?? "",
           endTime: slotDetails.endTime ?? resource.availableTo ?? "",
@@ -769,6 +853,8 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
         errors.push("Capacity is required.");
       } else if (!Number.isInteger(capacity) || capacity <= 0) {
         errors.push("Capacity must be greater than 0.");
+      } else if (normalizedType === "EQUIPMENT" && capacity !== 1) {
+        errors.push("Equipment CSV imports must use capacity 1 unless created as a shared pool from the form.");
       }
 
       if (!row.raw.location.trim()) {
@@ -804,6 +890,7 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
           name: row.raw.name.trim(),
           type: normalizedType,
           capacity,
+          sharedResource: false,
           location: row.raw.location.trim(),
           availableFrom: row.raw.availableFrom.trim(),
           availableTo: row.raw.availableTo.trim(),
@@ -955,35 +1042,47 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
     }
   };
 
-  const getSlotStatus = (resource, day, slot) => {
+  const getSlotMeta = (resource, day, slot) => {
     if (resource.status === "OUT_OF_SERVICE") {
-      return "Out of Service";
+      return { status: "Out of Service", detail: "Resource unavailable" };
     }
 
     const isInsideAvailability =
       resource.availableFrom && resource.availableTo && slot >= resource.availableFrom && slot < resource.availableTo;
 
     if (!isInsideAvailability) {
-      return "Out of Service";
+      return { status: "Out of Service", detail: "Outside operating hours" };
     }
 
     const dayKey = toDateKey(day);
-    const isBooked = bookings.some(
-      (booking) =>
-        isBookingActiveForAvailability(booking) &&
-        doesBookingMatchResource(booking, resource) &&
-        isBookingCoveringSlot(booking, dayKey, slot)
-    );
+    const overlappingBookings = getOverlappingBookingCount(bookings, resource, dayKey, slot);
 
-    return isBooked ? "Booked" : "Available";
+    if (isSharedEquipmentResource(resource)) {
+      const totalUnits = Math.max(Number(resource.capacity ?? 1), 1);
+      const remainingUnits = Math.max(totalUnits - overlappingBookings, 0);
+
+      if (remainingUnits === 0) {
+        return { status: "Fully Booked", detail: `${totalUnits}/${totalUnits} units reserved` };
+      }
+
+      if (overlappingBookings > 0) {
+        return { status: "Limited", detail: `${remainingUnits} of ${totalUnits} units available` };
+      }
+    }
+
+    return overlappingBookings > 0
+      ? { status: "Booked", detail: "This time slot is already reserved" }
+      : { status: "Available", detail: getResourceAvailabilityLabel(resource) };
   };
+
+  const getSlotStatus = (resource, day, slot) => getSlotMeta(resource, day, slot).status;
 
   const getSlotClass = (status) => {
     if (status === "Available") {
       return "border-green-200 bg-green-50 text-green-800";
     }
 
-    if (status === "Booked") {
+    if (status === "Booked" || status === "Limited") {
       return "border-amber-200 bg-amber-50 text-amber-800";
     }
 
@@ -1043,6 +1142,7 @@ export const useResourcesModule = ({ initialSearch = "" } = {}) => {
     availabilityResource,
     setAvailabilityResource,
     calendarDays,
+    getSlotMeta,
     getSlotStatus,
     getSlotClass,
     getNextSlot,

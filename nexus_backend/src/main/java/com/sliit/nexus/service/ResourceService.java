@@ -2,6 +2,7 @@ package com.sliit.nexus.service;
 
 import com.sliit.nexus.dto.ResourceRequestDTO;
 import com.sliit.nexus.dto.ResourceResponseDTO;
+import com.sliit.nexus.enums.ResourceType;
 import com.sliit.nexus.model.Resource;
 import com.sliit.nexus.repository.ResourceRepository;
 import java.util.List;
@@ -18,6 +19,7 @@ public class ResourceService {
 
     public ResourceResponseDTO create(ResourceRequestDTO request) {
         validateAvailabilityWindow(request);
+        validateCapacityRules(request);
 
         Resource resource = new Resource();
         applyRequest(resource, request);
@@ -34,6 +36,7 @@ public class ResourceService {
 
     public ResourceResponseDTO update(String resourceId, ResourceRequestDTO request) {
         validateAvailabilityWindow(request);
+        validateCapacityRules(request);
 
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new NoSuchElementException("Resource not found."));
@@ -55,10 +58,28 @@ public class ResourceService {
         }
     }
 
+    private void validateCapacityRules(ResourceRequestDTO request) {
+        if (request.getCapacity() == null || request.getCapacity() < 1) {
+            throw new IllegalArgumentException("Capacity must be at least 1.");
+        }
+
+        boolean isEquipment = request.getType() == ResourceType.EQUIPMENT;
+        boolean isSharedEquipment = Boolean.TRUE.equals(request.getSharedResource());
+
+        if (isEquipment && !isSharedEquipment && request.getCapacity() != 1) {
+            throw new IllegalArgumentException("Individual equipment must have a capacity of 1.");
+        }
+
+        if (isEquipment && isSharedEquipment && request.getCapacity() <= 1) {
+            throw new IllegalArgumentException("Shared equipment pools must have a capacity greater than 1.");
+        }
+    }
+
     private void applyRequest(Resource resource, ResourceRequestDTO request) {
         resource.setName(request.getName());
         resource.setType(request.getType());
         resource.setCapacity(request.getCapacity());
+        resource.setSharedResource(request.getType() == ResourceType.EQUIPMENT && Boolean.TRUE.equals(request.getSharedResource()));
         resource.setLocation(request.getLocation());
         resource.setAvailableFrom(request.getAvailableFrom());
         resource.setAvailableTo(request.getAvailableTo());
@@ -72,6 +93,7 @@ public class ResourceService {
         response.setName(resource.getName());
         response.setType(resource.getType());
         response.setCapacity(resource.getCapacity());
+        response.setSharedResource(Boolean.TRUE.equals(resource.getSharedResource()));
         response.setLocation(resource.getLocation());
         response.setAvailableFrom(resource.getAvailableFrom());
         response.setAvailableTo(resource.getAvailableTo());

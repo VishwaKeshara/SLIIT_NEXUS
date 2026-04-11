@@ -1,9 +1,12 @@
 package com.sliit.nexus.service;
 
+import com.sliit.nexus.enums.ResourceType;
 import com.sliit.nexus.model.Booking;
 import com.sliit.nexus.model.BookingStatus;
 import com.sliit.nexus.model.CheckInStatus;
+import com.sliit.nexus.model.Resource;
 import com.sliit.nexus.repository.BookingRepository;
+import com.sliit.nexus.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,9 +22,9 @@ import java.util.List;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final ResourceRepository resourceRepository;
 
     public Booking createBooking(Booking booking) {
-        // Validations
         if (booking.getStartTime().isAfter(booking.getEndTime())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time must be before end time");
         }
@@ -29,19 +32,28 @@ public class BookingService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot book in the past");
         }
 
-        // Conflict Detection based on the combined resource name (e.g., "Lecture Halls - LH-01")
-        // We use resourceName here because users now manually enter the specific room/ID
-        List<Booking> existingBookings = bookingRepository.findAll().stream()
-                .filter(b -> b.getResourceName().equals(booking.getResourceName()) 
-                        && b.getDate().equals(booking.getDate())
-                        && b.getStatus() != BookingStatus.REJECTED
-                        && b.getStatus() != BookingStatus.CANCELLED)
+        Resource resource = resourceRepository.findById(booking.getResourceId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected resource was not found"));
+
+        validateBookingAgainstResource(booking, resource);
+        booking.setResourceName(resource.getName());
+
+        List<Booking> overlappingBookings = bookingRepository.findAll().stream()
+                .filter(existing -> isActiveBooking(existing.getStatus()))
+                .filter(existing -> doesBookingMatchResource(existing, resource, booking))
+                .filter(existing -> existing.getDate().equals(booking.getDate()))
+                .filter(existing -> isOverlapping(booking.getStartTime(), booking.getEndTime(), existing.getStartTime(), existing.getEndTime()))
                 .toList();
 
-        for (Booking existing : existingBookings) {
-            if (isOverlapping(booking.getStartTime(), booking.getEndTime(), existing.getStartTime(), existing.getEndTime())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Time slot already booked for this resource");
+        boolean isSharedEquipment = resource.getType() == ResourceType.EQUIPMENT
+                && (Boolean.TRUE.equals(resource.getSharedResource())
+                || (resource.getCapacity() != null && resource.getCapacity() > 1));
+        if (isSharedEquipment) {
+            if (overlappingBookings.size() >= resource.getCapacity()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All units are already booked for this time slot");
             }
+        } else if (!overlappingBookings.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Time slot already booked for this resource");
         }
 
         booking.setStatus(BookingStatus.PENDING);
@@ -53,6 +65,37 @@ public class BookingService {
 
     private boolean isOverlapping(LocalTime start1, LocalTime end1, LocalTime start2, LocalTime end2) {
         return start1.isBefore(end2) && end1.isAfter(start2);
+    }
+
+    private void validateBookingAgainstResource(Booking booking, Resource resource) {
+        if (resource.getStatus() == null || !"ACTIVE".equals(resource.getStatus().name())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This resource is currently unavailable for booking");
+        }
+
+        if (booking.getStartTime().isBefore(resource.getAvailableFrom()) || booking.getEndTime().isAfter(resource.getAvailableTo())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected time is outside the resource availability window");
+        }
+
+        if (resource.getType() != ResourceType.EQUIPMENT
+                && booking.getAttendees() != null
+                && resource.getCapacity() != null
+                && booking.getAttendees() > resource.getCapacity()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Attendee count exceeds the resource capacity");
+        }
+    }
+
+    private boolean isActiveBooking(BookingStatus status) {
+        return status != BookingStatus.REJECTED && status != BookingStatus.CANCELLED;
+    }
+
+    private boolean doesBookingMatchResource(Booking existing, Resource resource, Booking incoming) {
+        if (existing.getResourceId() != null && existing.getResourceId().equals(incoming.getResourceId())) {
+            return true;
+        }
+
+        return existing.getResourceName() != null
+                && resource.getName() != null
+                && existing.getResourceName().trim().equalsIgnoreCase(resource.getName().trim());
     }
 
     public List<Booking> getAllBookings() {

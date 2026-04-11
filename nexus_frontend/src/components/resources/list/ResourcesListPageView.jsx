@@ -24,6 +24,7 @@ const ResourcesListPageView = ({ mode = "resources" }) => {
         calendarDays={resourcesModule.calendarDays}
         getNextSlot={resourcesModule.getNextSlot}
         getSlotClass={resourcesModule.getSlotClass}
+        getSlotMeta={resourcesModule.getSlotMeta}
         getSlotStatus={resourcesModule.getSlotStatus}
         handleBookResource={resourcesModule.handleBookResource}
         onClose={() => resourcesModule.setAvailabilityResource(null)}

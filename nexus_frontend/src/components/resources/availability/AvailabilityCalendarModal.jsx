@@ -3,6 +3,8 @@ import {
   formatCalendarDay,
   formatEnumLabel,
   formatTimeLabel,
+  getResourceAvailabilityLabel,
+  getResourceCapacityLabel,
   toDateKey,
 } from "../useResourcesModule.jsx";
 
@@ -11,6 +13,7 @@ const AvailabilityCalendarModal = ({
   calendarDays,
   getNextSlot,
   getSlotClass,
+  getSlotMeta,
   getSlotStatus,
   handleBookResource,
   onClose,
@@ -28,6 +31,9 @@ const AvailabilityCalendarModal = ({
             <h2 className="font-display mt-2 text-3xl font-extrabold tracking-[-0.04em]">{availabilityResource.name}</h2>
             <p className="mt-2 text-sm font-semibold text-[#d7eee6]">
               {formatEnumLabel(availabilityResource.type)} | {availabilityResource.location}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-[#f6e7a7]">
+              {getResourceCapacityLabel(availabilityResource)} | {getResourceAvailabilityLabel(availabilityResource)}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -64,6 +70,9 @@ const AvailabilityCalendarModal = ({
             <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-bold text-amber-800">
               Booked
             </span>
+            <span className="rounded-full border border-amber-300 bg-[#fff7db] px-4 py-2 text-sm font-bold text-[#8a6a04]">
+              Limited Availability
+            </span>
             <span className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-800">
               Out of Service
             </span>
@@ -91,13 +100,15 @@ const AvailabilityCalendarModal = ({
                     {formatTimeLabel(slot)}
                   </div>
                   {calendarDays.map((day) => {
+                    const slotMeta = getSlotMeta(availabilityResource, day, slot);
                     const status = getSlotStatus(availabilityResource, day, slot);
-                    const isAvailable = status === "Available";
+                    const isAvailable = status === "Available" || status === "Limited";
 
                     return (
                       <div key={`${toDateKey(day)}-${slot}`} className="border-r border-[#dbe7df] p-2 last:border-r-0">
                         <div className={`rounded-xl border px-3 py-3 text-center text-xs font-black ${getSlotClass(status)}`}>
                           <p>{status}</p>
+                          <p className="mt-1 text-[10px] font-semibold opacity-80">{slotMeta.detail}</p>
                           {isAvailable && (
                             <button
                               type="button"
@@ -110,7 +121,7 @@ const AvailabilityCalendarModal = ({
                               }
                               className="mt-2 rounded-lg bg-[#103c35] px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-[#0b2e29]"
                             >
-                              Book
+                              {status === "Limited" ? "Reserve Unit" : "Book"}
                             </button>
                           )}
                         </div>
