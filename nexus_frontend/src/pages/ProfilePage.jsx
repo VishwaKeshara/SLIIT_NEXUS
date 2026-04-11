@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
@@ -6,46 +6,54 @@ const formatRole = (role) => role.replaceAll("_", " ").toLowerCase().replace(/\b
 
 const formatProfileId = (user) => {
   const existingProfileId = user?.profileId ?? user?.profile_id ?? user?.userCode;
-
-  if (existingProfileId) {
-    return String(existingProfileId);
-  }
-
+  if (existingProfileId) return String(existingProfileId);
   const rawId = String(user?.id ?? "");
   const numericSuffix = rawId.match(/\d+$/)?.[0];
-
-  if (numericSuffix) {
-    return `profile_id-${Number(numericSuffix)}`;
-  }
-
-  if (!rawId) {
-    return "profile_id-1";
-  }
-
+  if (numericSuffix) return `profile_id-${Number(numericSuffix)}`;
+  if (!rawId) return "profile_id-1";
   const hash = [...rawId].reduce((total, char) => total + char.charCodeAt(0), 0);
   return `profile_id-${(hash % 999) + 1}`;
 };
 
 const roleStyles = {
-  ADMIN: "bg-amber-100 text-amber-800 ring-1 ring-amber-200",
-  MANAGER: "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200",
-  TECHNICIAN: "bg-cyan-100 text-cyan-800 ring-1 ring-cyan-200",
-  USER: "bg-blue-100 text-blue-800 ring-1 ring-blue-200",
+  ADMIN: "bg-[#fff3c4] text-[#8a6a13] ring-1 ring-[#f2d77b]",
+  MANAGER: "bg-[#dcfce7] text-[#166534] ring-1 ring-[#86efac]",
+  TECHNICIAN: "bg-[#dbeafe] text-[#1d4ed8] ring-1 ring-[#93c5fd]",
+  USER: "bg-[#e5e7eb] text-[#374151] ring-1 ring-[#d1d5db]",
 };
 
 const SidebarButton = ({ active = false, children, fillClass, tone = "light", ...props }) => (
   <button
     type="button"
-    className={`group relative overflow-hidden rounded-lg border border-white/12 bg-white/10 px-5 py-4 text-left font-extrabold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition hover:-translate-y-0.5 hover:border-white/30 hover:shadow-[0_16px_32px_rgba(0,0,0,0.16)] ${
+    className={`group relative overflow-hidden rounded-[1rem] border border-white/12 bg-white/10 px-5 py-4 text-left font-extrabold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition hover:-translate-y-0.5 hover:border-white/30 hover:shadow-[0_16px_32px_rgba(0,0,0,0.16)] ${
       active ? "text-[#07251f]" : "text-white"
     } ${tone === "dark" ? "hover:text-white" : "hover:text-[#07251f]"}`}
     {...props}
   >
-    <span
-      className={`absolute inset-y-0 left-0 ${active ? "w-full" : "w-0"} ${fillClass} transition-all duration-500 ease-out group-hover:w-full`}
-    />
+    <span className={`absolute inset-y-0 left-0 ${active ? "w-full" : "w-0"} ${fillClass} transition-all duration-500 ease-out group-hover:w-full`} />
     <span className="relative z-10">{children}</span>
   </button>
+);
+
+const StatCard = ({ detail, label, value }) => (
+  <article className="rounded-[1.5rem] border border-white/10 bg-white p-6 shadow-[0_18px_50px_rgba(6,34,30,0.1)]">
+    <p className="text-xs font-black uppercase tracking-[0.18em] text-[#7b8f88]">{label}</p>
+    <p className="mt-4 break-words font-display text-4xl font-extrabold tracking-[-0.05em] text-[#07251f]">{value}</p>
+    <p className="mt-2 text-sm font-semibold text-[#60726c]">{detail}</p>
+  </article>
+);
+
+const Panel = ({ children, eyebrow, title, action }) => (
+  <section className="rounded-[1.8rem] border border-white/10 bg-white p-6 shadow-[0_18px_50px_rgba(6,34,30,0.1)]">
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8a6a13]">{eyebrow}</p>
+        <h2 className="mt-2 text-3xl font-extrabold tracking-[-0.04em] text-[#07251f]">{title}</h2>
+      </div>
+      {action}
+    </div>
+    <div className="mt-6">{children}</div>
+  </section>
 );
 
 const ProfilePage = () => {
@@ -87,31 +95,28 @@ const ProfilePage = () => {
         ? "TECHNICIAN"
         : "USER";
 
-  const overviewCards = [
-    { label: "Profile ID", value: profileId },
-    { label: "Primary Role", value: formatRole(primaryRole) },
-    { label: "Unread Alerts", value: String(unreadCount) },
-    { label: "Active Roles", value: String(roles.length) },
+  const overviewCards = useMemo(
+    () => [
+      { label: "Profile ID", value: profileId, detail: "Internal identity reference used across campus systems." },
+      { label: "Primary Role", value: formatRole(primaryRole), detail: "Main access level driving your dashboards and tools." },
+      { label: "Unread Alerts", value: String(unreadCount), detail: "Notifications waiting for review in your alert center." },
+      { label: "Active Roles", value: String(roles.length), detail: "Role assignments currently active on this account." },
+    ],
+    [primaryRole, profileId, roles.length, unreadCount]
+  );
+
+  const quickLinks = [
+    { label: "Bookings", path: "/bookings", tone: "bg-[linear-gradient(135deg,#07251f,#12453a)] text-white" },
+    { label: "Ticketing", path: "/tickets", tone: "bg-white text-[#07251f] border border-[#d8e3de]" },
+    { label: "Notifications", path: "/notifications", tone: "bg-[#d4af37] text-[#07251f]" },
+    { label: "Resources", path: canManageResources ? "/resources/dashboard" : "/availability", tone: "bg-white text-[#07251f] border border-[#d8e3de]" },
   ];
 
-  const sidebarItems = [
-    ["overview", "Dashboard", "bg-[linear-gradient(90deg,#a7f3d0,#f8e06d)]"],
-    ["access", "Permissions", "bg-[linear-gradient(90deg,#bae6fd,#a7f3d0)]"],
+  const accessHighlights = [
+    { label: "Campus Access", value: roles.length > 1 ? "Multi-role" : "Single-role", detail: "Your account spans multiple service areas when needed." },
+    { label: "Operations Access", value: canManageResources ? "Enabled" : "Standard", detail: "Controls resource management and availability access." },
+    { label: "Admin Access", value: isAdmin ? "Full" : "Restricted", detail: "Defines whether user administration and oversight are available." },
   ];
-
-  const panelTitle =
-    {
-      overview: "Account Profile Dashboard",
-      edit: "Edit Profile Details",
-      access: "Access and Permissions",
-    }[activePanel] ?? "Account Profile Dashboard";
-
-  const panelSubtitle =
-    {
-      overview: "Manage your SLIIT Nexus account, alerts, quick links, and access level from one workspace.",
-      edit: "Update your display name, email address, or password for this account.",
-      access: "Review the roles connected to your campus workflows and dashboard access.",
-    }[activePanel] ?? "";
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -125,7 +130,6 @@ const ProfilePage = () => {
     setSaving(true);
     setError("");
     setStatusMessage("");
-
     try {
       await updateAccount({
         displayName: form.displayName,
@@ -142,10 +146,7 @@ const ProfilePage = () => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Delete this account permanently?")) {
-      return;
-    }
-
+    if (!window.confirm("Delete this account permanently?")) return;
     setDeleting(true);
     setError("");
     try {
@@ -163,314 +164,199 @@ const ProfilePage = () => {
   };
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[linear-gradient(135deg,#f7fbf7_0%,#e8f5ef_45%,#fff8e6_100%)] pt-6">
-      <div className="pointer-events-none fixed inset-x-0 top-0 h-64 bg-[linear-gradient(90deg,rgba(12,71,61,0.12),rgba(248,224,109,0.18),rgba(251,146,60,0.08))]" />
-      <div className="relative mx-auto flex max-w-[1800px] flex-col gap-8 px-4 pb-16 lg:flex-row lg:items-start lg:px-6">
-        <aside className="sticky top-6 overflow-hidden rounded-lg bg-[linear-gradient(160deg,#10211e_0%,#0c473d_54%,#5a3a14_100%)] p-6 text-white shadow-[0_28px_80px_rgba(16,60,53,0.32)] ring-1 ring-white/15 lg:min-h-[calc(100vh-3rem)] lg:w-80 lg:shrink-0">
-          <div className="relative">
-          <div className="flex items-center gap-4 border-b border-white/15 pb-7">
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#f8e06d,#a7f3d0)] text-2xl font-black tracking-[0.12em] text-[#07251f] shadow-[0_14px_32px_rgba(248,224,109,0.24)]">
-              {initials}
-            </div>
-            <div>
-              <p className="font-display text-3xl font-extrabold">SLIIT Nexus</p>
-              <p className="mt-1 text-sm font-semibold text-[#d7eee6]">Profile Workspace</p>
-            </div>
-          </div>
-
-          <nav className="mt-7 grid gap-4 text-base font-extrabold">
-            {sidebarItems.map(([panel, label, fade]) => (
-              <SidebarButton
-                key={panel}
-                onClick={() => setActivePanel(panel)}
-                active={activePanel === panel}
-                fillClass={fade}
-              >
-                {label}
-              </SidebarButton>
-            ))}
-
-            {isAdmin && (
-              <SidebarButton
-                onClick={() => navigate("/admin/dashboard")}
-                fillClass="bg-[linear-gradient(90deg,#f8e06d,#fef3c7)]"
-              >
-                User Role Management
-              </SidebarButton>
-            )}
-            <SidebarButton
-              onClick={() => navigate("/bookings")}
-              fillClass="bg-[linear-gradient(90deg,#bae6fd,#d9f99d)]"
-            >
-              Bookings
-            </SidebarButton>
-            <SidebarButton
-              onClick={() => navigate("/tickets")}
-              fillClass="bg-[linear-gradient(90deg,#fecdd3,#fed7aa)]"
-            >
-              Ticketing
-            </SidebarButton>
-            <SidebarButton
-              onClick={() => navigate(canManageResources ? "/resources/dashboard" : "/availability")}
-              fillClass="bg-[linear-gradient(90deg,#6f7da6,#4f7f8d)]"
-              tone="dark"
-            >
-              Resources
-            </SidebarButton>
-            <SidebarButton
-              onClick={handleLogout}
-              fillClass="bg-[linear-gradient(90deg,#fef08a,#fb923c)]"
-            >
-              Logout
-            </SidebarButton>
-          </nav>
-
-          <div className="mt-8 rounded-lg border border-white/15 bg-white/10 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur">
-            <p className="font-display text-2xl font-extrabold">Account Flow</p>
-            <p className="mt-3 text-sm leading-6 text-[#d7eee6]">
-              Keep your profile details, permissions, and campus shortcuts in one place.
-            </p>
-          </div>
-          </div>
-        </aside>
-
-        <section className="min-w-0 flex-1">
-          <header className="rounded-lg border border-white/70 bg-white/55 p-6 text-[#0f342e] shadow-[0_20px_60px_rgba(15,52,46,0.08)] backdrop-blur-2xl">
-            <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-              <div>
-                <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#b46b18]">Smart Campus Account Hub</p>
-                <h1 className="font-display mt-3 text-4xl font-extrabold text-[#0f342e] sm:text-5xl">
-                  {panelTitle}
-                </h1>
-                <p className="mt-3 max-w-3xl text-base font-semibold text-[#5c746d] sm:text-lg">{panelSubtitle}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => setActivePanel("overview")}
-                  className={`rounded-lg px-7 py-4 text-base font-black shadow-[0_12px_28px_rgba(15,52,46,0.08)] transition hover:-translate-y-0.5 ${
-                    activePanel === "overview" ? "bg-[#f8e06d] text-[#07251f]" : "bg-white/75 text-[#0f342e]"
-                  }`}
-                >
-                  Dashboard
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActivePanel("edit")}
-                  className={`rounded-lg px-7 py-4 text-base font-black shadow-[0_12px_28px_rgba(16,60,53,0.1)] transition hover:-translate-y-0.5 ${
-                    activePanel === "edit" ? "bg-[#f8e06d] text-[#07251f]" : "bg-white/75 text-[#0f342e]"
-                  }`}
-                >
-                  Edit Profile
-                </button>
-              </div>
-            </div>
-          </header>
-
-          {activePanel === "overview" && (
-            <>
-              <div className="mt-9 grid gap-6 md:grid-cols-4">
-                {overviewCards.map((card) => (
-                  <div
-                    key={card.label}
-                    className="rounded-lg border border-white/70 bg-white/48 p-7 shadow-[0_18px_42px_rgba(15,52,46,0.08)] ring-1 ring-white/70 backdrop-blur-2xl transition hover:-translate-y-1 hover:border-[#f8e06d]/70 hover:bg-white/68 hover:shadow-[0_26px_58px_rgba(15,52,46,0.12)]"
-                  >
-                    <p className="text-base font-extrabold text-[#6b766d]">{card.label}</p>
-                    <p className="mt-6 break-words font-display text-3xl font-extrabold text-[#0f342e]">
-                      {card.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <section className="mt-9 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-                <div className="overflow-hidden rounded-lg border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.68),rgba(232,245,239,0.48)_58%,rgba(255,248,230,0.72))] p-7 shadow-[0_24px_58px_rgba(15,52,46,0.14)] backdrop-blur-2xl sm:p-8">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-[#0c473d] text-2xl font-black tracking-[0.12em] text-[#f8e06d] shadow-[0_18px_34px_rgba(16,60,53,0.18)]">
-                        {initials}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#b46b18]">Account Profile</p>
-                        <h2 className="font-display mt-2 text-4xl font-extrabold text-[#0f342e]">
-                          {displayName}
-                        </h2>
-                        <p className="mt-2 text-base font-semibold text-[#5c746d]">{email}</p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActivePanel("edit")}
-                      className="rounded-lg bg-[#f8e06d] px-5 py-3 text-sm font-black text-[#07251f] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#fde68a]"
-                    >
-                      Update Profile
-                    </button>
-                  </div>
-
-                  <div className="mt-8 grid gap-4 md:grid-cols-3">
-                    <button
-                      type="button"
-                      onClick={() => navigate("/bookings")}
-                      className="rounded-lg border border-white/70 bg-white/60 p-5 text-center text-[#0f342e] shadow-sm backdrop-blur-xl transition hover:-translate-y-1 hover:bg-[#ecfdf5]"
-                    >
-                      <p className="text-xl font-extrabold">Bookings</p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate("/tickets")}
-                      className="rounded-lg bg-[#0c473d] p-5 text-center text-white shadow-[0_14px_34px_rgba(16,60,53,0.18)] transition hover:-translate-y-1 hover:bg-[#123f38]"
-                    >
-                      <p className="text-xl font-extrabold">Support Desk</p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate("/notifications")}
-                      className="rounded-lg bg-[#f8e06d] p-5 text-center text-[#07251f] shadow-[0_14px_34px_rgba(16,60,53,0.1)] transition hover:-translate-y-1 hover:bg-[#fed7aa]"
-                    >
-                      <p className="text-xl font-extrabold">Notifications</p>
-                    </button>
-                  </div>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#154337_0%,#0d2b25_24%,#061713_58%,#04110e_100%)] px-4 py-6 sm:px-6">
+      <div className="mx-auto max-w-[1820px]">
+        <section className="overflow-hidden rounded-[2.25rem] border border-white/10 bg-[linear-gradient(135deg,rgba(8,32,27,0.94),rgba(12,54,46,0.88)_42%,rgba(249,250,247,0.98)_130%)] shadow-[0_28px_90px_rgba(0,0,0,0.38)]">
+          <div className="grid xl:grid-cols-[320px_1fr]">
+            <aside className="border-r border-white/10 bg-[linear-gradient(180deg,rgba(5,20,17,0.98),rgba(12,47,40,0.98))] p-6 text-white xl:p-8">
+              <div className="flex items-center gap-4 border-b border-white/10 pb-7">
+                <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[#d4af37] text-2xl font-black tracking-[0.12em] text-[#07251f]">
+                  {initials}
                 </div>
-
-                <aside className="rounded-lg border border-white/70 bg-white/58 p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-white/70 backdrop-blur-2xl sm:p-8">
-                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#b46b18]">Current Status</p>
-                  <h2 className="font-display mt-2 text-4xl font-extrabold text-[#0f342e]">Alerts</h2>
-                  <p className="mt-5 text-5xl font-black text-[#0c473d]">{unreadCount}</p>
-                  <p className="mt-3 text-sm font-semibold leading-6 text-[#5c746d]">
-                    {unreadCount > 0
-                      ? `${unreadCount} alert${unreadCount > 1 ? "s" : ""} waiting in your notification center.`
-                      : "All caught up."}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/notifications")}
-                    className="mt-6 w-full rounded-lg bg-[#0c473d] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#123f38]"
-                  >
-                    Open Notifications
-                  </button>
-                </aside>
-              </section>
-            </>
-          )}
-
-          {activePanel === "edit" && (
-            <section className="mt-9 overflow-hidden rounded-lg border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.68),rgba(232,245,239,0.48)_58%,rgba(255,248,230,0.72))] p-7 shadow-[0_24px_58px_rgba(15,52,46,0.14)] backdrop-blur-2xl sm:p-8">
-              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#b46b18]">Account Tool</p>
-                  <h2 className="font-display mt-2 text-4xl font-extrabold text-[#0f342e]">Profile Details</h2>
-                  <p className="mt-2 text-sm font-semibold text-[#5c746d]">
-                    Leave the password field blank to keep your current password.
-                  </p>
+                  <p className="font-display text-3xl font-extrabold">SLIIT Nexus</p>
+                  <p className="mt-1 text-sm font-semibold uppercase tracking-[0.14em] text-[#d7c27c]">Profile Command Center</p>
                 </div>
               </div>
 
-              <form
-                className="mt-6 rounded-lg border border-white/80 bg-white/48 p-5 shadow-inner backdrop-blur-2xl sm:p-6"
-                onSubmit={handleSave}
-              >
-                <div className="grid gap-5 md:grid-cols-2">
-                  <label className="block">
-                    <span className="text-sm font-bold text-[#0f342e]">Display Name</span>
-                    <input
-                      name="displayName"
-                      value={form.displayName}
-                      onChange={handleChange}
-                      className="mt-2 w-full rounded-lg border border-white/80 bg-white/70 px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none transition focus:border-[#b46b18] focus:bg-white"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-sm font-bold text-[#0f342e]">Email Address</span>
-                    <input
-                      name="email"
-                      type="email"
-                      value={form.email}
-                      onChange={handleChange}
-                      className="mt-2 w-full rounded-lg border border-white/80 bg-white/70 px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none transition focus:border-[#b46b18] focus:bg-white"
-                    />
-                  </label>
-                  <label className="block md:col-span-2">
-                    <span className="text-sm font-bold text-[#0f342e]">New Password</span>
-                    <input
-                      name="password"
-                      type="password"
-                      value={form.password}
-                      onChange={handleChange}
-                      placeholder="Leave blank to keep current password"
-                      className="mt-2 w-full rounded-lg border border-white/80 bg-white/70 px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none transition focus:border-[#b46b18] focus:bg-white"
-                    />
-                  </label>
-                </div>
+              <div className="mt-7 rounded-[1.5rem] border border-white/10 bg-white/5 p-5">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#d7c27c]">Signed in</p>
+                <p className="mt-3 text-xl font-extrabold">{displayName}</p>
+                <p className="mt-1 text-sm font-semibold text-white/70">{email}</p>
+              </div>
 
-                {(statusMessage || error) && (
-                  <div className="mt-5 rounded-lg bg-white/75 p-4 ring-1 ring-white/80 backdrop-blur-xl">
-                    {statusMessage && <p className="text-sm font-bold text-emerald-700">{statusMessage}</p>}
-                    {error && <p className="text-sm font-bold text-red-700">{error}</p>}
-                  </div>
-                )}
-
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="rounded-lg bg-[#0c473d] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_20px_rgba(16,60,53,0.18)] transition hover:-translate-y-0.5 hover:bg-[#123f38] disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {saving ? "Saving..." : "Update Profile"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={deleting}
-                    onClick={handleDelete}
-                    className="rounded-lg bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-[0_10px_20px_rgba(185,28,28,0.14)] transition hover:-translate-y-0.5 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {deleting ? "Deleting..." : "Delete Account"}
-                  </button>
-                </div>
-              </form>
-            </section>
-          )}
-
-          {activePanel === "access" && (
-            <section className="mt-9 rounded-lg border border-white/70 bg-white/58 p-7 shadow-[0_20px_48px_rgba(15,52,46,0.08)] ring-1 ring-white/70 backdrop-blur-2xl sm:p-8">
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#b46b18]">Permissions</p>
-                  <h2 className="font-display mt-2 text-4xl font-extrabold text-[#0f342e]">Role Access</h2>
-                </div>
+              <nav className="mt-7 grid gap-4 text-base font-extrabold">
+                <SidebarButton active={activePanel === "overview"} onClick={() => setActivePanel("overview")} fillClass="bg-[linear-gradient(90deg,#d4af37,#f7de7a)]">Overview</SidebarButton>
+                <SidebarButton active={activePanel === "edit"} onClick={() => setActivePanel("edit")} fillClass="bg-[linear-gradient(90deg,#c7f9cc,#84cc16)]">Edit Profile</SidebarButton>
+                <SidebarButton active={activePanel === "access"} onClick={() => setActivePanel("access")} fillClass="bg-[linear-gradient(90deg,#bae6fd,#99f6e4)]">Permissions</SidebarButton>
                 {isAdmin && (
-                  <button
-                    type="button"
-                    onClick={() => navigate("/admin/dashboard")}
-                    className="rounded-lg bg-[#f8e06d] px-5 py-3 text-sm font-black text-[#07251f] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#fde68a]"
-                  >
-                    Open Admin Console
-                  </button>
+                  <SidebarButton onClick={() => navigate("/admin/dashboard")} fillClass="bg-[linear-gradient(90deg,#d4af37,#fef3c7)]">Admin Control Center</SidebarButton>
                 )}
-              </div>
+                <SidebarButton onClick={handleLogout} fillClass="bg-[linear-gradient(90deg,#fef08a,#fb923c)]">Logout</SidebarButton>
+              </nav>
 
-              <div className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {roles.map((role) => (
-                  <article
-                    key={role}
-                    className="group relative overflow-hidden rounded-lg border border-white/70 bg-white/52 p-5 shadow-[0_18px_44px_rgba(15,52,46,0.12)] backdrop-blur-2xl transition hover:-translate-y-1 hover:border-[#f8e06d]/70 hover:bg-white/75 hover:shadow-[0_26px_58px_rgba(15,52,46,0.18)]"
-                  >
-                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.58),rgba(232,245,239,0.38)_60%,rgba(255,248,230,0.52))]" />
-                    <div className="relative">
-                      <p className="text-xs font-black uppercase tracking-[0.14em] text-[#b46b18]">Assigned Role</p>
-                      <h3 className="mt-3 text-2xl font-extrabold text-[#0f342e]">{formatRole(role)}</h3>
-                      <span
-                        className={`mt-5 inline-flex rounded-full px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] ${
-                          roleStyles[role] ?? "bg-slate-100 text-slate-700 ring-1 ring-slate-200"
-                        }`}
-                      >
-                        {role}
-                      </span>
+              <div className="mt-8 rounded-[1.5rem] border border-[#d4af37]/30 bg-[#d4af37]/10 p-5 text-[#f9f3db]">
+                <p className="text-xs font-black uppercase tracking-[0.18em]">Profile Summary</p>
+                <div className="mt-4 space-y-4">
+                  {accessHighlights.map((item) => (
+                    <div key={item.label}>
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="text-sm font-bold">{item.label}</p>
+                        <p className="text-xl font-extrabold">{item.value}</p>
+                      </div>
+                      <p className="mt-1 text-sm text-[#f4e8bb]/85">{item.detail}</p>
                     </div>
-                  </article>
-                ))}
+                  ))}
+                </div>
               </div>
-            </section>
-          )}
+            </aside>
+
+            <div className="bg-[linear-gradient(180deg,rgba(247,249,246,0.98),rgba(239,245,241,0.98))] p-6 text-[#07251f] sm:p-8">
+              <header className="flex flex-wrap items-start justify-between gap-6">
+                <div className="max-w-4xl">
+                  <p className="text-sm font-black uppercase tracking-[0.2em] text-[#8a6a13]">Smart Campus Identity Hub</p>
+                  <h1 className="mt-3 text-5xl font-extrabold tracking-[-0.06em] text-[#07251f] sm:text-6xl">
+                    {activePanel === "overview" ? "Account Profile Dashboard" : activePanel === "edit" ? "Edit Profile Details" : "Access And Permissions"}
+                  </h1>
+                  <p className="mt-4 max-w-3xl text-base font-semibold leading-7 text-[#536861] sm:text-lg">
+                    {activePanel === "overview"
+                      ? "Review your account posture, notifications, roles, and smart campus shortcuts from one premium workspace."
+                      : activePanel === "edit"
+                        ? "Update your display name, email address, and password while keeping account access under control."
+                        : "Understand the permissions, operational access, and campus systems available to your account."}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button type="button" onClick={() => setActivePanel("overview")} className={`rounded-[1rem] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] transition ${activePanel === "overview" ? "bg-[#07251f] text-white" : "border border-[#d8e3de] bg-white text-[#07251f]"}`}>Overview</button>
+                  <button type="button" onClick={() => setActivePanel("edit")} className={`rounded-[1rem] px-5 py-3 text-sm font-black uppercase tracking-[0.14em] transition ${activePanel === "edit" ? "bg-[#d4af37] text-[#07251f]" : "border border-[#d8e3de] bg-white text-[#07251f]"}`}>Edit Profile</button>
+                </div>
+              </header>
+
+              {activePanel === "overview" && (
+                <>
+                  <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    {overviewCards.map((card) => (
+                      <StatCard key={card.label} label={card.label} value={card.value} detail={card.detail} />
+                    ))}
+                  </section>
+
+                  <section className="mt-8 grid gap-5 xl:grid-cols-[1.3fr_0.9fr]">
+                    <Panel
+                      eyebrow="Identity"
+                      title="Profile Overview"
+                      action={<button type="button" onClick={() => setActivePanel("edit")} className="rounded-[1rem] bg-[#d4af37] px-4 py-2 text-sm font-black text-[#07251f] transition hover:bg-[#e0bf58]">Update Profile</button>}
+                    >
+                      <div className="flex flex-wrap items-center gap-5">
+                        <div className="flex h-24 w-24 items-center justify-center rounded-[1.5rem] bg-[linear-gradient(135deg,#07251f,#12453a)] text-3xl font-black text-[#d4af37]">
+                          {initials}
+                        </div>
+                        <div>
+                          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#8a6a13]">Account Identity</p>
+                          <h2 className="mt-2 text-4xl font-extrabold tracking-[-0.04em] text-[#07251f]">{displayName}</h2>
+                          <p className="mt-2 text-base font-semibold text-[#60726c]">{email}</p>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {roles.map((role) => (
+                              <span key={role} className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${roleStyles[role] ?? "bg-slate-100 text-slate-700 ring-1 ring-slate-200"}`}>
+                                {role}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                        {quickLinks.map((item) => (
+                          <button key={item.label} type="button" onClick={() => navigate(item.path)} className={`rounded-[1.2rem] px-5 py-5 text-left text-sm font-black uppercase tracking-[0.14em] transition hover:-translate-y-0.5 ${item.tone}`}>
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </Panel>
+
+                    <Panel eyebrow="Notifications" title="Alert Status">
+                      <div className="rounded-[1.5rem] border border-[#d8e3de] bg-[#f8fbf9] p-6">
+                        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8a6a13]">Unread Notifications</p>
+                        <p className="mt-4 text-6xl font-extrabold tracking-[-0.05em] text-[#07251f]">{unreadCount}</p>
+                        <p className="mt-4 text-sm font-semibold leading-6 text-[#60726c]">
+                          {unreadCount > 0
+                            ? `${unreadCount} alert${unreadCount > 1 ? "s" : ""} waiting in your notification center.`
+                            : "All campus alerts have been reviewed. You are fully up to date."}
+                        </p>
+                        <button type="button" onClick={() => navigate("/notifications")} className="mt-6 w-full rounded-[1rem] bg-[#07251f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0f382f]">
+                          Open Notifications
+                        </button>
+                      </div>
+                    </Panel>
+                  </section>
+                </>
+              )}
+
+              {activePanel === "edit" && (
+                <Panel eyebrow="Account Tool" title="Edit Profile Details">
+                  <form onSubmit={handleSave} className="rounded-[1.5rem] border border-[#d8e3de] bg-[#f8fbf9] p-6">
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <label className="block">
+                        <span className="text-sm font-bold text-[#07251f]">Display Name</span>
+                        <input name="displayName" value={form.displayName} onChange={handleChange} className="mt-2 w-full rounded-[1rem] border border-[#dbe7df] bg-white px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#0f5a48]" />
+                      </label>
+                      <label className="block">
+                        <span className="text-sm font-bold text-[#07251f]">Email Address</span>
+                        <input name="email" type="email" value={form.email} onChange={handleChange} className="mt-2 w-full rounded-[1rem] border border-[#dbe7df] bg-white px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#0f5a48]" />
+                      </label>
+                      <label className="block md:col-span-2">
+                        <span className="text-sm font-bold text-[#07251f]">New Password</span>
+                        <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Leave blank to keep current password" className="mt-2 w-full rounded-[1rem] border border-[#dbe7df] bg-white px-4 py-3 text-sm font-semibold text-[#0f342e] outline-none focus:border-[#0f5a48]" />
+                      </label>
+                    </div>
+
+                    {(statusMessage || error) && (
+                      <div className="mt-5 rounded-[1rem] bg-white p-4 ring-1 ring-[#e2ece7]">
+                        {statusMessage && <p className="text-sm font-bold text-emerald-700">{statusMessage}</p>}
+                        {error && <p className="text-sm font-bold text-red-700">{error}</p>}
+                      </div>
+                    )}
+
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <button type="submit" disabled={saving} className="rounded-[1rem] bg-[#07251f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#0f382f] disabled:cursor-not-allowed disabled:opacity-60">
+                        {saving ? "Saving..." : "Update Profile"}
+                      </button>
+                      <button type="button" disabled={deleting} onClick={handleDelete} className="rounded-[1rem] bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">
+                        {deleting ? "Deleting..." : "Delete Account"}
+                      </button>
+                    </div>
+                  </form>
+                </Panel>
+              )}
+
+              {activePanel === "access" && (
+                <>
+                  <section className="mt-8 grid gap-4 md:grid-cols-3">
+                    {accessHighlights.map((item) => (
+                      <StatCard key={item.label} label={item.label} value={item.value} detail={item.detail} />
+                    ))}
+                  </section>
+
+                  <Panel
+                    eyebrow="Permissions"
+                    title="Role Access Matrix"
+                    action={isAdmin ? <button type="button" onClick={() => navigate("/admin/dashboard")} className="rounded-[1rem] bg-[#d4af37] px-4 py-2 text-sm font-black text-[#07251f] transition hover:bg-[#e0bf58]">Open Admin Console</button> : null}
+                  >
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {roles.map((role) => (
+                        <article key={role} className="rounded-[1.4rem] border border-[#d8e3de] bg-[#f8fbf9] p-5">
+                          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#8a6a13]">Assigned Role</p>
+                          <h3 className="mt-3 text-2xl font-extrabold text-[#07251f]">{formatRole(role)}</h3>
+                          <span className={`mt-5 inline-flex rounded-full px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] ${roleStyles[role] ?? "bg-slate-100 text-slate-700 ring-1 ring-slate-200"}`}>
+                            {role}
+                          </span>
+                        </article>
+                      ))}
+                    </div>
+                  </Panel>
+                </>
+              )}
+            </div>
+          </div>
         </section>
       </div>
     </main>
