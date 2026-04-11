@@ -1,10 +1,32 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap");
+@import "tailwindcss";
+
+:root {
+  --nx-ink: #091413;
+  --nx-deep: #285a48;
+  --nx-accent: #408a71;
+  --nx-mint: #b0e4cc;
+  --nx-cream: #fff6f6;
+}
+
 html {
-  font-family: "Inter", sans-serif;
-  background: #f8fafc;
+  font-family: "Manrope", sans-serif;
+  background: var(--nx-cream);
+  color: var(--nx-ink);
 }
 
 body {
   margin: 0;
+  background: var(--nx-cream);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: "Sora", sans-serif;
+  letter-spacing: -0.02em;
 }
 
 a {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { notificationApi } from "../services/api";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const NotificationPanel = () => {
   const { user, unreadCount, setUnreadCount } = useAuth();
@@ -35,18 +35,25 @@ const NotificationPanel = () => {
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="relative rounded-full border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-700"
+        className={`relative flex items-center gap-2 rounded-full border px-3.5 py-2.5 text-sm font-semibold transition ${
+          open
+            ? "border-blue-200 bg-blue-50 text-blue-800"
+            : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-slate-50 hover:text-blue-700"
+        }`}
       >
-        Notifications
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-base leading-none">
+          {unreadCount > 0 ? "!" : "*"}
+        </span>
+        <span className="hidden xl:inline">Alerts</span>
         {unreadCount > 0 && (
-          <span className="ml-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs text-white">
+          <span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">
             {unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-3 w-[22rem] rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl">
+        <div className="absolute right-0 z-50 mt-3 w-[22rem] rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_25px_70px_rgba(15,23,42,0.18)]">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-slate-900">Alerts and updates</p>

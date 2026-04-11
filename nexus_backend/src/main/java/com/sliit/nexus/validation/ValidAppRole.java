@@ -1,0 +1,17 @@
+package com.sliit.nexus.validation;
+
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Constraint(validatedBy = ValidAppRoleValidator.class)
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE, ElementType.RECORD_COMPONENT})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ValidAppRole {
+    String message() default "Invalid role provided.";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+}

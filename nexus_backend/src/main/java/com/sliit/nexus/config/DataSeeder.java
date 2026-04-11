@@ -1,12 +1,12 @@
 package com.sliit.nexus.config;
 
 import com.sliit.nexus.model.AppRole;
-import com.sliit.nexus.model.BookingRequest;
+import com.sliit.nexus.model.Booking;
 import com.sliit.nexus.model.BookingStatus;
 import com.sliit.nexus.model.SupportTicket;
 import com.sliit.nexus.model.TicketStatus;
 import com.sliit.nexus.model.UserAccount;
-import com.sliit.nexus.repository.BookingRequestRepository;
+import com.sliit.nexus.repository.BookingRepository;
 import com.sliit.nexus.repository.SupportTicketRepository;
 import com.sliit.nexus.repository.UserAccountRepository;
 import java.time.Instant;
@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
@@ -23,59 +24,78 @@ import org.springframework.context.annotation.Configuration;
 public class DataSeeder {
 
     private final UserAccountRepository userAccountRepository;
-    private final BookingRequestRepository bookingRequestRepository;
+    private final BookingRepository bookingRepository;
     private final SupportTicketRepository supportTicketRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     ApplicationRunner seedData() {
         return args -> {
-            try {
-                UserAccount admin = userAccountRepository.findByEmailIgnoreCase("admin@sliitnexus.com")
-                        .orElseGet(() -> userAccountRepository.save(UserAccount.builder()
-                                .email("admin@sliitnexus.com")
-                                .displayName("Admin User")
-                                .roles(Set.of(AppRole.ADMIN, AppRole.USER))
-                                .provider("seed")
-                                .providerId("admin-seed")
-                                .createdAt(Instant.now())
-                                .updatedAt(Instant.now())
-                                .build()));
-
-                UserAccount student = userAccountRepository.findByEmailIgnoreCase("student@sliitnexus.com")
-                        .orElseGet(() -> userAccountRepository.save(UserAccount.builder()
-                                .email("student@sliitnexus.com")
-                                .displayName("Student User")
-                                .roles(Set.of(AppRole.USER))
-                                .provider("seed")
-                                .providerId("student-seed")
-                                .createdAt(Instant.now())
-                                .updatedAt(Instant.now())
-                                .build()));
-
-                if (bookingRequestRepository.count() == 0) {
-                    bookingRequestRepository.save(BookingRequest.builder()
-                            .requestedByUserId(student.getId())
-                            .resourceName("Lecture Hall B")
-                            .dateLabel("2026-04-09 10:00 AM")
-                            .status(BookingStatus.PENDING)
+            UserAccount admin = userAccountRepository.findByEmailIgnoreCase("admin@sliitnexus.com")
+                    .orElseGet(() -> userAccountRepository.save(UserAccount.builder()
+                            .email("admin@sliitnexus.com")
+                            .displayName("Admin User")
+                            .roles(Set.of(AppRole.ADMIN, AppRole.USER))
+                            .provider("local")
+                            .providerId("admin-seed")
+                            .passwordHash(passwordEncoder.encode("Admin123!"))
                             .createdAt(Instant.now())
                             .updatedAt(Instant.now())
-                            .build());
-                }
-
-                if (supportTicketRepository.count() == 0) {
-                    supportTicketRepository.save(SupportTicket.builder()
-                            .createdByUserId(student.getId())
-                            .title("Projector not working in Lab 2")
-                            .description("Projector powers on but does not show HDMI input.")
-                            .status(TicketStatus.OPEN)
-                            .createdAt(Instant.now())
-                            .updatedAt(Instant.now())
-                            .build());
-                }
-            } catch (Exception exception) {
-                log.warn("Skipping Mongo seed data because the database is not reachable: {}", exception.getMessage());
+                            .build()));
+            if (admin.getPasswordHash() == null || admin.getPasswordHash().isBlank()) {
+                admin.setPasswordHash(passwordEncoder.encode("Admin123!"));
+                admin.setProvider("local");
+                admin.setUpdatedAt(Instant.now());
+                admin = userAccountRepository.save(admin);
             }
+
+            UserAccount student = userAccountRepository.findByEmailIgnoreCase("student@sliitnexus.com")
+                    .orElseGet(() -> userAccountRepository.save(UserAccount.builder()
+                            .email("student@sliitnexus.com")
+                            .displayName("Student User")
+                            .roles(Set.of(AppRole.USER))
+                            .provider("local")
+                            .providerId("student-seed")
+                            .passwordHash(passwordEncoder.encode("Student123!"))
+                            .createdAt(Instant.now())
+                            .updatedAt(Instant.now())
+                            .build()));
+            if (student.getPasswordHash() == null || student.getPasswordHash().isBlank()) {
+                student.setPasswordHash(passwordEncoder.encode("Student123!"));
+                student.setProvider("local");
+                student.setUpdatedAt(Instant.now());
+                student = userAccountRepository.save(student);
+            }
+
+            if (bookingRepository.count() == 0) {
+                bookingRepository.save(Booking.builder()
+                        .userId(student.getId())
+                        .userName(student.getDisplayName())
+                        .resourceId("seed-resource-1") // dummy
+                        .resourceName("Lecture Hall B")
+                        .date(java.time.LocalDate.now().plusDays(1))
+                        .startTime(java.time.LocalTime.of(10, 0))
+                        .endTime(java.time.LocalTime.of(12, 0))
+                        .purpose("Weekly Club Meeting")
+                        .attendees(30)
+                        .status(BookingStatus.PENDING)
+                        .createdAt(Instant.now())
+                        .updatedAt(Instant.now())
+                        .build());
+            }
+
+            if (supportTicketRepository.count() == 0) {
+                supportTicketRepository.save(SupportTicket.builder()
+                        .createdByUserId(student.getId())
+                        .title("Projector not working in Lab 2")
+                        .description("Projector powers on but does not show HDMI input.")
+                        .status(TicketStatus.OPEN)
+                        .createdAt(Instant.now())
+                        .updatedAt(Instant.now())
+                        .build());
+            }
+
+            log.info("MongoDB seed data verified successfully.");
         };
     }
 }
