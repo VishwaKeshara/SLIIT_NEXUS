@@ -15,11 +15,11 @@ import NotificationsPage from "./pages/NotificationsPage";
 import AboutUsPage from "./pages/AboutUsPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import CheckInPage from "./pages/CheckInPage";
-import AddResourcePage from "./pages/resources/AddResourcePage";
-import AvailabilityPage from "./pages/resources/AvailabilityPage";
-import BulkImportPage from "./pages/resources/BulkImportPage";
-import ResourcesDashboardPage from "./pages/resources/ResourcesDashboardPage";
-import ResourcesListPage from "./pages/resources/ResourcesListPage";
+import AddResourcePageView from "./components/resources/add/AddResourcePageView";
+import AvailabilityPageView from "./components/resources/availability/AvailabilityPageView";
+import BulkImportPageView from "./components/resources/bulk-import/BulkImportPageView";
+import ResourcesDashboardPageView from "./components/resources/dashboard/ResourcesDashboardPageView";
+import ResourcesListPageView from "./components/resources/list/ResourcesListPageView";
 
 function App() {
   const { pathname } = useLocation();
@@ -34,12 +34,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login/success" element={<LoginSuccessPage />} />
-        <Route path="/resources" element={<ResourcesListPage />} />
+        <Route path="/resources" element={<ResourcesListPageView />} />
         <Route
           path="/resources/dashboard"
           element={
             <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
-              <ResourcesDashboardPage />
+              <ResourcesDashboardPageView />
             </ProtectedRoute>
           }
         />
@@ -47,7 +47,7 @@ function App() {
           path="/resources/add"
           element={
             <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
-              <AddResourcePage />
+              <AddResourcePageView />
             </ProtectedRoute>
           }
         />
@@ -55,7 +55,7 @@ function App() {
           path="/resources/bulk-import"
           element={
             <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
-              <BulkImportPage />
+              <BulkImportPageView />
             </ProtectedRoute>
           }
         />
@@ -71,7 +71,7 @@ function App() {
           path="/availability"
           element={
             <ProtectedRoute>
-              <AvailabilityPage />
+              <AvailabilityPageView />
             </ProtectedRoute>
           }
         />

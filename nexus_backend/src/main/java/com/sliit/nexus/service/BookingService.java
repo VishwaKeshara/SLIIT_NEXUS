@@ -59,6 +59,13 @@ public class BookingService {
         return bookingRepository.findAll();
     }
 
+    public List<Booking> getAvailabilityBookings() {
+        return bookingRepository.findAll().stream()
+                .filter(booking -> booking.getStatus() != BookingStatus.REJECTED)
+                .filter(booking -> booking.getStatus() != BookingStatus.CANCELLED)
+                .toList();
+    }
+
     public List<Booking> getBookingsByUserId(String userId) {
         return bookingRepository.findByUserId(userId);
     }

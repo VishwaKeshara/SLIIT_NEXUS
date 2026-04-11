@@ -23,6 +23,7 @@ export const notificationApi = {
 
 export const bookingApi = {
   list: () => API.get("/bookings"),
+  availability: () => API.get("/bookings/availability"),
   getById: (id) => API.get(`/bookings/${id}`),
   create: (payload) => API.post("/bookings", payload),
   approve: (id) => API.put(`/bookings/${id}/approve`),

@@ -44,6 +44,12 @@ public class BookingController {
         }
     }
 
+    @GetMapping("/availability")
+    public List<Booking> getAvailabilityBookings(Authentication authentication) {
+        authService.requireCurrentUser(authentication);
+        return bookingService.getAvailabilityBookings();
+    }
+
     @GetMapping("/{id}")
     public Booking getBookingById(@PathVariable String id, Authentication authentication) {
         UserAccount userAccount = authService.requireCurrentUser(authentication);
